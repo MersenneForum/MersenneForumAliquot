@@ -28,6 +28,7 @@ Current reservations:
 """
 
 from myutils import linecount, Print, strftime, blogotubes, add_cookies
+import re
 
 if 'http' in info:
      txt = blogotubes(info)
@@ -41,7 +42,7 @@ if 'http' in resfile:
      # Isolate the [code] block with the reservations
      page = re.search(r'<pre.*?>(.*?)</pre>', page, flags=re.DOTALL).group(1)
      ind = page.find('\n')
-     page = [ind+1:] # Dump the first line
+     page = page[ind+1:] # Dump the first line
      resfile = dir+'/reservations'
      with open(resfile, 'w') as f:
           f.write(page)     
@@ -213,7 +214,6 @@ def edit_post(postid, body, reason=''):
      return page
 
 def spider(last_pid):
-     import re
      wobsite = 'http://www.mersenneforum.org/showthread.php?t=11588&page='
      backup()
      db = read_db()
@@ -297,7 +297,7 @@ def spider(last_pid):
      if spider_msg:
           update()
           write_db(db)
-          send('Spider:', ' | '.join(spider_msg)
+          send('Spider:', ' | '.join(spider_msg))
      return highest_pid
 
 if __name__ == '__main__':

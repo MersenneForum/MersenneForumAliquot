@@ -3,9 +3,9 @@ You need to change the working directory and login credentials in the script.
 Like the website scripts, I would redirect stdout and stderr to a log file and check up on it from
 time to time.
 
-Currently, any line with a capital A or R, with a 5 or 6 digit number, is assumed to be a reservation
-made by the poster; any line with a capital U or D, 5 or 6 digit number, is treated as a drop.
-Reservations by non-members can still be edited in to the head post as always; the script always
+Currently, any line with a capital A or R, with 5 or 6 digit numbers, is assumed to be a reservation
+made by the poster; any line with a capital U or D and 5 or 6 digit numbers, is treated as a drop.
+Reservations by non-members can still be edited in to the head post as before; the script always
 gets the current reservations from there, so those changes are preserved.
 
 Note that before initial use you just put the most recent post ID in the file described by the script.
