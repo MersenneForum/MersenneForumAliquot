@@ -8,7 +8,7 @@
 # update it as necessary.
 
 
-dir = '/home/bill/aliquot' # Set this appropriately
+dir = '.' # Set this appropriately
 resfile = 'http://mersenneforum.org/showpost.php?p=165249'
 bup = dir+'/backup'
 pid_file = dir+'/last_pid'
@@ -80,7 +80,11 @@ def read_db(file=resfile):
                     seq.size = int(l[-1])
                except ValueError: # Some lines have no data, only <seq name>
                     seq.name = ' '.join(l[1:])
-                    seq.index, seq.size = get_info(seq.seq)
+                    try:
+                         seq.index, seq.size = get_info(seq.seq)
+                    except TypeError:
+                         Print(seq.seq, "does'nt exist!")
+                         continue
                else:
                     seq.name = ' '.join(l[1:-2])
                db[seq.seq] = seq
@@ -324,6 +328,7 @@ if __name__ == '__main__':
                drop_db(db, argv[2], [int(seq.replace(',','')) for seq in argv[3:]])
           write_db(db)
      elif argv[1] == 'print':
+          write_db(read_db())
           with open(resfile, 'r') as f:
                for line in f:
                     print(line, end='') # Line newline + print newline = extra whitespace
