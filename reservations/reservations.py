@@ -297,7 +297,7 @@ def spider(last_pid):
      if spider_msg:
           update()
           write_db(db)
-          send('Spider:', ' | '.join(spider_msg))
+          send('Spider: ' + ' | '.join(spider_msg))
      return highest_pid
 
 if __name__ == '__main__':

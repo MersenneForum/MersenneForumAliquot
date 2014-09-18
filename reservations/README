@@ -4,7 +4,7 @@ Like the website scripts, I would redirect stdout and stderr to a log file and c
 time to time.
 
 Currently, any line with a capital A or R, with 5 or 6 digit numbers, is assumed to be a reservation
-made by the poster; any line with a capital U or D and 5 or 6 digit numbers, is treated as a drop.
+made by the poster; any line with a capital U or D and 5 or 6 digit numbers is treated as a drop.
 Reservations by non-members can still be edited in to the head post as before; the script always
 gets the current reservations from there, so those changes are preserved.
 
