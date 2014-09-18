@@ -1,0 +1,210 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+     <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+     <meta name="author" content="William (Bill) Winslow">
+     <meta name="description" content="Making status updates on Aliquot Sequences easier. :)" >
+     <link rel="icon" href="http://img4.wikia.nocookie.net/__cb20110423145435/bungie/images/3/32/Twinkie_7thMarathon.gif">
+     <link rel="Shortcut Icon" href="http://img4.wikia.nocookie.net/__cb20110423145435/bungie/images/3/32/Twinkie_7thMarathon.gif">
+     <style type="text/css">
+          body      {{ background: #0000D2;
+                    font-family: "sans serif"; 
+                    color: #FFFFFF; }}
+          .cen      {{ text-align: center;}}
+          .just     {{ margin-left: 6%;
+                    margin-right: 6%; }}
+          a         {{ color: #FF9B00; }}
+          a.lol     {{ color: #FF8300; }}
+          .dataTables_wrapper {{ 
+                    width: 90%; 
+                    height: 100%;
+                    text-align: center; 
+                    margin-left: auto;
+                    margin-right: auto; 
+                    margin-bottom: 24px; }}
+          table     {{ text-align: center;
+                    color: #000000;
+                    background-color: #05E9FF;
+                    border-collapse: collapse;
+                    font-size: 95%; }}
+          td        {{ white-space: nowrap; }}
+          img.center {{ display: block;
+                     clear: both;
+                     margin-left: auto;
+                     margin-right: auto; }}
+          .headerrow {{ background-color: #E0E0E0; 
+                     font-size: 105%; 
+                     font-weight: bold; 
+                     cursor: pointer; }}
+          .factorcol {{ text-align: left; }}
+     </style>
+     <script type="text/javascript" src="/aliquot/js/jquery.js"></script>
+     <script type="text/javascript" src="/aliquot/js/jquery.dataTables.js"></script>
+     <script type="text/javascript" src="/aliquot/js/dataTables.scroller.js"></script>
+     <script type="text/javascript">
+     $.fn.dataTableExt.afnFiltering.push(
+       function(oSettings, aData, iDataIndex) {{
+         if( document.getElementById('three').checked ) {{
+           if( aData[5].indexOf("* 3 *") > -1 || aData[5].indexOf("* 3^") > -1 ){{
+             return false;
+           }}
+         }}
+         if( document.getElementById('driver').checked && aData[11] ) {{
+           return false;
+         }}
+         if( document.getElementById('reserve').checked && aData[10] ) {{
+           return false;
+         }}
+         var rmin = document.getElementById('min').value*1; // *1 converts str to int
+         if( rmin != "" && aData[0] < rmin ) {{
+           return false;
+         }}
+         var rmax = document.getElementById('max').value*1;
+         if( rmax != "" && aData[0] > rmax ) {{
+           return false;
+         }}
+         return true;
+       }}
+     );
+     function specialSort(a, b) {{
+     // x any y should be true if a or b are a date, false otherwise
+       //console.log("a: "+a+' b: '+b);
+       if( typeof a == "string" )
+         x = a.indexOf('-') > -1; // true for date
+       else x = false; // ints are not dates
+       if( typeof b == "string" )
+         y = b.indexOf('-') > -1; // true for date
+       else y = false; // ints are not dates
+       
+       if( x ) {{
+         if( y ) {{
+           return (a < b) ? 1 : ( (a > b) ? -1 : 0);
+         }} else {{
+           return 1;
+         }}
+       }} else if( y ) {{
+         return -1;
+       }} else {{
+         a = parseInt(a);
+         b = parseInt(b);
+         return (a < b) ? 1 : ( (a > b) ? -1 : 0);
+       }}
+     }}
+     jQuery.fn.dataTableExt.oSort['special-asc'] = specialSort;
+     jQuery.fn.dataTableExt.oSort['special-desc'] = function(a, b) {{ return -specialSort(a, b); }};
+     $(document).ready(function() {{
+       var oTable = $('#win').dataTable( {{
+		"sScrollY": "577px",
+		"sAjaxSource": "AllSeq.json",
+		"sDom": '<"check">fritS',
+		"aaSorting": [[ 1, "asc" ]],
+		"bDeferRender": true,
+		//"bAutoWidth": false,
+		"aoColumnDefs": [
+		     {{ "sClass": "factorcol", "aTargets": [4, 5] }}, // left justified
+		     {{ "bSearchable": false, "bVisible": false, "aTargets": [3, 11] }}, // id and is_driver are totally invisible
+		     // three columns are rendered as links
+		     {{ "fnRender": function (o, val) {{return '<a target="_blank" class="lol" href="http://factordb.com/sequences.php?se=1&aq='+val+'&action=last20">'+val+'</a>'}}, "bUseRendered": false, "aTargets": [0] }},
+		     {{ "fnRender": function (o, val) {{return '<a target="_blank" class="lol" href="http://factordb.com/aliquot.php?type=1&aq='+o.aData[0]+'&big=1">'+val+'</a>'}}, "bUseRendered": false, "aTargets": [2] }},
+		     //{{ "fnRender": function (o, val) {{return '<a target="_blank" class="lol" href="http://factordb.com/index.php?id='+o.aData[3]+'">'+val+'</a>'}}, "bUseRendered": false, "aTargets": [6] }},
+		     {{ "sType": "special", "aTargets": [9] }} // special sort for progress column
+		]
+       }});
+       $("div.check").html('Exclude sequences with a 3: <input type="checkbox" id="three"> &nbsp;'+ 
+          'Exclude drivers: <input type="checkbox" id="driver"> &nbsp;'+
+          'Exclude reserved sequences: <input type="checkbox" id="reserve"><br>'+
+          'Range-filter sequence leaders: <input type="text" id="min" maxlength=6 size=6> - <input type="text" id="max" maxlength=6 size=6> <!--button type="button" id="button">Filter</button-->' );
+       function redraw() {{ oTable.fnDraw(); }}
+       $('#three').change( redraw );
+       $('#driver').change( redraw );
+       $('#reserve').change( redraw );
+       $('#min').keyup( redraw );
+       $('#max').keyup( redraw );
+       //$('#button').mousedown( redraw );
+     }});
+     </script>
+     <title>The tru7h, the whole tru7h, and nothing but the tru7h.</title>
+</head>
+<body>
+     <h1 class="cen">Welcome!</h1><br>
+     <div class="cen just"><h4>This is a page I put together inspired by schickel's AllSeq.txt, combined with the fact that finding a recent copy was a pain in the butt.
+     This is supposed to make things easier (including easier sorting and data mining).</h4>
+     
+     <p>This uses Syd's wonderful <a href="http://factordb.com/help.php?page=0">Factor DataBase</a> to get FDB's last <a href="http://factordb.com/sequences.php">known information</a>
+     about an <a href="http://en.wikipedia.org/wiki/Aliquot_sequence">Aliquot sequence</a>. As such, if a worker hasn't updated the DB in a while or the DB has errors in a sequence,
+     well... there's not much I can do about it.</p></div>
+     
+     <div class="just"><p><h4>Instructions:</h4></p> 
+     <p>This table makes use of a wonderful JavaScript library called DataTables created by <a href="http://datatables.net/index">this awesome group</a> 
+     whose work I found <a href="http://stackoverflow.com/questions/11304490/quick-html-table-sorting">thanks to StackOverflow</a>. DataTables in turn depends on 
+     <a href="http://jquery.com/">jQuery</a>. <br><br>
+     It's got some awesome features: you can do multi-column sorts by clicking the primary column, and then shift-clicking the secondary columns (in order of priority); 
+     it sorts the table quickly, thanks to deferred rendering (meaning the sorted data is only rendered as you scroll). This latter feature is why hitting Page Down 
+     repeatedly causes lag. Some potential uses of the multi-sort include finding the shortest sequence of size 111, or all sequences with size &lt; 115 with a certain 
+     driver. I also encourage you to use the search/filter feature (one of my favorite uses is searching by name), or the exclusion checkboxes.</p>
+     
+     <p>If you find a sequence you would like to extend, you should reserve it in <a href="http://www.mersenneforum.org">MersenneForum.org</a>'s
+     <a href="http://www.mersenneforum.org/forumdisplay.php?f=90">Aliquot sequence</a> <a href="http://www.mersenneforum.org/showthread.php?t=11588">reservations thread</a>;
+     That's the source for the reservations shown in this table. Also note that if the sequence is less than 10,000, 
+     there's a good chance it's being <a href="http://christophe.clavier.free.fr/Aliquot/site/clavier_table.html">worked on</a> by 
+     <a href="http://christophe.clavier.free.fr/Aliquot/site/Aliquot.html">Christophe Clavier</a>. All such reservation requests should be emailed to him. Also keep in mind 
+     that his work may not be in the FDB (and thus not in this table). Sequences between 10,000 and 100,000 
+     should also be checked further at MersenneForum, because this range was worked on by Clifford Stern. See 
+     <a href="http://www.mersenneforum.org/showthread.php?t=11625">this MF thread</a> for more details about or to ask about the status of sequences in these ranges.</p>
+     
+     <p>If you'd like to have the basic information available in the old AllSeq.txt format (to e.g. perform an analysis with grep, etc.), you can find that <a href="AllSeq.txt">here</a>.</p>
+     
+     <p><h4>Other Information</h4></p>
+     <p>To keep load on the FDB to a minimum, the Python script which makes this page is intended to update 55 sequences per hour, meaning 
+     no sequence should be more than a <a href="http://www.wolframalpha.com/input/?i=9226%2F55%20hours">week</a> out of date. Each sequence lists the 
+     date it was last updated. Each update is run at 7 past the hour, but the page won't actually change until a few minutes after that (depending on the FDB). To further reduce FDB load,
+     the script queries the FDB ID of the last unfactored line from the previous update. Only if that line is factored does the script actually request the much heavier sequence status page.</p>
+     
+     <p>Drivers and guides: I wrote a short <a href="aliquot.txt">Python module</a>, based on the definitions and notes from Clifford Stern's <a href="analysis.html">Analysis page</a>,
+     in order to classify the sequences in the table. The only exception to Clifford's definitions I use is to present the power of two as a "guide" if a "proper" guide is lacking.
+     The guide column does show proper drivers, though there is a checkbox to exclude sequences controlled by a driver (as well as a box to exclude sequences with a 
+     (pesky) 3 in them). The class shown is exactly the "class" described by Clifford in his page.</p>
+     
+     <p>At kar_bon's suggestion, the script now also records the FDB ID of the last line, to try and detect merges. The main drawback is that a merged sequence could 
+     advance between getting the info for one branch and the info of the other, meaning that such a merge would go undetected. The merge detection script is run once
+     a day, so theoretically if everyone does updates only once a day, no merges will be missed. (On the other hand, I certainly don't follow that rule :P)</p>
+     
+     <p>At fivemack's suggestion, the script now also tracks the last time a sequence was lengthened. If, at the current update, a sequence is longer than at the previous update,
+     the "Recent Progress" column displays the total increase in length. If a sequence has not been extended, then the date of the last extension is shown.
+     (The FDB doesn't seem to have recorded dates before 2011-03-17.)</p>
+     
+     <p>As you've probably noticed, this table is also capable of reading the current reservations from the lead post of the reservations thread; the time reported is
+     the last edit date of that post. The reservations are all updated every hour, unlike the sequences themselves.</p>
+     
+     <p>I'm also working on a <a href="statistics.html">statistics page</a> based on the data in the table. Check back every so often for new features.</p>
+     
+     <p>If you want to request a feature, report a bug, offer an idea for the stats page, or otherwise discuss the table, please use
+     <a href="http://www.mersenneforum.org/showthread.php?t=16965">this MF thread</a>.</p>
+     
+     <p>I also borrowed some of PrimeNet's table formatting.</p></div>
+     
+     <br>
+     <div class="cen"><p>All times are UTC. Reservations are as of {:s}.</p></div>
+     <table id="win" border="1" bordercolor="#B8B8B8" cellpadding="2" cellspacing="0">
+       <thead>
+          <tr class="headerrow">
+          <th>Sequence</th>
+          <th>Size</th>
+          <th>Index</th>
+          <th>Hidden ID</th>
+          <th>Guide</th>
+          <th>Known Factors</th>
+          <th>Cofactor Size</th>
+          <th>Class</th>
+          <th>Last Updated</th>
+          <th>Recent Progress</th>
+          <th>Reservation</th>
+          <th>Hidden Driver Bool</th>
+          </tr>
+       </thead>
+       <tbody>
+       </tbody>
+     </table>
+     <img src="facepalm_picard_riker.jpg" class="center" alt="Fin du page">
+</body>
+</html>

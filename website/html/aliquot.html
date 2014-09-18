@@ -1,0 +1,2259 @@
+<html>
+<head>
+<meta http-equiv="Content-Type"
+content="text/html; charset=iso-8859-1">
+<meta name="GENERATOR" content="Microsoft FrontPage Express 2.0">
+<title>Aliquot Sequences from the Trenches</title>
+</head>
+
+<body bgcolor="#FFFFFF">
+<p>Note: Aside from this note, this is an almost exact duplicate of what used to be <a href="http://www.lafn.org/~ax810/aliquot.htm">this</a> web page,
+written by Clifford Stern and archived by the Wayback Machine on July 17th, 2011. If the link works for you, please tell me so that I may take down this page. 
+Some of the links here are to other pages on Clifford's site, which I don't have, so those links won't work.</p>
+
+<p align="center"><font size="5"><b>Aliquot Sequences from
+the Trenches</b></font></p>
+
+<p>First, there were <b>perfect numbers</b>. Then came <b>amicable pairs</b>. Those were followed by <b>sociable numbers. </b>This progression led some to question the fate of sequences in which each member was the sum of the <b>aliquot parts</b> of its predecessor, where the <b>aliquot parts </b>of n consist of the divisors of n excluding n itself. This is
+expressed mathematically by use of the sigma function: <nobr><img src="sigma2.bmp" alt="sigma2" width="14" height="18">(n)</nobr> equals the sum of all the divisors of the integer n. For each n<sub>i</sub> of an <font size="3"><b>aliquot sequence</b></font>, its successor n<sub>i+1</sub> = <nobr><img src="sigma2.bmp" alt="sigma2"
+width="14" height="18">(n<sub>i</sub>)</nobr> - n<sub>i</sub>. The <b>Catalan-Dickson Conjecture </b>theorized that each of these sequences would either collapse to 1 or enter a cycle consisting of one or more numbers. However, the advent of computers has revealed empirically that this conjecture is almost certainly false. In particular, an <b>aliquot sequence</b> beginning with a randomly chosen even number would, in all probability, be expected to increase without bound. This is the assessment of <b>Richard Guy</b> and <b>John Selfridge</b> writing in 1974 and <a href="aliquot.html#drives">published the next year</a> in the journal<b> Mathematics of Computation</b>. Nevertheless, these sequences continue to be of interest, and the conjecture is considered the best known iteration problem in number theory. Here are the principle <b>drivers</b>
+that serve to propel the sequences upward:</p>
+
+<p><font size="4">2 * 3<br>
+2<sup><b>2</b></sup> * 7<br>
+2<sup><b>3</b></sup> * 3 * 5<br>
+2<sup><b>4</b></sup> * 31<br>
+2<sup><b>5</b></sup> * 3 * 7<br>
+2<sup><b>6</b></sup> * 127</font></p>
+
+<p>Escape from any of these occurs only under special
+circumstances (see <a href="analysis.html">analysis</a>). One
+might intuitively think that once a sequence does lose its
+driver, it would then fall of its own weight, plunging all the
+way to 1 or ending up in a cycle. But this is rarely the case.
+After escape from a driver, the next step needed for possible
+termination would be aquisition of the <b>downdriver (2
+*)</b>. However, it is far more likely that an
+upward-propelling guide, driver or the digit '3' would be
+obtained. As a consequence, these sequences are subject to a
+natural upward trend.</p>
+
+<p align="center"><font size="5"><b>MAJOR PROJECTS</b></font></p>
+
+<p>The biggest project by far was the ambitious effort by <a
+href="http://www.aliquot.de/aliquote.htm"><b>Wolfgang
+Creyaufmüller</b></a><b> </b>to<b> </b>compute all sequences
+that begin with numbers less than 1,000,000 to at least 80
+digits. This multi-year endeavor produced a steady stream of
+interesting results such as terminating sequences, confluences,
+and exceptionally long sequences. Its completion was announced on
+April 1, 2003, and the results are now available to the research
+community on his recently constructed <a
+href="http://www.aliquot.de/tabellen/download.htm">download page</a>.</p>
+
+<p><a href="http://www.loria.fr/~zimmerma/records/aliquot.html"><b>Paul
+Zimmermann</b></a><b>, </b>the principle investigator of the <a
+href="http://www.aliquot.de/lehmer.htm">Lehmer
+Five</a>, computed each sequence in [1, 10^5] and extended those
+in [50,000, 10^5] to 80 digits. He made significant contributions
+to the <a href="http://gmplib.org/manual/Contributors.html#Contributors">GNU
+multiple precision arithmetic library</a>, and 
+his <a href="http://www.loria.fr/~zimmerma/records/ecmnet.html">ECMNET
+Project</a> has produced a series of ever more efficient versions
+of the elliptical curve factoring method.
+
+<p><a
+href="http://www.math.ru.nl/~bosma/research/nuth/ali.html"><b>Wieb
+Bosma</b></a> did pioneering work in [10^4,
+50,000], computing each member to at least 90 digits. His results
+for terminating sequences held up for a remarkably long period of
+time until <b>Wolfgang Creyaufmüller </b>broke the impasse by
+terminating<b> </b><a
+href="http://www.aliquot.de/sequenzen/16302.elf">16302</a> on
+December 31, 2003. He is now working on extending <a
+href="http://www.math.ru.nl/~bosma/Projects/ali.html">sequences</a> in
+[250000, 400000] to 100 digits.</p>
+
+<p><a
+href="http://www.unirioja.es/dptos/dmc/jvarona/aliquot.html"><b>Juan
+L. Varona</b></a> and <b>Manuel Benito </b>worked intensively in
+[10^3, 10^4], computing each to 100 digits and beyond. On June
+10, 2001, they terminated <a href="http://www.aliquot.de/sequenzen/3630.elf">3630</a>,
+a result which reigned supreme for nearly four years in terms of
+the maximum size reached for a terminating sequence: 100 digits
+at index 1263 (5.64 x 10^99). At this site can also be found <a
+href="ftp://mat.unirioja.es/pub/aliquot/paperExperMath/3630finishes.pdf">3630finishes.pdf</a>,
+a comprehensive introduction to the subject by multiple authors.
+In addition, they provide <a
+href="ftp://mat.unirioja.es/pub/aliquot/paperMathComp/aliquot.pdf">Advances
+in Aliquot Sequences</a> which was published in the journal <b>Mathematics
+of Computation.</b></p>
+
+<p><a
+href="http://christophe.clavier.free.fr/Aliquot/site/Aliquot.html"><b>Christophe
+Clavier</b></a>, along with a high-powered team of associates took over work
+in the <a
+href="http://christophe.clavier.free.fr/Aliquot/site/clavier_table.html">interval</a>
+1464 to 9852. The result was a remarkable series of driver escapes and downdriver
+aquisitions. However, they have been very unlucky in failing to obtain any new
+terminating sequences from their 32 downdriver runs that began in triple digits.</p>
+
+<p><b>Wolfgang Creyaufmüller</b> and I continued the efforts of <b>Paul
+Zimmermann</b> in [50,000, 100,000]. <a href="http://www.lafn.org/~ax810/details.htm">My
+computations</a> were confined to those that were not being
+driven by one of the main six drivers at the 80-digit mark. The
+result was one terminating sequence (<a href="http://www.lafn.org/~ax810/62832.zip">62832</a>)
+and one new confluence (<a href="http://www.lafn.org/~ax810/72288.zip">72288</a>). <b>Wolfgang
+</b>followed by working on the <a href="http://www.lafn.org/~ax810/details3.htm">remaining
+ones</a>, and was successful in finding three new terminating
+sequences, in spite of each having been under the control of a
+driver at the 80-digit mark.</p>
+
+<p><b>Wolfgang Creyaufmüller</b> subsequently went to work <a
+href="http://www.lafn.org/~ax810/details4.htm">extending</a> Wieb Bosma's sequences in
+[10,000, 50,000] to at least 100 digits. Though termination is
+rare after the 90-digit mark has been reached, he succeeded in
+finding two new terminating sequences: the aforementioned <a
+href="http://www.aliquot.de/sequenzen/16302.elf">16302</a> and
+then <a href="http://www.lafn.org/~ax810/49218.zip">49218</a> near the end of the project.</p>
+
+<p><b>Wolfgang Creyaufmüller</b> completed a project to extend all
+sequences in [50,000, 100,000] to at least 100 digits. It produced
+many interesting results, such as driver escapes and long downdriver
+runs. However, for the first time, no additional terminating sequences
+were found.</p>
+
+<p><b>Wolfgang Creyaufmüller</b> extended the
+sequences in [100,000, 200,000] to 100 digits. This produced
+many interesting results, including eleven terminations, one
+side-sequence and several new confluences.</p>
+
+<p>Members of the <b>Mersenne Forum</b> have extended nearly every sequence in [500,000, 1,000,000] from where <b>Wolfgang Creyaufmüller</b> had left off to at least 100 digits. This produced a long list of new terminations and confluences.</p>
+
+<p align="center"><font color="#FF0000" size="5">Recent News</font></p>
+
+<p align="center"><b>Note:</b> results from the frenetic activity in the <a href="http://www.mersenneforum.org/forumdisplay.php?f=90">Mersenne Forum</a> have been provided to me by <a href="http://www.frontiernet.net/~aliquot">Frank Schickel</a></p>
+
+<p><b>Serge Batalov</b> computed <a href="http://factordb.com/sequences.php?se=1&aq=707016&action=last20&fr=&to=">707016</a>, a sequence with a remarkable number of twists and turns, to the second highest termination at 124 digits. It includes the third longest downdriver run, and is the fourth longest in the termination category with a final index of 5932.
+
+<p>Members of the <b>Mersenne Forum</b> factored the 170-digit composite at index 2549 of <b>4788</b> where the sequence had been stuck for several months. It is the record for biggest factorization job for an aliquot sequence using the Number Field Sieve. The sieving was done by <b>Andreas Schindel, Frank Schickel, Ben Chaffin, Sander Hoogendoorn, Ben Buhrow</b>, and <b>Carlos Pinho</b>.
+
+<p><b>Dmitry Domanov</b> obtained the downdriver at a second highest 147 digits in <b>11040</b>. His computations have also advanced the sequence to tenth place in the list of longest sequences, where its current index is 6241.
+
+<p><b>Don Leclair</b> set multiple records by capturing the downdriver at 158 digits while simultaneously escaping from the 2^2 * 7 driver in <b>3906</b>. It is the highest downdriver acquisition, highest driver escape and highest escape from a driver directly to the downdriver.
+
+<p><b>Dmitry Domanov</b> became the new king of high terminating sequences by finishing off <a href="http://factordb.com/sequences.php?se=1&aq=921232&action=last20&fr=&to=">921232</a> on April 12th after it had reached a maximum of 127 digits. <b>Wolfgang Creyaufmüller</b> had originally computed this to 103 digits at index 5326 where it was driven by 2^3 * 3^2 * 5. After advancing it to the 127-digit mark, <b>Dmitry</b> captured the downdriver at 126 digits, which lowered the height to 113. That was followed by the fifth longest downdriver run, producing a reduction in size from 113 to 33. The final index of 6358 makes it the second longest terminating sequence, behind <b>414288</b> computed by <b>Ignacio Santos</b>, which ended at index 6584.
+
+<p>98616 terminated after reaching a height of 118 digits on November 18th, tying it for what was then second place with <b>163716</b> in the overall list. <a href="aliquot.html#98616">See below</a> for details.
+
+<p><b>Christophe Clavier</b> set what was then a new record for the highest escape from 2^2 * 7 directly to the downdrver at 124 digits in <a href="http://christophe.clavier.free.fr/Aliquot/site/database1/s4380.txt">4380</a>. This surpassed the previous high of 116 set by Mersenne Forum members in <b>10212</b>.
+
+<p><b>Paul Zimmermann</b> set what was then a new record for the highest acqusition of the downdriver at 145 digits in <a href="http://factordb.com/sequences.php?se=1&aq=660&action=last20&fr=&to=">660</a> in July of 2006.
+
+<p><b>Paul Zimmermann</b> set a new record of 146 for the highest escape from the 2^5 * 3 * 7 driver in <a href="http://factordb.com/sequences.php?se=1&aq=552&action=last20&fr=&to=">552</a> during the Summer of 2005, greatly exceeding the previously known record of 107 in <b>271932</b>.
+
+<p><b>Frank Schickel</b> performed the hat trick of escapes from the rare 2^9 * 3 * 11 * 31 driver by negotiating escapes in all three sequences that had been under control of that driver. First, he set a new record with an escape in <a href="http://factordb.com/sequences.php?se=1&aq=604560&action=last20&fr=&to=">604560</a> at 126 digits, greatly exceeding the previous high of 55 set by Wolfgang Creyaufmüller in 867690. That was followed by an escape in <a href="http://factordb.com/sequences.php?se=1&aq=479632&action=last20&fr=&to=">479632</a> at 111 digits, and on October 16, 2009 he broke his own record with an escape in <a href="http://factordb.com/sequences.php?se=1&aq=363270&action=last20&fr=&to=">363270</a> at 133 digits.
+
+<p><b>Paul Zimmermann</b> set a new record of 150 for the highest escape from the 2^5 * 3^n * 7 (n>1) guide in <a href="http://factordb.com/sequences.php?se=1&aq=1134&action=last20&fr=&to=">1134</a> at index 2308, surpassing the previous high of 135 set by Ignacio Santos in 199152 at index 4572.
+
+<p><b>Jonathan DeMarrais</b> terminated <a href="http://factordb.com/sequences.php?se=1&aq=507924&action=last20&fr=&to=">507924</a> after it had reached a maximum of 115 digits, equaling the size of his previous result in 151752 discussed below. Beginning where <b>Wolfgang Creyaufmüller</b> left off at 83 digits with the sequence driven by 2 * 3^2, escape came at 86 digits but the 2^3 * 3 driver then increased the size to 104. Lasting stability was finally achieved at the height of 114, followed by an exceptionally long downdriver run from 115 to 54 digits. The finish came with the prime 43 at index 3147.
+
+<p><b>Serge Batalov</b> broke is own record for the longest single sequence by extending <a href="http://factordb.com/sequences.php?se=1&aq=552150&action=last20&fr=&to=">552150</a> to 8190 lines. Picking up where <b>Wolfgang Creyaufmüller</b> left off at index 3964, he advanced the sequence to a length once the exclusive province of paired sequences.
+
+<p><a name="drives"><b>Frank Schickel</b> has reproduced the seminal article mentioned above in .pdf format. <b>What Drives an Aliquot Sequence?</b> by Richard Guy and J. L. Selfridge develops the driver concept and argues in favor of an infinitude of unbounded sequences. Consult the Mersenne Forum for information on obtaining a copy (or email me).</p>
+
+<p><b>Serge Batalov</b> achieved his third terminating sequence in <a href="http://factordb.com/sequences.php?se=1&aq=216810&action=last20&fr=&to=">216810</a>. <b>Wolfgang Creyaufmüller</b> had left off just when it had escaped from a long run of the 2 * 3 driver, where it emerged guided by 2^2 * 3 at 100 digits. Continuing from there, Serge captured the downdriver at 102 digits, and there was little resistance the subsequent plunge to completion.
+
+<p><b>Jonathan DeMarrais</b> computed <a href="http://factordb.com/sequences.php?se=1&aq=151752&action=last20&fr=&to=">151752</a> to the third highest terminating sequence by reaching a maximum of 115 digits. Beginning where <b>Wolfgang Creyaufmüller</b> left off at 100 digits with the sequence stable at index 1117, he quickly ran into trouble when the 2^3 * 3 * 5 driver was acquired. The situation improved when the '3' became raised above the exponent of 1, but that also served to accelerate the rise of the sequence up to 115 digits before escape finally came. The downdriver was obtained at the level, and then began a rare series of events hypothesized <a href="aliquot.htm#true">below</a> in which a rapid collapse ensued with only small interruptions along the way. It ended at index 2025 with the prime 59.
+
+<p><b>Serge Batalov</b> got his second terminating sequence in <a href="http://factordb.com/sequences.php?se=1&aq=134856&action=last20&fr=&to=">134856</a> after it had reached a maximum height of 102 digits. His computations began where <b>Wolfgang Creyaufmüller</b> had left off at 100 digits at index 710.
+
+<p>After coming tantalizingly close with 48462 (see <a href="aliquot.htm#48462">below</a>), <b>Frank Schickel</b> finally achieved his first terminating sequence in <a href="http://factordb.com/sequences.php?se=1&aq=163716&action=last20&fr=&to=">163716</a>, and in so doing, made second place in the list of highest terminating sequences at 118 digits. His work began where <b>Wolfgang Creyaufmüller</b> had left off at 100 digits at index 655.
+
+<p><b>Serge Batalov</b> set a new record for the longest single sequence by extending 195528 beyond the length of 1578, the previous record held by <b>Christophe Clavier</b> for over three years. Beginning where <b>Wolfgang Creyaufmüller</b> left off at index 3974 where 195528 was driven by 2^2 * 7 at 100 digits, Serge computed the sequence to an escape from that driver at 110 digits. The downdriver was then acquired at that level, initiating a drop to 34 digits. The sequence was subsequently driven back to the height of 101 by 2^4 * 31, and after reaching 115 digits, another long decline reduced the size twice to only 12 digits. Eventually, a return of the 2^2 * 7 driver occurred at 28 digits, sending the sequence to the height of 116, where escape was unfortunately to the 2 * 3 driver. It has now reached the index 7972 at 140 digits. <a
+href="http://web.archive.org/web/20110717085734/http://christophe.clavier.free.fr/Aliquot/site/database1/s1578.txt">1578</a> is at index 7261, and also collapsed to the 2 * 3 driver.
+
+<p><b>Ignacio Santos</b> set a new record for the highest escape from the 2^3 * 3 * 5 driver at 135 digits in <a href="http://factordb.com/sequences.php?se=1&aq=167148&action=last20&fr=&to=">167148</a>, exceeding the previous high of 129 in <a href="http://factordb.com/sequences.php?se=1&aq=162126&action=last20&fr=&to=">162126</a>.
+
+<p><b>Ignacio Santos</b> acquired the downdriver at 141 digits in <a href="http://factordb.com/sequences.php?se=1&aq=199152&action=last20&fr=&to=">199152</a>, exceeding the previous record of 140 he had previously set in the very same sequence. The earlier downdriver run lasted only 14 lines, with subsequent computations increasing the size from 137 to 141.
+
+<p><b>Mikael Klasson</b> set a new standard in <a href="http://factordb.com/sequences.php?se=1&aq=139314&action=last20&fr=&to=">139314</a> for the longest downdriver run by surpassing the records recently set by <b>Markus Tervooren</b> described below. Size was reduced from 131 to 23 for a reduction of 108 digits, and the total length was 565 lines. After getting as low as 17 digits, the 2^2 * 7 driver was acquired at size 18, and when escape was finally achieved, the sequence had returned to triple digits.
+
+<p><b>Serge Batalov</b> terminated <a href="http://factordb.com/sequences.php?se=1&aq=191430&action=last20&fr=&to=">191430</a>, thus becoming the first to terminate a six-digit sequence after it had reached triple digits. Beginning where <b>Wolfgang Creyaufmüller</b> had left off at index 1243 where the sequence was at what turned out to be its maximum height of 100, the downdriver was acquired at 99 digits at index 1267, leading to its ultimate termination. This broke a three-way tie at the previous maximum height of 99 for six-digit terminating sequences held by Wieb Bosma in 261306 and Wolfgang Creyaufmüller in 108072 and 133596.
+
+<p><b>Ignacio Santos</b> obtained the downdriver in <a href="http://factordb.com/sequences.php?se=1&aq=199152&action=last20&fr=&to=">199152</a> at a new record height of 140, surpassing the previous high of 134 set by <b>Markus Tervooren</b> in 162126. In addition, it was obtained while simultaneously losing the '3', breaking the previous record of 133 digits recently set by <b>Mikael Klasson</b> in 103920.
+
+<p><b>Markus Tervooren</b> completed a remarkable downdriver run in <a href="http://factordb.com/sequences.php?se=1&aq=162126&action=last20&fr=&to=">162126</a>, breaking previous records by a substantial margin. The reduction is size was 101 and the length was 536, surpassing the previous records of 88 an 436 respectively, set by <b>Christophe Clavier</b> in 6822.
+
+<p><b>Max Dettweiler</b> posting at mersenneforum.org set a new record for the highest escape from the 2^6 * 127 driver at 105 digits in <a href="http://factordb.com/sequences.php?se=1&aq=102264&action=last20&fr=&to=">102264</a>, edging out the previous record of 104 set by <b>Wolfgang Creyaufmüller</b> in 82728. Of special interest was that the escape was directly to the downdriver, exceeding the previous high of 76 digits for such a transition from this driver held by Wolfgang in 838476.
+
+<p><b>Dennis Langdeau</b> set a new record for the highest escape from the 2^4 * 31 driver at 129 digits in <a href="http://christophe.clavier.free.fr/Aliquot/site/database1/s5778.txt">5778</a>. The previous high was 119 in <a href="http://christophe.clavier.free.fr/Aliquot/site/database1/s6822.txt">6822</a>.
+
+<p><b>Christophe Clavier</b> broke the record for the highest escape from the 2^5 * 7 guide at 143 digits in <a href="http://christophe.clavier.free.fr/Aliquot/site/database1/s3366.txt">3366</a>. The previous record was 119 digits in 
+<a href="http://christophe.clavier.free.fr/Aliquot/site/database1/s1512.txt">1512</a>.
+
+<p><b>Wieb Bosma</b> posted a remarkable length result for <b>314718</b>, and <b>Frank Schickel</b> reconstructed the sequence after spotting it on Wieb's <a href="http://www.math.ru.nl/~bosma/Projects/tabB.html">web page</a>. Subsequent analysis revealed that it had merged with <a href="http://factordb.com/sequences.php?se=1&aq=4788&action=last20&fr=&to=">4788</a> (314718:i6466 = 4788:i6 = 60564) so that the combined 314718/4788 set a new record as the longest sequence pair, now at index 9063. That dropped 389508/34908 to second place at index 8034 and 483570/1920 to third among paired sequences at index 6865.
+
+<p><b>Frank Schickel</b> has written a valuable new <a href="http://www.frontiernet.net/~aliquot">graphing program</a> for aliquot sequences. Programmed in Delphi using <a href="http://www.steema.com/">Steema</a> software, sequences in virtually any format can be loaded and then saved as a GIF graphic file. I've added a graphics page with especially interesting examples, most of which are discussed or mentioned on this page. Others include 76686 and the terminating 133596, both by <b>Wolfgang Creyaufmüller</b>.
+
+<p>Members of mersenneforum.org in the <a href="http://www.mersenneforum.org/forumdisplay.php?f=90">Aliquot-sequence</a> section set what was then a new record of 116 digits for the highest escape from 2^2 * 7 directly to the downdriver in  <a href="http://factordb.com/sequences.php?se=1&aq=10212&action=last20&fr=&to=">10212</a> at index 1614. The previous record was 111 digits in
+<a href="http://christophe.clavier.free.fr/Aliquot/site/database1/s1734.txt">1734</a> at index 1484. 10metreh began by extending the work of <b>Wieb Bosma</b> and <b>Wolfgang Creyaufmüller</b>, and <b>Andreas Schindel</b> began the downdriver run, eventually ending at 82 digits. The 2 * 3 driver was acquired at the height of 97, sending the sequence to its current size of 138.
+
+<p align="center"><font color="#FF0000" size="5">Older News</font></p>
+
+<p><a href="http://www.lafn.org/~ax810/62850.ZIP">62850</a> set what was then a new record for the highest terminating sequence when it finished on September 3rd, 2008, exactly one week after aquiring the downdriver at 121 digits. See below for details.
+
+<p>Late in the morning of July 20th, 2008, <a href="http://www.lafn.org/~ax810/98790.ZIP">98790</a> ended in the prime 13. It was second in
+length (4443) and now third in maximum height (112) for terminating sequences. <a href="http://www.aliquot.de/sequenzen/446580.elf">446580</a>
+continues in first place in the category of longest terminating sequence at 4736.
+
+<p><b>Christophe Clavier</b> broke multiple records with a downdriver run of historic dimensions in <a
+href="http://christophe.clavier.free.fr/Aliquot/site/database1/s6822.txt">6822</a>:
+it was the longest at 436 lines and produced the biggest reduction in size of 88,
+falling from 129 to 41 digits. The previous records were 386 and 81 respectively, in 33960.
+In addition, it reached a new record height (137) for a sequence that
+would later aquire the downdriver. Christophe had earlier broken the record for the highest
+escape from the 2^3 * 5 guide at 133 digits in this sequence, surpassing the previous record
+of 119 set by <b>Igor Schein</b> in <b>7890</b>.
+
+<p><b>Christophe Clavier</b> escaped the 2 * 3 driver at a new record height
+of 139 in <a
+href="http://christophe.clavier.free.fr/Aliquot/site/database1/s1464.txt">1464</a>,
+surpassing the previous record of 125 which he also set for <a
+href="http://christophe.clavier.free.fr/Aliquot/site/database1/s3876.txt">3876</a>.
+The sequence is now guided by 2^4 * 3^2.
+
+<p><b>Frank Schickel</b> obtained the downdriver in 144984 at 128 digits, then the
+fifth highest overall. Size was reduced to 95, where the downdriver was lost directly
+to the 2^3 * 5 guide. It achieved the milestone of 7000 lines and ended up driven by 2^5 * 3 * 7
+at index 7010 and height 132.
+
+<p><b>Frank Schickel</b> obtained the downdriver in <b>47728</b> at 122 digits, a new
+record height for sequences that began in the five-digit range. The previous high was
+115 for <b>48462</b> and <b>82728</b>. The downdriver was lost at the height of 112,
+and the sequence is now driven by 2^3 * 3^2 at 133 digits.
+
+<p><b>Christophe Clavier</b> escaped the 2^3 * 3 driver at a new record height
+of 143 in <a
+href="http://christophe.clavier.free.fr/Aliquot/site/database1/s2484.txt">2484</a>,
+surpassing the previous record of 142 which he also set for <a
+href="http://christophe.clavier.free.fr/Aliquot/site/database1/s1560.txt">1560</a>.
+
+<p>11670 was the 22nd sequence to aquire the downdriver at a
+size of at least 110 digits, and became the first of these to terminate when it ended
+in the prime 193 on September 4, 2007. See below for details.
+
+<p><b>Wolfgang Creyaufmüller</b> extended <b>144984</b> from its previous target
+height of 80 digits at index 1638 to a confluence with <b>391040</b> at index 5255:
+144984:i5255 = 391040:i6 = 1031680. 391040 was thus reduced to side-sequence status.
+Wolfgang continued computations of 144984 to 101 digits, where it reached the index
+6531, and thus replaced 8760 as the second longest single sequence. 144984 was
+later computed by <b>Frank Schickel</b> (see above).
+
+<p><a name="48462"><b>Frank Schickel</b> extended 48462 from where I left off to an escape
+from the 2^4 * 31 driver that had controlled the sequence since its aquisition at 
+height 43. Escape came at 113 digits, the second highest for that driver. He then
+obtained the downdriver at the size of 115 digits, then a new record height for such
+aquisition in a sequence beginning in [10^4, 10^6]. The downdriver was lost at 103
+digits but was reacquired at height 106 and then again at 108 digits, resulting in a
+reduction of size to 60. Numerous downdriver runs followed, eventually dropping the
+sequence twice to only 9 digits. Unfortunately, the recalcitrant 2^6 * 127 driver
+was acquired at 17 digits, sending the sequence to the height of 123.
+
+<p><b>Benoît Chevallier-Mames</b> set what was then a new record for the highest aquisition
+of the downdriver: 133 digits in <a
+href="http://christophe.clavier.free.fr/Aliquot/site/database1/9684.txt">9684</a>. This
+surpassed the previous record of 132 digits set by <b>Christophe Clavier</b> at index 4359 in <b>1578</b>.
+The downdriver was lost at size 113, but two more downdriver runs reduced
+the size all the way to 39. The 2^2 * 7 driver took over directly from there, and has
+driven the sequence to 135 digits.
+
+<p><b>Eric Nelson-Melby</b> extended <b>34908</b> to index 5088 and height 124. In March
+of 2002, <b>Wolfgang Creyaufmüller</b> had found <b>389508</b> to be a side-sequence of 34908:
+389508:i2919 = 34908:i7 = 113464. As a result, the combined sequence <a
+href="http://www.aliquot.de/sequenzen/389508.elf">389508/34908</a> was at a then record index of 8032.
+
+<p align="center"><b>Stable Sequences in [10^4, 10^5]</b></p>
+
+<p>The following sequences are currently "stable" in that they are not being 
+propelled upward by a driver, guide, or by the presence of that pesky '3':<br><br>
+84822 c100 sz 115 &nbsp;Z/C/W &nbsp;downdriver run on hold<br>
+80244 c115 sz 118 &nbsp;Z/C/W<br>
+61452 c100 sz 119 &nbsp;Z/C/J<br>
+42798 c120 sz 124 &nbsp;B/C/W<br>
+29360 c130 sz 131 &nbsp;B/C/S<br>
+23142 c131 sz 133 &nbsp;B/C/S<br>
+63660 c134 sz 136 &nbsp;Z/C/S<br>
+11040 c115 sz 141 &nbsp;B/C/S/D<br><br>
+B=Bosma, C=Creyaufmüller, D=Dmitry Domanov, J=Jonathan DeMarrais, W=Tom Womack, Z=Zimmermann, S=Stern</p>
+
+<p>The current status of the 822 unresolved sequences that began with five digit numbers is partially given in this text file. Please check the <a href="http://factordb.com/sequences.php">master database</a> for more recent results for certain sequences.</p>
+
+<p>In July, I uploaded every sequence I've worked on since November of 2003 to the master database that had more lines than were already there. I'm currently working on the following list of 13 in the 5-digit range:<br><br>
+
+21756 23142 29360 35196 38052 41412 52374 55752 56928 63660 75798 81600 85716. 
+</p>
+
+<p>Three are stable (given in the list above), and the others are one possible step from stabiliy. They are of the form 2^2 * 3, 2^4 * 3, 2^3 * 5 or 2^5 * 7 and are in the range 130-136 digits.</p>
+
+<p align="left"><b>Sequences that reached triple digits before terminating</b></p>
+
+<table border="1">
+    <tr>
+        <td><b>height</b></td>
+        <td><b>sequence</b></td>
+        <td><b>date</b></td>
+        <td>&nbsp;</td>
+    </tr>
+    <tr>
+        <td>127</td>
+	  <td><a href="http://factordb.com/sequences.php?se=1&aq=921232&action=last20&fr=&to=">921232</a></td>
+        <td>April 12, 2010</td>
+        <td><b>Dmitry Domanov</b></td>
+    </tr>
+    <tr>
+        <td>124</td>
+        <td><a href="http://factordb.com/sequences.php?se=1&aq=707016&action=last20&fr=&to=">707016</a></td>
+        <td>November 11, 2010</td>
+        <td><b>Serge Batalov</b></td>
+    </tr>
+    <tr>
+        <td>121</td>
+        <td><a href="http://www.lafn.org/~ax810/62850.ZIP">62850</a></td>
+        <td>September 3, 2008</td>
+        <td><a href="http://www.lafn.org/~ax810/graphs.htm#62850">graph</a></td>
+    </tr>
+    <tr>
+        <td>118</td>
+        <td><a href="http://factordb.com/sequences.php?se=1&aq=98616&action=last20&fr=&to=">98616</a></td>
+        <td>November 18, 2009</td>
+        <td>&nbsp;</td>
+    </tr>
+    <tr>
+        <td>118</td>
+        <td><a href="http://factordb.com/sequences.php?se=1&aq=163716&action=last20&fr=&to=">163716</a></td>
+        <td>June 11, 2009</td>
+        <td><b>Frank Schickel</b></td>
+    </tr>
+    <tr>
+        <td>115</td>
+        <td><a href="http://factordb.com/sequences.php?se=1&aq=151752&action=last20&fr=&to=">151752</a></td>
+        <td>June 21, 2009</td>
+        <td><b>Jonathan DeMarrais</b></td>
+    </tr>
+    <tr>
+        <td>115</td>
+        <td><a href="http://factordb.com/sequences.php?se=1&aq=507924&action=last20&fr=&to=">507924</a></td>
+        <td>September 15, 2009</td>
+        <td><b>Jonathan DeMarrais</b></td>
+    </tr>
+    <tr>
+        <td>115</td>
+        <td><a href="http://factordb.com/sequences.php?se=1&aq=834216&action=last20&fr=&to=">834216</a></td>
+        <td>April 15, 2010</td>
+        <td><b>Serge Batalov</b></td>
+    </tr>
+    <tr>
+        <td>113</td>
+        <td><a href="http://www.lafn.org/~ax810/11670.txt">11670</a></td>
+        <td>September 4, 2007</td>
+        <td>&nbsp;</td>
+    </tr>
+    <tr>
+        <td>112</td>
+        <td><a href="http://www.lafn.org/~ax810/98790.ZIP">98790</a></td>
+        <td>July 20, 2008</td>
+        <td>&nbsp;</td>
+    </tr>
+    <tr>
+        <td>111</td>
+        <td><a href="http://factordb.com/sequences.php?se=1&aq=829914&action=last20&fr=&to=">829914</a></td>
+        <td>April 4, 2010</td>
+        <td>biwema</td>
+    </tr>
+    <tr>
+        <td>110</td>
+        <td><a href="http://factordb.com/sequences.php?se=1&aq=757512&action=last20&fr=&to=">757512</a></td>
+        <td>May 20, 2010</td>
+        <td>&nbsp;</td>
+    </tr>
+    <tr>
+        <td>109</td>
+        <td><a href="http://www.lafn.org/~ax810/15960.txt">15960</a></td>
+        <td>May 5, 2007</td>
+        <td>&nbsp;</td>
+    </tr>
+    <tr>
+        <td>109</td>
+	  <td><a href="http://factordb.com/sequences.php?se=1&aq=771108&action=last20&fr=&to=">771108</a></td>
+        <td>January, 2010</td>
+        <td><b>Dmitry Domanov</b></td>
+    </tr>
+    <tr>
+        <td>108</td>
+	  <td><a href="http://factordb.com/sequences.php?se=1&aq=33672&action=last20&fr=&to=">33672</a></td>
+        <td>April 5, 2010</td>
+        <td><b>Dmitry Domanov</b></td>
+    </tr>
+    <tr>
+        <td>107</td>
+        <td><a href="http://www.lafn.org/~ax810/45984.txt">45984</a></td>
+        <td>May 29, 2006</td>
+        <td>&nbsp;</td>
+    </tr>
+    <tr>
+        <td>107</td>
+	  <td><a href="http://factordb.com/sequences.php?se=1&aq=90480&action=last20&fr=&to=">90480</a></td>
+        <td>April 15, 2010</td>
+        <td><b>Sander Hoogendoorn</b></td>
+    </tr>
+    <tr>
+        <td>107</td>
+        <td><a href="http://factordb.com/sequences.php?se=1&aq=92898&action=last20&fr=&to=">92898</a></td>
+        <td>March 6, 2010</td>
+        <td>&nbsp;</td>
+    </tr>
+    <tr>
+        <td>107</td>
+        <td><a href="http://factordb.com/sequences.php?se=1&aq=534200&action=last20&fr=&to=">534200</a></td>
+        <td>September, 2009</td>
+        <td>Mersenne Forum</td>
+    </tr>
+    <tr>
+        <td>106</td>
+        <td><a href="http://factordb.com/sequences.php?se=1&aq=721980&action=last20&fr=&to=">721980</a></td>
+        <td>February, 2010</td>
+        <td><b>Jonathan DeMarrais</b></td>
+    </tr>
+    <tr>
+        <td>106</td>
+        <td><a href="http://factordb.com/sequences.php?se=1&aq=815730&action=last20&fr=&to=">815730</a></td>
+        <td>February 26, 2010</td>
+        <td>biwema</td>
+    </tr>
+    <tr>
+        <td>104</td>
+        <td><a href="http://factordb.com/sequences.php?se=1&aq=754848&action=last20&fr=&to=">754848</a></td>
+        <td>December, 2009</td>
+        <td><b>Serge Batalov</b></td>
+    </tr>
+    <tr>
+        <td>104</td>
+        <td><a href="http://factordb.com/sequences.php?se=1&aq=938490&action=last20&fr=&to=">938490</a></td>
+        <td>October 31, 2010</td>
+        <td>&nbsp;</td>
+    </tr>
+    <tr>
+        <td>103</td>
+        <td><a href="http://www.lafn.org/~ax810/21024.txt">21024</a></td>
+        <td>April 30, 2005</td>
+        <td>&nbsp;</td>
+    </tr>
+    <tr>
+        <td>103</td>
+        <td><a href="http://factordb.com/sequences.php?se=1&aq=334440&action=last20&fr=&to=">334440</a></td>
+        <td>November 20, 2010</td>
+        <td>RobertS</td>
+    </tr>
+    <tr>
+        <td>103</td>
+        <td><a href="http://factordb.com/sequences.php?se=1&aq=812376&action=last20&fr=&to=">812376</a></td>
+        <td>February, 2010</td>
+        <td><b>Tom Womack</b></td>
+    </tr>
+    <tr>
+        <td>103</td>
+        <td><a href="http://factordb.com/sequences.php?se=1&aq=894312&action=last20&fr=&to=">894312</a></td>
+        <td>August 31, 2010</td>
+        <td>&nbsp;</td>
+    </tr>
+    <tr>
+        <td>102</td>
+        <td><a href="http://www.lafn.org/~ax810/56368.txt">56368</a></td>
+        <td>April 5, 2005</td>
+        <td>&nbsp;</td>
+    </tr>
+    <tr>
+        <td>102</td>
+        <td><a href="http://factordb.com/sequences.php?se=1&aq=134856&action=last20&fr=&to=">134856</a></td>
+        <td>May 5, 2009</td>
+        <td><b>Serge Batalov</b></td>
+    </tr>
+    <tr>
+        <td>102</td>
+        <td><a href="http://factordb.com/sequences.php?se=1&aq=216810&action=last20&fr=&to=">216810</a></td>
+        <td>July 21, 2009</td>
+        <td><b>Serge Batalov</b></td>
+    </tr>
+    <tr>
+        <td>101</td>
+        <td><a href="http://www.lafn.org/~ax810/17130.txt">17130</a></td>
+        <td>August 26, 2005</td>
+        <td>&nbsp;</td>
+    </tr>
+    <tr>
+        <td>101</td>
+	  <td><a href="http://factordb.com/sequences.php?se=1&aq=197208&action=last20&fr=&to=">197208</a></td>
+        <td>March 14, 2010</td>
+        <td><b>Serge Batalov</b></td>
+    </tr>
+    <tr>
+        <td>101</td>
+	  <td><a href="http://factordb.com/sequences.php?se=1&aq=791112&action=last20&fr=&to=">791112</a></td>
+        <td>January, 2010</td>
+        <td><b>Jonathan DeMarrais</b></td>
+    </tr>
+    <tr>
+        <td>101</td>
+	  <td><a href="http://factordb.com/sequences.php?se=1&aq=904386&action=last20&fr=&to=">904386</a></td>
+        <td>March 23, 2010</td>
+        <td><b>Greg Childers</b></td>
+    </tr>
+    <tr>
+        <td>101</td>
+	  <td><a href="http://factordb.com/sequences.php?se=1&aq=964614&action=last20&fr=&to=">964614</a></td>
+        <td>November, 2009</td>
+        <td><b>Serge Batalov</b></td>
+    </tr>
+    <tr>
+        <td>100</td>
+        <td><a href="http://www.aliquot.de/sequenzen/3630.elf">3630</a></td>
+        <td>June 10, 2001</td>
+        <td><b>Juan L. Varona</b> and <b>Manuel Benito</b></td>
+    </tr>
+    <tr>
+        <td>100</td>
+        <td><a href="http://www.lafn.org/~ax810/23910.txt">23910</a></td>
+        <td>April 21, 2004</td>
+        <td>ended in 1210, 1184</td>
+    </tr>
+    <tr>
+        <td>100</td>
+        <td><a href="http://www.lafn.org/~ax810/62832.txt">62832</a></td>
+        <td>June 28, 2002</td>
+        <td>&nbsp;</td>
+    </tr>
+    <tr>
+        <td>100</td>
+        <td><a href="http://factordb.com/sequences.php?se=1&aq=191430&action=last20&fr=&to=">191430</a></td>
+        <td>May 5, 2009</td>
+        <td><b>Serge Batalov</b></td>
+    </tr>
+    <tr>
+        <td>100</td>
+        <td><a href="http://factordb.com/sequences.php?se=1&aq=461430&action=last20&fr=&to=">461430</a></td>
+        <td>December 11, 2010</td>
+        <td><b>Ben Chaffin</b></td>
+    </tr>
+</table>
+
+<p><font size="4"><strong>Highest driver escapes</strong></font></p>
+
+<table border="2">
+    <tr>
+	<td><b>driver</b></td>
+	<td><b>height</b></td>
+	<td><b>sequence</b></td>
+	<td><b>index</b></td>
+	<td><b>escaped by</b></td>
+    </tr>
+    <tr>
+	<td>2 * 3</td>
+	<td>139</td>
+	<td>1464</td>
+	<td>2248</td>
+	<td>Christophe Clavier</td>
+    </tr>
+    <tr>
+	<td>2^2 * 7</td>
+	<td>158</td>
+	<td>3906</td>
+	<td>1571</td>
+	<td>Don Leclair</td>
+    </tr>
+    <tr>
+	<td>2^3 * 3</td>
+	<td>144</td>
+	<td>5778</td>
+	<td>1047</td>
+	<td>Christophe Clavier</td>
+    </tr>
+    <tr>
+	<td>2^3 * 3 * 5</td>
+	<td>135</td>
+	<td>167148</td>
+	<td>3916</td>
+	<td>Ignacio Santos</td>
+    </tr>
+    <tr>
+	<td>2^4 * 31</td>
+	<td>129</td>
+	<td>5778</td>
+	<td>973</td>
+	<td>Dennis Langdeau</td>
+    </tr>
+    <tr>
+	<td>2^5 * 3 * 7</td>
+	<td>146</td>
+	<td>552</td>
+	<td>900</td>
+	<td>Paul Zimmermann</td>
+    </tr>
+    <tr>
+	<td>2^6 * 127</td>
+	<td>105</td>
+	<td>&nbsp;&nbsp;14994<br>
+	&nbsp;&nbsp;53970<br>
+	102264</td>
+	<td>&nbsp;&nbsp;649<br>
+	&nbsp;&nbsp;567<br>
+	3140</td>
+	<td>Jonathan DeMarrais<br>
+	Jonathan DeMarrais<br>
+	Max Dettweiler</td>
+    </tr>
+    <tr>
+	<td>2^9 * 3 * 11 * 31</td>
+	<td>133</td>
+	<td>363270</td>
+	<td>1619</td>
+	<td>Frank Schickel</td>
+    </tr>
+</table>
+
+<p align="center"><b>My results</b></p>
+
+<p>I've found seventeen terminating sequences and two new confluences:</p>
+
+<p><a href="http://factordb.com/sequences.php?se=1&aq=938490&action=last20&fr=&to=">938490</a> terminated on October 31st after having reached a maximum size of 104. <b>Wolfgang Creyaufmüller</b> computed this sequence to 81 digits at index 1665 where it was driven by 2^3 * 3. <b>Greg Childers</b> extended it on April 1st to 101 digits where it was guided by 2^2 * 3 at index 1742. I restarted work on October 23rd, and after topping out at 104, it finished on Halloween eight days later.
+
+<p><a href="http://factordb.com/sequences.php?se=1&aq=894312&action=last20&fr=&to=">894312</a> terminated on August 31st after having reached a maximum size of 103. <b>Wolfgang Creyaufmüller</b> originally computed this sequence to 81 digits where it was driven by 2^2 * 3 * 7 at index 552. <b>Tom Womack</b> continued from there and obtained an escape from that driver directly to the downdriver at the height of 86. He eventually left off at the target size of 100 where it was guided by 2^2 * 3 * 5^2. I built upon those computations beginning on August 28th, and termination came three days later upon reaching a confluence with <b>6160</b>: 894312:i3098 = 6160:i1 = 11696. That merger added 3000+ lines, resulting in a final index of 6123, making it the third longest terminating sequence. First and second places are 414288 and 921232 discussed above. 6160 along with 3630 are the historic triumphs of <b>Juan L. Varona</b> and <b>Manuel Benito</b>. Those sequences terminated after reaching heights of 96 and 100 respectively in 2001. Remarkably, they continue to be the highest terminating sequences in [1, 10^4].
+
+<p><a href="http://factordb.com/sequences.php?se=1&aq=757512&action=last20&fr=&to=">757512</a> terminated on May 20th after reaching a maximum height of 110 digits: 757512i2207=601. Originally computed by <b>Wolfgang Creyaufmüller</b>, he acquired the 2^5 * 3^2 * 7 guide at 69 digits, which was still in effect when he left off at index 571 at 82 digits. A Forum member obtained a one line escape four lines later, whereupon it snapped back to something even worse: the 2^5 * 3 * 7 driver. However, an escape from that came at 93 digits, and was left off guided by 2^5 * 3^2 * 5 at 100 digits. I began work on May 15, and stability was achieved just 10 lines later at 103 digits. It continued to run up all the way to 110 digits where the downdriver was obtained. That reduced the size to just 105, but another downdriver run went from 105 to 34. This ranks as the eleventh highest terminating sequence.</p>
+
+<p>On March 7th, <a href="http://factordb.com/sequences.php?se=1&aq=92898&action=last20&fr=&to=">92898</a> terminated after having reached a maximum of 107 digits. <b>Paul Zimmermann</b> originally computed this to 80 digits where it was guided by 2^4 * 3 at index 1084. I extended it to index 2459 where it was driven by 2^2 * 7 at 92 digits. <b>Wolfgang Creyaufmüller</b> then advanced it to an escape from that driver, leaving off at 101 digits on August 28, 2005 where it was guided by 2^4 * 3 * 5. Continuing on August 30, 2005, I captured the downdriver at 107 digits on May 2nd, 2006, leaving off with the 2^2 * 7 driver at the height of 102. Encouraged by the recent success Mersenne Forum members were having escaping drivers in the 5-digit range, I began attempting the same on my own sequences that previously had downdriver runs beginning in triple digits. For 92898, that process began March 6th. Escape from 2^2 * 7 came after only 11 steps, with the downdriver soon recaptured, leading to termination the next day.</p>
+
+<p><a name="98616">On November 18, 2009, <a href="http://factordb.com/sequences.php?se=1&aq=98616&action=last20&fr=&to=">98616</a> terminated after reaching a maximum of 118 digits: 98616i2790=43. <b>Paul Zimmermann</b> originally computed this sequence to the target height of 80 digits where it was driven by 2 * 3^2. In April of 2003, <b>Wolfgang Creyaufmüller</b> escaped this driver at 90 digits, leaving off at the size of 99 where it was then driven by 2^3 * 3^2 * 5. In August of 2005, he added 14 more lines, increasing the size to 104. On February 26, 2008 I began working from there. After reaching 118 digits, the downdriver was obtained at 115, reducing the size to 99. The downdriver was acquired a second time at 115 digits, this time leading to a finish.</p>
+
+<p>On September 3rd, 2008, <a href="http://www.lafn.org/~ax810/62850.ZIP">62850</a> broke the record for the highest terminating sequence one week after aquiring the downdriver at 121 digits. <b>Paul Zimmermann</b> originally computed this sequence to the target height of 80 digits where it was guided by 2^5 * 3 at index 740. I continued from there, and obtained the downdriver at 90 digits, resulting in a drop to the height of only 18. Eventually it rebounded to 94 digits, where I left off at index 2948 in March of 2003. <b>Wolfgang Creyaufmüller</b> advanced the sequence to 101 digits in February 2005, where it was driven by 2^3 * 3^2 at index 2978. I continued computations on July 15, 2006, with the downdriver obtained on August 27th of this year. That produced the second longest downdriver run, reducing the size by 82 digits. It finished at index 3973 in the prime 41.</p>
+
+<p>On July 20th, 2008, <a href="http://www.lafn.org/~ax810/98790.ZIP">98790</a> terminated after reaching a height of 112: 98790i4443=13.
+<b>Paul Zimmermann</b> originally computed this sequence to the target height of 80 at index 3115 where
+it was guided by 2^5 * 3. I extended it to 99 digits where it was driven by 2^3 * 3^3 * 5 at index 3200
+on October 2002. <b>Wolfgang Creyaufmüller</b> moved it past the 100-digit mark at index 3209
+and size 103 in August of 2005. I restarted computations from there on July 7th, with the
+downdriver acquired on July 17th, leading to termination three days later.</p>
+
+<p>In the evening of September 4, 2007, <a href="http://www.lafn.org/~ax810/11670.txt">11670</a> terminated after reaching a new record height (for terminating sequences) of 113. <b>Wieb Bosma</b> originally computed this sequence to 91 digits where it was guided by 2^6 * 3 * 5 at index 954. <b>Wolfgang Creyaufmüller</b> advanced it to a height of 101 at index 979 on November 2, 2003 where it was at the last line of a run by 2^5 * 3^2. I began working from there on December 25, 2005, eventually leaving off at 1024. 2^2 * 3 * C109  sz 110 on August 30, 2006. The addition of <a href="http://www.math.ttu.edu/~cmonico/software/ggnfs">GGNFS</a> to my factoring resources on May 6th of 2007 enabled the resumption of work on this sequence on August 23rd, and on that date it achieved stability for the first time in this century. The downdriver was acquired on August 30th at height 113, which eventually led to termination at index 3534 with the prime 193.</p>
+
+<p>On May 5, 2007, <a href="http://www.lafn.org/~ax810/15960.txt">15960</a> terminated after reaching a new record height
+(for terminating sequences) of 109. <b>Wieb Bosma</b> originally computed this sequence to
+the target height of 90 digits at index 749, where it was driven by 2^3 * 3^3 * 5. <b>Wolfgang
+Creyaufmüller</b> extended it to 100 digits in November of 2003, achieving an escape from from
+that driver and leaving off at index 782 where it was guided by 2^2 * 3. On February 20, 2005
+I began from there, working off and on over the next couple of years. Eventually, the downdriver
+was obtained at height 106 on May 3rd, and it terminated two days later at index 2033 and prime 41.</p>
+
+<p>On September 16, 2006, <a href="http://www.lafn.org/~ax810/77880.txt">77880</a> was found to be a side-sequence of 21546:
+77880:i1470 = 21546:i72 = 1373808. <b>Paul Zimmermann</b> originally computed this sequence
+to the target height of 80 at index 454 where it was being driven by 2^3 * 3 * 5. As part of
+a project to advance all sequences in [50,000, 100,000] to a height of at least 90,
+<b>Wolfgang Creyaufmüller</b> brought 77880 to a height of 93 at index 494 on May 27, 2003
+where it was then driven by 2^2 * 7. Two years later, Wolfgang advanced the sequence to the
+new target height of 100 at index 541. His computations included an escape from 2^2 * 7 at
+98 digits, and finished on May 29, 2005 under the control of 2^3 * 3^2. On September 15th,
+2006, I began work to further extend the sequence. It quickly escaped from that
+driver, and acquired the downdriver at its maximum height of 103. A precipitous decline
+quickly ensued, culminating in the merger with 21546 the next day. This is a new record for
+the greatest height reached by a side-sequence (prior to confluence). The previous record
+was held by 72288 and 109086, both of which reached a maximum of 90 digits.</p>
+
+<p>Near midnight of May 29, 2006, <a href="http://www.lafn.org/~ax810/45984.txt">45984</a> ended in the prime 11
+at index 1490 after reaching a new record height (for terminating sequences) of 107.
+<b>Wieb Bosma</b> originally computed this sequence to the target height of 90 digits, at
+index 499. My initial efforts reached an impasse on March 15, 2002 at index 589 and
+height 101. I added a few lines on October 15, 2004, leaving off at height 103 and
+index 598, stuck on a 100-digit composite. Things finally got going again on
+December 18, 2005. After reaching a maximum height of 107 digits at index 841, the
+downdriver was obtained on May 27, 2006 at 106 digits, which produced an exceptionally
+long drop to 54 digits. Only brief interruptions separated the succeeding downdriver
+runs which led to a successful conclusion.</p>
+
+<p><a href="http://www.lafn.org/~ax810/17130.txt">17130</a> ended in the perfect number <b>8128</b> at
+index 3225 on August 26, 2005. <b>Wieb Bosma</b> originally computed this sequence
+to 98 digits at index 1498, where it was guided by 2^4 * 3^2. In December of
+2003, <b>Wolfgang Creyaufmüller</b> continued computations, finding that it
+quickly lost the 3 and acquired the downdriver at height 99 which resulted in
+a decline to 80 digits. Eventually it came under control of 2^3 * 5, and
+Wolfgang left off at the target height of 100 digits at index 1827. On March
+9th of 2005 I added a single line, and did not do anything more until
+August 23rd of that year. The sequence escaped from 2^3 * 5 at index 1836 and
+acquired the downdriver at height 101, which quickly led to its termination.
+
+<p><a href="http://www.lafn.org/~ax810/21024.txt">21024</a> terminated on April 30, 2005
+after reaching a new record height (for terminating sequences) of
+103 digits: 21024i2423=1429. <b>Wieb Bosma</b> originally
+computed 21024 to 98 digits at index 1011. In January of 2004, <b>Wolfgang
+Creyaufmüller</b> extended it to 101 digits at index 1023,
+leaving off at 2^4 * 3^2 * 131 * C97. On April 14th of 2005,
+I began working where Wolfgang left off. After reaching 103
+digits, the downdriver was obtained on April 18th at a height of
+102 digits, with termination achieved twelve days later. </p>
+
+<p><a href="http://www.lafn.org/~ax810/56368.txt">56368</a> finished on April 5, 2005,
+breaking the record set by <b>3630</b> for terminating sequences
+by reaching 102 digits: 56368i3446=43. <b>Paul Zimmermann</b>
+initially computed this to a height of 80 digits at index 789 where
+it was under control of the 2^6 * 127 driver. <b>Wolfgang
+Creyaufmüller </b>extended it all the way to index 1931 after
+observing a quick escape from that driver at the 81-digit mark
+and a big drop to 36 digits. He left off on July 11, 2003 at the
+target height of 90 where it had become stable at 2^2 * 5. Two
+days later my efforts began, resulting in an advance to 100
+digits on December 16, 2003 at index 1992 where it stalled at 2^2
+* 3 * 41 * 53 * C95. After a gap of more than a year, I resumed
+work with a faster computer on January 7, 2005. After reaching
+102 digits, the downdriver was obtained on March 31 which led to
+a disappointing drop of only 100 to 95 digits. A brief interlude
+with 2^4 * 31 was followed by another aquisition of the
+downdriver which was much more productive, culminating in the
+prime 43 being reached the next day.</p>
+
+<p><a href="http://www.lafn.org/~ax810/62832.txt">62832</a>:i1740 = 43 on June 28, 2002,
+reached a maximum of 100 digits. My computations began where <b>Paul
+Zimmermann </b>left off at 80 digits.</p>
+
+<p><a href="http://www.lafn.org/~ax810/23910.txt">23910</a> terminated on April 21, 2004
+after reaching a maximum of 100 digits by entering the amicable
+pair (1210, 1184): 23910i1891=1210. Computations began where <b>Wolfgang
+Creyaufmüller </b>left off at 100 digits. <b>Wieb Bosma</b> had
+originally computed this to 92 digits at index 1121.</p>
+
+<p><a href="http://www.lafn.org/~ax810/105384.txt">105384</a> terminated on April 1, 2004
+after reaching a maximum of 96 digits by entering the same
+amicable pair: 105384i2846=1210. This time my computations began
+where <b>Juan L. Varona</b> and <b>Manuel Benito </b>had left off
+at 80 digits.</p>
+
+<p><a href="http://www.lafn.org/~ax810/72288.txt">72288</a> reached a height of 90 digits
+before merging with <b>11408</b> on July 17th, 2002: 72288:i1642
+= 11408:i6 = 85808. <b>Paul Zimmermann </b>had initially computed
+this to 80 digits.</p>
+
+<p align="center"><a name="true"><font size="4"><b>Could the Catalan-Dickson Conjecture be true?</b></font></p>
+
+<p>Empirical evidence and mathematical analysis seems to suggest
+that there are infinitely many open-ended sequences. However,
+there is disagreement among mathematicians on this issue.
+Consider that sometimes when a sequence aquires the downdriver,
+the result is a precipitous drop to termination with only small
+interruptions along the way. It might be assumed that every
+sequence encounters the downdriver at various points. Perhaps
+it's just a matter of reaching one favorable to quick
+termination. In practice, aquisition of the downdriver after a
+sequence reaches 80 digits rarely initiates a sustained drive to
+the bottom. When that driver is lost, the sequence is once again
+subject to the normal upward forces. To actually make it back to
+an endpoint, several additional lucky runs are required.</p>
+
+<p>There has been a dramatic reduction in the number of new
+terminating sequences as we moved from heights in the 80s, 90s,
+and now to the 100s. It took nearly four years after <b>Juan L.
+Varona</b> and <b>Manuel Benito </b>terminated <b>3630</b> before
+a new record was achieved (<a href="http://www.lafn.org/~ax810/56368.txt">56368</a>), and the
+former continues to be the highest a terminating sequence has reached
+in the select region below 10^4. In spite of our access to faster
+computers and improved software, only nine sequences have terminated
+after reaching a height greater than 110 digits. The long obstacle
+course that must be negotiated from such levels has proved daunting indeed.</p>
+
+<p><b>Unresolved sequences in [1, 10^4] that began a downdriver run after reaching 100 digits</b></p>
+
+<table border="1">
+	<tr>
+		<td><b>n</b></td>
+		<td><b>maximum<br>
+		height*</b></td>
+		<td><b>downdriver<br>
+		range</b></td>
+		<td><b>ultimate<br>
+		bottom</b></td>
+		<td><b>computed by</b></td>
+		<td><b>downdriver<br>
+		found by</b></td>
+	</tr>
+	<tr>
+		<td><a href="http://www.aliquot.de/sequenzen/564.elf">564</a></td>
+		<td>104</td>
+		<td>104-83</td>
+		<td>62</td>
+		<td>Lehmer/<br>
+		Lenstra/<br>
+		Montgomery/<br>
+		Wagstaff/<br>
+		Creyaufmüller/<br>
+		Zimmermann</td>
+		<td>Zimmermann</td>
+	</tr>
+	<tr>
+		<td><a href="http://factordb.com/sequences.php?se=1&aq=660&action=last20&fr=&to=">660</a></td>
+		<td>145</td>
+		<td>145-138</td>
+		<td>138</td>
+		<td>Lehmer/<br>
+		Lenstra/<br>
+		Montgomery/<br>
+		Wagstaff/<br>
+		Creyaufmüller/<br>
+		Zimmermann</td>
+		<td>Zimmermann</td>
+	</tr>
+	<tr>
+		<td><a
+		href="http://christophe.clavier.free.fr/Aliquot/site/database1/s1488.txt">1488</a></td>
+		<td>107</td>
+		<td>107-106</td>
+		<td>106</td>
+		<td>Varona/<br>
+		Kleinjung</td>
+		<td>Kleinjung</td>
+	</tr>
+	<tr>
+		<td><a
+		href="http://christophe.clavier.free.fr/Aliquot/site/database1/s1578.txt">1578</a></td>
+		<td>111</td>
+		<td>110-57<br>
+		106-96</td>
+		<td>&nbsp;&nbsp;5<br>
+		93</td>
+		<td>Varona/<br>
+		Clavier/<br>
+		Creyaufmüller/<br>
+		Hoogendoorn</td>
+		<td>Clavier<br>
+		Hoogendoorn</td>
+	</tr>
+	<tr>
+		<td><a
+		href="http://christophe.clavier.free.fr/Aliquot/site/database1/s1578.txt">1578</a></td>
+		<td>132</td>
+		<td>132-95<br>
+		103-72<br>
+		112-98<br>
+		111-100<br>
+		103-78</td>
+		<td>91<br>
+		47<br>
+		98<br>
+		100<br>
+		54</td>
+		<td>Clavier</td>
+		<td>Clavier</td>
+	</tr>
+	<tr>
+		<td><a
+		href="http://christophe.clavier.free.fr/Aliquot/site/database1/s1734.txt">1734</a></td>
+		<td>111</td>
+		<td>111-103<br>
+	  103-71</td>
+		<td>103<br>
+		&nbsp;&nbsp;70</td>
+		<td>Varona/<br>
+		Clavier/<br>
+		Schein</td>
+		<td>Schein</td>
+	</tr>
+	<tr>
+		<td><a
+		href="http://christophe.clavier.free.fr/Aliquot/site/database1/s2232.txt">2232</a></td>
+		<td>113</td>
+		<td>112-108</td>
+		<td>108</td>
+		<td>Varona/<br>
+		Clavier</td>
+		<td>Clavier</td>
+	</tr>
+	<tr>
+		<td><a
+		href="http://christophe.clavier.free.fr/Aliquot/site/database1/s2712.txt">2712</a></td>
+		<td>123</td>
+		<td>123-102</td>
+		<td>102</td>
+		<td>Varona/<br>
+		Clavier</td>
+		<td>Clavier</td>
+	</tr>
+	<tr>
+		<td><a
+		href="http://christophe.clavier.free.fr/Aliquot/site/database1/s3366.txt">3366</a></td>
+		<td>106</td>
+		<td>106-100<br>
+		103-86</td>
+		<td>99<br>
+		85</td>
+		<td>Varona/<br>
+		Clavier</td>
+		<td>Clavier</td>
+	</tr>
+	<tr>
+		<td><a
+		href="http://christophe.clavier.free.fr/Aliquot/site/database1/s3564.txt">3564</a></td>
+		<td>115</td>
+		<td>115-73<br>
+		103-81</td>
+		<td>73<br>
+		37</td>
+		<td>Varona/<br>
+		Clavier/<br>
+		Johnson</td>
+		<td>Johnson</td>
+	</tr>
+	<tr>
+		<td><a
+		href="http://christophe.clavier.free.fr/Aliquot/site/database1/s3678.txt">3678</a></td>
+		<td>111</td>
+		<td>111-68</td>
+		<td>23</td>
+		<td>Varona/<br>
+		Hudson/<br>
+		Clavier</td>
+		<td>Hudson</td>
+	</tr>
+	<tr>
+		<td><a
+		href="http://christophe.clavier.free.fr/Aliquot/site/database1/s3906.txt">3906</a></td>
+		<td>158</td>
+		<td>158-131</td>
+		<td>131</td>
+		<td>Varona/<br>
+		Clavier/<br>
+		Leclair</td>
+		<td>Leclair</td>
+	</tr>
+	<tr>
+		<td><a href="ftp://mat.unirioja.es/pub/aliquot/00xxxx">4116</a></td>
+		<td>104</td>
+		<td>104-93</td>
+		<td>92</td>
+		<td>Varona/<br>
+		Benito</td>
+		<td>Varona/<br>
+		Benito</td>
+	</tr>
+	<tr>
+		<td><a
+		href="http://christophe.clavier.free.fr/Aliquot/site/database1/4380.txt">4380</a></td>
+		<td>124</td>
+		<td>124-100<br>
+		103-78</td>
+		<td>78</td>
+		<td>Varona/<br>
+		Clavier</td>
+		<td>Clavier</td>
+	</tr>
+	<tr>
+		<td><a
+		href="http://christophe.clavier.free.fr/Aliquot/site/database1/s6822.txt">6822</a></td>
+		<td>137<br>
+		131</td>
+		<td>129-41<br>
+		131-63</td>
+		<td>32<br>
+		59</td>
+		<td>Varona/<br>
+		Clavier</td>
+		<td>Clavier</td>
+	</tr>
+	<tr>
+		<td><a href="ftp://mat.unirioja.es/pub/aliquot/00xxxx">7560</a></td>
+		<td>100</td>
+		<td>100-81</td>
+		<td>37</td>
+		<td>Varona/<br>
+		Benito</td>
+		<td>Varona/<br>
+		Benito</td>
+	</tr>
+	<tr>
+		<td><a href="ftp://mat.unirioja.es/pub/aliquot/00xxxx">7890</a></td>
+		<td>123</td>
+		<td>116-102</td>
+		<td>102</td>
+		<td>Varona/<br>
+		Clavier/<br>
+		Schein</td>
+		<td>Schein</td>
+	</tr>
+	<tr>
+		<td><a href="ftp://mat.unirioja.es/pub/aliquot/00xxxx">8760</a></td>
+		<td>102</td>
+		<td>99-51<br>
+		92-36</td>
+		<td>28<br>
+		20</td>
+		<td>Varona/<br>
+		Benito</td>
+		<td>Varona/<br>
+		Benito</td>
+	</tr>
+	<tr>
+		<td><a
+		href="http://christophe.clavier.free.fr/Aliquot/site/database1/s9462.txt">9462</a></td>
+		<td>129</td>
+		<td>129-116<br>
+		116-107<br>
+		105-91<br>
+		&nbsp;&nbsp;91-84</td>
+		<td>84</td>
+		<td>Varona/<br>
+		Leclair</td>
+		<td>Leclair</td>
+	</tr>
+	<tr>
+		<td><a
+		href="http://christophe.clavier.free.fr/Aliquot/site/database1/s9684.txt">9684</a></td>
+		<td>109<br>
+		110</td>
+		<td>108-96<br>
+		109-107</td>
+		<td>&nbsp;&nbsp;96<br>
+		107</td>
+		<td>Varona/<br>
+		Clavier</td>
+		<td>Clavier</td>
+	</tr>
+	<tr>
+		<td><a
+		href="http://christophe.clavier.free.fr/Aliquot/site/database1/s9684.txt">9684</a></td>
+		<td>134<br>
+		&nbsp;</td>
+		<td>133-113<br>
+		111-88</td>
+		<td>&nbsp;&nbsp;<br>
+		39</td>
+		<td>Varona/<br>
+		Clavier/<br>
+		Chevallier-Mames</td>
+		<td>Chevallier-Mames</td>
+	</tr>
+	<tr>
+		<td><a href="ftp://mat.unirioja.es/pub/aliquot/00xxxx">9852</a></td>
+		<td>131</td>
+		<td>129-92</td>
+		<td>90</td>
+		<td>Varona/<br>
+		Clavier/<br>
+		Hoogendoorn</td>
+		<td>Hoogendoorn</td>
+	</tr>
+</table>
+
+<p>* This column refers to the maximum height each sequence had
+attained before initiation of a downdriver run.</p>
+
+<p>A <b>downdriver run</b> is defined here to be a series of at least two consecutive
+iterations containing the downdriver, and is considered to have ended upon reaching two
+consecutive lines that both do <i>not</i> have the downdriver.<br><br>
+
+<b>Note:</b> The table for sequences beginning with five-digit numbers has grown too large, and has therefore been moved <a href="http://www.lafn.org/~ax810/table.htm">here</a>.</p>
+
+<p><font size="4"><u>Utilities for aliquot sequences</u></font></p>
+
+<p>The programs in <a href="http://www.lafn.org/~ax810/routines.zip">routines.zip</a>
+perform various functions:</p>
+
+<p><u>renumber.c</u> adds lines from one file to another if a confluence
+exists between them. The added lines are renumbered.<br>
+<u>num2elf.c</u> converts the &quot;numbers&quot; type files of Ivo
+Duentsch to the .elf format.<br>
+<u>elf2num.c</u> is the reverse of num2elf.<br>
+<u>cl2elf.c</u> converts the files of Christophe Clavier to the .elf
+type.<br>
+<u>elf2cl.c</u> is the reverse of cl2elf.<br>
+<u>merge.ub</u> locates the first point of confluence between two files
+that have merged.<br>
+<u>ck.ub</u> runs a quick check of the soundness of a file.<br>
+<u>check.ub</u> does a thorough check of a file.<br>
+<u>uu.bat</u> is a routine for running UBASIC programs from the command
+line.<br>
+<u>seq.c</u> writes the last portion of an aliquot file to seq.txt. The number of
+each line is removed and replaced by its size, which is given at the end of
+the line. The purpose is to make it easier to follow the course of a sequence
+beyond a point specified by the user. Enter the sequence number as the first
+argument, followed by the starting line number as the second.<br><br>
+32-bit DOS executables: <a href="http://www.lafn.org/~ax810/renumber.exe">renumber.exe</a> &nbsp;<a
+href="http://www.lafn.org/~ax810/cl2elf.exe">cl2elf.exe</a> &nbsp;<a
+href="http://www.lafn.org/~ax810/elf2cl.exe">elf2cl.exe</a> &nbsp;<a href="http://www.lafn.org/~ax810/num2elf.exe">num2elf.exe</a> 
+&nbsp;<a href="http://www.lafn.org/~ax810/elf2num.exe">elf2num.exe</a> &nbsp;<a href="http://www.lafn.org/~ax810/seq.exe">seq.exe</a></p>
+
+<p>Here is a second set of programs, contained in <a href="http://www.lafn.org/~ax810/set2.zip">set2.zip</a></p>
+
+<p><u>chk.c</u> tests the soundness of an aliquot file, checking for each of the possible errors. Enter the sequence number and one of the standard files will be opened: elf, num or those of Christophe Clavier. Alternatively, enter the complete file name as the argument. If an error is is found, the details are displayed and the program exits. Therefore, it should be run again after repairing the faulty line to check for additional errors. This function can be utilized in a program by testing for an error code of 1 to determine if a file is unsound. It can thus be employed to test multiple files automatically.</p>
+
+<p><u>alk.c</u> is a new aliquot sequence compression function similar to that of <b>Jesper Gerved</b>, used extensively on this web site. Unfortunately, the latter is limited to sequences that reach a maximum of 144 digits, a level that has been frequently surpassed of late. Enter an argument in the same manner as chk.c: if only the sequence number is given, the program will be applied to one of the standard types, searching  in the order .elf, Clavier then num. Alternatively, enter the full name of any file whose contents are of the standard type. A check is first made of the file's soundness, as the process will not succeed if any errors are present. After passing that test, the essential data is saved in a file with the extension .alk. To decompress, enter just the sequence number, and the .alk file will be detected with the original contents reconstructed as an .elf file.  When both an .elf and .alk file exist for a given sequence and only the sequence number is entered as the argument, the situation is ambiguous. Here is how it's handled: a comparison is made between the last index of the two files. If the index of the .elf file is bigger, then it is assumed that compression is desired, and a new .alk file is created. This prevents lines added since the last compression from being wiped out by the outdated .alk file. In either case, the result is that both files are up to date. Though .alk files are bigger than the corresponding .alq's, the new ones become much smaller after zip compression is applied compared to zipped alq's.</p>
+
+<u>errfix.c</u> repairs formatting errors in the <a
+href="http://christophe.clavier.free.fr/Aliquot/site/clavier_table.html">files</a> of Christophe Clavier. These include repeated factors and the lack of a space between an asterisk and a number. Repeated factors are combined into one along with the correct exponent, and a space is inserted between an asterisk and number where necessary. Enter just the sequence number, and the corresponding text file will be opened. It might be necessary to run this routine before applying chk.c to one of these files in order for it to pass the test. This program has been newly revised to handle 28 lines recently added to <a href="http://christophe.clavier.free.fr/Aliquot/site/database1/s3366.txt">3366</a> which contain no spaces at all between factors and asterisks.</p>
+
+<u>quadratc.c</u> applies the quadratic formula to finish the factorization of a number when the factors have been lost but the next number of the aliquot sequence is known. If the factorization cannot be readily determined by normal means, it could be because the last two factors are large and a lengthy factoring job might be necessary. At this point, the quadratic formula will finish the task. To begin, execute the function and enter numbers for n1 and n2 when prompted: the first is the original number to be factored and the second is the next number in the sequence. Alternatively, place the two numbers in a file and enter the file name as the function's argument. The program trial divides by the primes less than 2^17 and then tries to finish it off with the quadratic formula. If that fails, it means that more than two factors remain, and the user is prompted to supply an intermediate factor. This continues until the factorization is completed.</p>
+
+<u>mgma2elf.c</u> (magma to elf) converts the files of Wieb Bosma (which are in <a href="http://magma.maths.usyd.edu.au/magma">Magma</a> format) to the standard .elf type. Enter the sequence number and the program attempts to open the corresponding file using the naming scheme Bosma employs. So far, only two of these files have been hyperlinked (see <a href="http://www.math.ru.nl/~bosma/Projects/tabA.html">this page</a>), but when others are available this function will be useful.</p>
+
+<p><u>appendat.c</u> (append .dat file) facilitates distributed computing for <a href="http://www.boo.net/~jasonp/qs.html">Msieve</a>'s quadratic sieve. It appends the contents of the .dat file found in a given location (whose path is entered as the function's argument) to the one present in the current directory. A check is made to verify the corresponding composites are the same. For <a href="http://bbuhrow.googlepages.com/">Yafu</a>, use <u>appendyf.c</u> (see below).</p>
+
+<p><u>convert.pl</u> is Perl script that converts the output of Msieve's polynomial selection to the form used by GGNFS. This was written according to the <a href="http://gilchrist.ca/jeff/factoring/nfs_msieve_poly_guide.html">detailed instructions</a> gratefully provided by <a href="http://gilchrist.ca/jeff/factoring/nfs_beginners_guide.html"><b>Jeff Gilchrist</b></a>. The script calls for the project name as the argument. Therefore, to run GGNFS with Msieve creating the .poly file, use the following steps:<br><br>
+
+msieve -v -np -i &lt;name&gt;.n<br>
+convert.pl &lt;name&gt;<br>
+factmsieve.pl &lt;name&gt;.n</p>
+
+32-bit DOS executables: <a href="http://www.lafn.org/~ax810/chk.exe">chk.exe</a> &nbsp;<a
+href="http://www.lafn.org/~ax810/alk.exe">alk.exe</a> &nbsp;<a
+href="http://www.lafn.org/~ax810/errfix.exe">errfix.exe</a> &nbsp;<a
+href="http://www.lafn.org/~ax810/quadratc.exe">quadratc.exe</a> &nbsp;<a href="http://www.lafn.org/~ax810/mgma2elf.exe">mgma2elf.exe</a> 
+&nbsp;<a href="http://www.lafn.org/~ax810/appendat.exe">appendat.exe</a> &nbsp;<a href="http://www.lafn.org/~ax810/appendat.exe">appendyf.exe</a></p>
+
+<p>If the second core of a computer is available and not in use, then the speed of Yafu can be doubled. After beginning execution of that function, switch to another directory and execute Yafu again for the same composite. When the sum of the two relation sets reaches somewhat more than half of the required number, stop both, execute appendyf in the first directory using the address of the second as the argument and restart Yafu. If significantly more relations remain to be accumulated, go to the second directory, delete siqs.dat and run Yafu again there. After a little while, stop both and repeat as explained above. The same process can be used for Msieve, using appendat instead of appendyf. For two Yafu's, try the combining process when both reach 17,000 relations. For Msieve, look for the relation sums to reach 45% to 50% of the required number before switching to the combining phase.</p> 
+
+<p><b>Averages for downdriver runs</b><br>
+(These are based on the 2494 sequences below 251712)</p>
+
+<table border="1">
+	<tr>
+		<td><b>starting size</b></td>
+		<td><b>number of lines</b></td>
+		<td><b>digit reduction</b></td>
+	</tr>
+	<tr>
+		<td>20-29</td>
+		<td>24.16</td>
+		<td>4.91</td>
+	</tr>
+	<tr>
+		<td>30-39</td>
+		<td>34.61</td>
+		<td>7.08</td>
+	</tr>
+	<tr>
+		<td>40-49</td>
+		<td>44.63</td>
+		<td>9.04</td>
+	</tr>
+	<tr>
+		<td>50-59</td>
+		<td>58.30</td>
+		<td>11.81</td>
+	</tr>
+	<tr>
+		<td>60-69</td>
+		<td>66.02</td>
+		<td>13.45</td>
+	</tr>
+	<tr>
+		<td>70-79</td>
+		<td>83.40</td>
+		<td>16.94</td>
+	</tr>
+	<tr>
+		<td>80-89</td>
+		<td>88.47</td>
+		<td>17.91</td>
+	</tr>
+	<tr>
+		<td>90-99</td>
+		<td>98.90</td>
+		<td>20.09</td>
+	</tr>
+	<tr>
+		<td>100+</td>
+		<td>116.75</td>
+		<td>23.67</td>
+	</tr>
+</table>
+
+<p><b>Record downdriver runs</b></p>
+
+<table border="1">
+	<tr>
+		<td><b>length</b></td>
+		<td><b>sequence</b></td>
+		<td><b>index</b></td>
+	</tr>
+	<tr>
+		<td>565</td>
+		<td><a href="http://www.lafn.org/~ax810/graphs.htm#139314">139314</a></td>
+		<td>1724</td>
+	</tr>
+	<tr>
+		<td>536</td>
+		<td>162126</td>
+		<td>2057</td>
+	</tr>
+	<tr>
+		<td>471</td>
+		<td>707016</td>
+		<td>5265</td>
+	</tr>
+	<tr>
+		<td>436</td>
+		<td>6822</td>
+		<td>1595</td>
+	</tr>
+	<tr>
+		<td>406</td>
+		<td><a href="http://www.lafn.org/~ax810/graphs.htm#62850">62850</a></td>
+		<td>3228</td>
+	</tr>
+	<tr>
+		<td>394</td>
+		<td>921232</td>
+		<td>5753</td>
+	</tr>
+	<tr>
+		<td>388</td>
+		<td>149808</td>
+		<td>1062</td>
+	</tr>
+	<tr>
+		<td>386</td>
+		<td><a href="http://www.lafn.org/~ax810/graphs.htm#33960">33960</a></td>
+		<td>1473</td>
+	</tr>
+	<tr>
+		<td>374</td>
+		<td>740106</td>
+		<td>2863</td>
+	</tr>
+	<tr>
+		<td>369</td>
+		<td>37968</td>
+		<td>553</td>
+	</tr>
+	<tr>
+		<td>363</td>
+		<td>157752</td>
+		<td>1226</td>
+	</tr>
+	<tr>
+		<td>362</td>
+		<td>80232</td>
+		<td>1095</td>
+	</tr>
+	<tr>
+		<td>355</td>
+		<td>574614</td>
+		<td>1197</td>
+	</tr>
+	<tr>
+		<td>353</td>
+		<td>15390</td>
+		<td>799</td>
+	</tr>
+	<tr>
+		<td>345</td>
+		<td>743370</td>
+		<td>723</td>
+	</tr>
+	<tr>
+		<td>343</td>
+		<td>781302</td>
+		<td>825</td>
+	</tr>
+	<tr>
+		<td>342</td>
+		<td>570690</td>
+		<td>1295</td>
+	</tr>
+	<tr>
+		<td>341</td>
+		<td>722064</td>
+		<td>543</td>
+	</tr>
+	<tr>
+		<td>341</td>
+		<td>753732</td>
+		<td>1847</td>
+	</tr>
+	<tr>
+		<td>336</td>
+		<td>233324</td>
+		<td>2454</td>
+	</tr>
+	<tr>
+		<td>336</td>
+		<td>513300</td>
+		<td>346</td>
+	</tr>
+	<tr>
+		<td>335</td>
+		<td>17892</td>
+		<td>973</td>
+	</tr>
+	<tr>
+		<td>335</td>
+		<td>561000</td>
+		<td>744</td>
+	</tr>
+	<tr>
+		<td>333</td>
+		<td>6822</td>
+		<td>3016</td>
+	</tr>
+</table>
+
+<p><b>Record reductions in size from a downdriver run:</b></p>
+
+<table border="1">
+	<tr>
+		<td><b>reduction</b></td>
+		<td><b>sequence</b></td>
+		<td><b>index</b></td>
+	</tr>
+	</tr>
+	<tr>
+		<td>108</td>
+		<td>139314</td>
+		<td>1724</td>
+	</tr>
+	<tr>
+		<td>101</td>
+		<td>162126</td>
+		<td>2057</td>
+	</tr>
+	<tr>
+		<td>90</td>
+		<td>707016</td>
+		<td>5265</td>
+	</tr>
+	<tr>
+		<td>88</td>
+		<td>6822</td>
+		<td>1595</td>
+	</tr>
+	<tr>
+		<td>82</td>
+		<td>62850</td>
+		<td>3228</td>
+	</tr>
+	<tr>
+		<td>81</td>
+		<td>33960</td>
+		<td>1473</td>
+	</tr>
+	<tr>
+		<td>81</td>
+		<td>37968</td>
+		<td>553</td>
+	</tr>
+	<tr>
+		<td>80</td>
+		<td>921232</td>
+		<td>5753</td>
+	</tr>
+	<tr>
+		<td>78</td>
+		<td>149808</td>
+		<td>1062</td>
+	</tr>
+	<tr>
+		<td>75</td>
+		<td>80232</td>
+		<td>1095</td>
+	</tr>
+	<tr>
+		<td>75</td>
+		<td>740106</td>
+		<td>2863</td>
+	</tr>
+	<tr>
+		<td>75</td>
+		<td>829914</td>
+		<td>2016</td>
+	</tr>
+	<tr>
+		<td>73</td>
+		<td>29052</td>
+		<td>1347</td>
+	</tr>
+	<tr>
+		<td>72</td>
+		<td>157752</td>
+		<td>1226</td>
+	</tr>
+	<tr>
+		<td>70</td>
+		<td>722064</td>
+		<td>543</td>
+	</tr>
+	<tr>
+		<td>69</td>
+		<td>743370</td>
+		<td>724</td>
+	</tr>
+	<tr>
+		<td>69</td>
+		<td>753732</td>
+		<td>1847</td>
+	</tr>
+	<tr>
+		<td>68</td>
+		<td>6822</td>
+		<td>3016</td>
+	</tr>
+	<tr>
+		<td>68</td>
+		<td>29070</td>
+		<td>1075</td>
+	</tr>
+	<tr>
+		<td>68</td>
+		<td>561000</td>
+		<td>744</td>
+	</tr>
+	<tr>
+		<td>67</td>
+		<td>147324</td>
+		<td>595</td>
+	</tr>
+	<tr>
+		<td>67</td>
+		<td>199152</td>
+		<td>2450</td>
+	</tr>
+	<tr>
+		<td>66</td>
+		<td>154056</td>
+		<td>1345</td>
+	</tr>
+	<tr>
+		<td>66</td>
+		<td>574614</td>
+		<td>1197</td>
+	</tr>
+</table>
+
+<p align="left"><b>Highest downdriver aquisitions in [1, 10^4] </b></p>
+
+<table border="1">
+    <tr>
+        <td><b>height</b></td>
+        <td><b>sequence</b></td>
+        <td><b>index</b></td>
+        <td><b>obtained by</b></td>
+        <td><b>date</b></td>
+    </tr>
+    <tr>
+        <td>158</td>
+        <td>3906</td>
+        <td>1571</td>
+        <td>Don Leclair</td>
+        <td>May 28, 2010</td>
+    </tr>
+    <tr>
+        <td>145</td>
+        <td>660</td>
+        <td>728</td>
+        <td>Paul Zimmermann</td>
+        <td>July, 2006</td>
+    </tr>
+    <tr>
+        <td>142</td>
+        <td>1560</td>
+        <td>1650</td>
+        <td>Christophe Clavier</td>
+        <td>September 29, 2009</td>
+    </tr>
+    <tr>
+        <td>133</td>
+        <td>9684</td>
+        <td>1234</td>
+        <td>Benoit Chevallier-Mames</td>
+        <td>January 12, 2007</td>
+    </tr>
+    <tr>
+        <td>132</td>
+        <td>1578</td>
+        <td>4359</td>
+        <td>Christophe Clavier</td>
+        <td>April 6, 2006</td>
+    </tr>
+    <tr>
+        <td>131</td>
+        <td>6822</td>
+        <td>3016</td>
+        <td>Christophe Clavier</td>
+        <td>June, 2009</td>
+    </tr>
+    <tr>
+        <td>129</td>
+        <td>6822</td>
+        <td>1595</td>
+        <td>Christophe Clavier</td>
+        <td>June, 2008</td>
+    </tr>
+    <tr>
+        <td>129</td>
+        <td>9462</td>
+        <td>552</td>
+        <td>Don Leclair</td>
+        <td>August, 2005</td>
+    </tr>
+    <tr>
+        <td>129</td>
+        <td>9852</td>
+        <td>1003</td>
+        <td>Sander Hoogendoorn</td>
+        <td>Summer, 2008</td>
+    </tr>
+    <tr>
+        <td>124</td>
+        <td>4380</td>
+        <td>1182</td>
+        <td>Christophe Clavier</td>
+        <td>October 5, 2009</td>
+    </tr>
+    <tr>
+        <td>123</td>
+        <td>2712</td>
+        <td>1525</td>
+        <td>Christophe Clavier</td>
+        <td>December 23, 2005</td>
+    </tr>
+    <tr>
+        <td>116</td>
+        <td>7890</td>
+        <td>1360</td>
+        <td>Igor Schein</td>
+        <td>February, 2006</td>
+    </tr>
+    <tr>
+        <td>116</td>
+        <td>9462</td>
+        <td>798</td>
+        <td>Don Leclair</td>
+        <td>December, 2005</td>
+    </tr>
+    <tr>
+        <td>115</td>
+        <td>3564</td>
+        <td>895</td>
+        <td>Donovan Johnson</td>
+        <td>September, 2005</td>
+    </tr>
+    <tr>
+        <td>112</td>
+        <td>1578</td>
+        <td>5964</td>
+        <td>Christophe Clavier</td>
+        <td>May 11, 2006</td>
+    </tr>
+    <tr>
+        <td>112</td>
+        <td>2232</td>
+        <td>478</td>
+        <td>Christophe Clavier</td>
+        <td>2004</td>
+    </tr>
+    <tr>
+        <td>111</td>
+        <td>1578</td>
+        <td>6278</td>
+        <td>Christophe Clavier</td>
+        <td>May 27, 2006</td>
+    </tr>
+    <tr>
+        <td>111</td>
+        <td>1734</td>
+        <td>1484</td>
+        <td>Igor Schein</td>
+        <td>August, 2005</td>
+    </tr>
+    <tr>
+        <td>111</td>
+        <td>9684</td>
+        <td>1441</td>
+        <td>Benoit Chevallier-Mames</td>
+        <td>February, 2007</td>
+    </tr>
+    <tr>
+        <td>110</td>
+        <td>1578</td>
+        <td>1185</td>
+        <td>Christophe Clavier</td>
+        <td>February, 2005</td>
+    </tr>
+    <tr>
+        <td>110</td>
+        <td>3678</td>
+        <td>1396</td>
+        <td>Mark Hudson</td>
+        <td>March, 2005</td>
+    </tr>
+    <tr>
+        <td>110</td>
+        <td>3906</td>
+        <td>1250</td>
+        <td>Don Leclair</td>
+        <td>August, 2005</td>
+    </tr>
+    <tr>
+        <td>109</td>
+        <td>9684</td>
+        <td>1026</td>
+        <td>Christophe Clavier</td>
+        <td>October 12, 2005</td>
+    </tr>
+    <tr>
+        <td>108</td>
+        <td>3906</td>
+        <td>829</td>
+        <td>Don Leclair</td>
+        <td>August, 2005</td>
+    </tr>
+    <tr>
+        <td>108</td>
+        <td>9684</td>
+        <td>696</td>
+        <td>Christophe Clavier</td>
+        <td>2004</td>
+    </tr>
+    <tr>
+        <td>107</td>
+        <td>1488</td>
+        <td>919</td>
+        <td>Thorsten Kleinjung</td>
+        <td>January, 2005</td>
+    </tr>
+</table>
+
+<p align="left"><b>Highest downdriver aquisitions in [10^4, 10^6]</b></p>
+
+<table border="1">
+    <tr>
+        <td><b>height</b></td>
+        <td><b>sequence</b></td>
+        <td><b>index</b></td>
+        <td><b>date</b></td>
+    </tr>
+    <tr>
+        <td>147<sup>12</sup></td>
+        <td>11040</td>
+        <td>6174</td>
+        <td>September, 2010</td>
+    </tr>
+    <tr>
+        <td>141<sup>8</sup></td>
+        <td>199152</td>
+        <td>4646</td>
+        <td>May 21, 2009</td>
+    </tr>
+    <tr>
+        <td>140<sup>8</sup></td>
+        <td>199152</td>
+        <td>4587</td>
+        <td>April 28, 2009</td>
+    </tr>
+    <tr>
+        <td>138<sup>10</sup></td>
+        <td>147192</td>
+        <td>4629</td>
+        <td>February, 2010</td>
+    </tr>
+    <tr>
+        <td>136<sup>12</sup></td>
+        <td>15390</td>
+        <td>799</td>
+        <td>March, 2010</td>
+    </tr>
+    <tr>
+        <td>136<sup>2</sup></td>
+        <td>170196</td>
+        <td>1783</td>
+        <td>February 18, 2010</td>
+    </tr>
+    <tr>
+        <td>134<sup>3</sup></td>
+        <td>162126</td>
+        <td>2057</td>
+        <td>March 21, 2009</td>
+    </tr>
+    <tr>
+        <td>133<sup>2</sup></td>
+        <td>29772</td>
+        <td>1025</td>
+        <td>October 18, 2009</td>
+    </tr>
+    <tr>
+        <td>133<sup>5</sup></td>
+        <td>103920</td>
+        <td>4581</td>
+        <td>April 17, 2009</td>
+    </tr>
+    <tr>
+        <td>131</td>
+        <td>20076</td>
+        <td>1676</td>
+        <td>December 14, 2010</td>
+    </tr>
+    <tr>
+        <td>131<sup>2</sup></td>
+        <td>171018</td>
+        <td>1971</td>
+        <td>April 14, 2010</td>
+    </tr>
+    <tr>
+        <td>131<sup>10</sup></td>
+        <td>205980</td>
+        <td>2296</td>
+        <td>August, 2010</td>
+    </tr>
+    <tr>
+        <td>131<sup>5</sup></td>
+        <td>139314</td>
+        <td>1724</td>
+        <td>May, 2009</td>
+    </tr>
+    <tr>
+        <td>130</td>
+        <td>29360</td>
+        <td>1456</td>
+        <td>September 5, 2010</td>
+    </tr>
+    <tr>
+        <td>129<sup>6</sup></td>
+        <td>113454</td>
+        <td>2120</td>
+        <td>May, 2009</td>
+    </tr>
+    <tr>
+        <td>129<sup>15</sup></td>
+        <td>157752</td>
+        <td>4457</td>
+        <td>2009-2010</td>
+    </tr>
+    <tr>
+        <td>129<sup>2</sup></td>
+        <td>604560</td>
+        <td>2474</td>
+        <td>December 2, 2009</td>
+    </tr>
+    <tr>
+        <td>128</td>
+        <td>14280</td>
+        <td>925</td>
+        <td>October 23, 2010</td>
+    </tr>
+    <tr>
+        <td>128<sup>16</sup></td>
+        <td>34308</td>
+        <td>1461</td>
+        <td>May 15, 2010</td>
+    </tr>
+    <tr>
+        <td>128</td>
+        <td>76014</td>
+        <td>1158</td>
+        <td>June 27, 2010</td>
+    </tr>
+    <tr>
+        <td>128<sup>2</sup></td>
+        <td>144984</td>
+        <td>6650</td>
+        <td>April 4, 2008</td>
+    </tr>
+    <tr>
+        <td>128<sup>7</sup></td>
+        <td>182224</td>
+        <td>1196</td>
+        <td>April, 2009</td>
+    </tr>
+    <tr>
+        <td>126<sup>16</sup></td>
+        <td>80244</td>
+        <td>1139</td>
+        <td>2010</td>
+    </tr>
+    <tr>
+        <td>126</td>
+        <td>76314</td>
+        <td>1157</td>
+        <td>May 30, 2010</td>
+    </tr>
+    <tr>
+        <td>126<sup>12</sup></td>
+        <td>921232</td>
+        <td>5640</td>
+        <td>April, 2010</td>
+    </tr>
+    <tr>
+        <td>125</td>
+        <td>21528</td>
+        <td>978</td>
+        <td>April 8, 2010</td>
+    </tr>
+    <tr>
+        <td>125</td>
+        <td>36960</td>
+        <td>1634</td>
+        <td>May 3, 2010</td>
+    </tr>
+    <tr>
+        <td>125<sup>10</sup></td>
+        <td>205980</td>
+        <td>2499</td>
+        <td>August, 2010</td>
+    </tr>
+    <tr>
+        <td>124</td>
+        <td>11408</td>
+        <td>937</td>
+        <td>October 17, 2010</td>
+    </tr>
+    <tr>
+        <td>124</td>
+        <td>12120</td>
+        <td>1225</td>
+        <td>March 10, 2010</td>
+    </tr>
+    <tr>
+        <td>124</td>
+        <td>81576</td>
+        <td>713</td>
+        <td>September 22, 2010</td>
+    </tr>
+    <tr>
+        <td>124<sup>2</sup></td>
+        <td>88662</td>
+        <td>2185</td>
+        <td>November 4, 2009</td>
+    </tr>
+    <tr>
+        <td>124<sup>5</sup></td>
+        <td>128370</td>
+        <td>3646</td>
+        <td>April 10, 2009</td>
+    </tr>
+    <tr>
+        <td>123<sup>16</sup></td>
+        <td>84822</td>
+        <td>3081</td>
+        <td>2010</td>
+    </tr>
+    <tr>
+        <td>123<sup>9</sup></td>
+        <td>107310</td>
+        <td>2521</td>
+        <td>May, 2009</td>
+    </tr>
+    <tr>
+        <td>123<sup>12</sup></td>
+        <td>15390</td>
+        <td>656</td>
+        <td>2010</td>
+    </tr>
+    <tr>
+        <td>122<sup>13</sup></td>
+        <td>34308</td>
+        <td>928</td>
+        <td>2010</td>
+    </tr>
+    <tr>
+        <td>122</td>
+        <td>47352</td>
+        <td>1465</td>
+        <td>July 24, 2009</td>
+    </tr>
+    <tr>
+        <td>122<sup>2</sup></td>
+        <td>47728</td>
+        <td>2913</td>
+        <td>February 26, 2008</td>
+    </tr>
+    <tr>
+        <td>122</td>
+        <td>49692</td>
+        <td>947</td>
+        <td>July 7, 2009</td>
+    </tr>
+    <tr>
+        <td>122</td>
+        <td>65208</td>
+        <td>2310</td>
+        <td>March 11, 2009</td>
+    </tr>
+    <tr>
+        <td>122</td>
+        <td>68340</td>
+        <td>769</td>
+        <td>March 24, 2009</td>
+    </tr>
+    <tr>
+        <td>121</td>
+        <td>25380</td>
+        <td>1106</td>
+        <td>January 25, 2009</td>
+    </tr>
+    <tr>
+        <td>121</td>
+        <td>37146</td>
+        <td>1646</td>
+        <td>October 28, 2008</td>
+    </tr>
+    <tr>
+        <td>121</td>
+        <td>62850</td>
+        <td>1984</td>
+        <td>August 27, 2008</td>
+    </tr>
+    <tr>
+        <td>121</td>
+        <td>77840</td>
+        <td>3869</td>
+        <td>December 5, 2008</td>
+    </tr>
+    <tr>
+        <td>121<sup>2</sup></td>
+        <td>88662</td>
+        <td>1796</td>
+        <td>June 24, 2009</td>
+    </tr>
+    <tr>
+        <td>121<sup>8</sup></td>
+        <td>167148</td>
+        <td>2666</td>
+        <td>May, 2009</td>
+    </tr>
+    <tr>
+        <td>121<sup>13</sup></td>
+        <td>232956</td>
+        <td>1490</td>
+        <td>2009</td>
+    </tr>
+    <tr>
+        <td>120</td>
+        <td>14970</td>
+        <td>1551</td>
+        <td>June 1, 2008</td>
+    </tr>
+    <tr>
+        <td>120</td>
+        <td>32280</td>
+        <td>2300</td>
+        <td>July 19, 2009</td>
+    </tr>
+    <tr>
+        <td>120</td>
+        <td>37146</td>
+        <td>1288</td>
+        <td>September 5, 2008</td>
+    </tr>
+    <tr>
+        <td>126<sup>16</sup></td>
+        <td>80244</td>
+        <td>978</td>
+        <td>2010</td>
+    </tr>
+    <tr>
+        <td>120<sup>13</sup></td>
+        <td>832194</td>
+        <td>1205</td>
+        <td>2010</td>
+    </tr>
+    <tr>
+        <td>119</td>
+        <td>20076</td>
+        <td>1093</td>
+        <td>February 6, 2009</td>
+    </tr>
+    <tr>
+        <td>119</td>
+        <td>52218</td>
+        <td>1635</td>
+        <td>August 2, 2009</td>
+    </tr>
+    <tr>
+        <td>119</td>
+        <td>80232</td>
+        <td>980</td>
+        <td>September 13, 2008</td>
+    </tr>
+    <tr>
+        <td>119</td>
+        <td>95610</td>
+        <td>915</td>
+        <td>November 27, 2009</td>
+    </tr>
+    <tr>
+        <td>119<sup>10</sup></td>
+        <td>114810</td>
+        <td>3194</td>
+        <td>June, 2009</td>
+    </tr>
+    <tr>
+        <td>119<sup>7</sup></td>
+        <td>182224</td>
+        <td>1544</td>
+        <td>May, 2009</td>
+    </tr>
+    <tr>
+        <td>119<sup>12</sup></td>
+        <td>735966</td>
+        <td>3065</td>
+        <td>December, 2009</td>
+    </tr>
+    <tr>
+        <td>118<sup>16</sup></td>
+        <td>34308</td>
+        <td>1117</td>
+        <td>2010</td>
+    </tr>
+    <tr>
+        <td>118</td>
+        <td>75798</td>
+        <td>434</td>
+        <td>July 8, 2008</td>
+    </tr>
+    <tr>
+        <td>118<sup>2</sup></td>
+        <td>163716</td>
+        <td>932</td>
+        <td>May 27, 2009</td>
+    </tr>
+    <tr>
+        <td>117<sup>12</sup></td>
+        <td>11040</td>
+        <td>5524</td>
+        <td>October, 2009</td>
+    </tr>
+    <tr>
+        <td>117</td>
+        <td>39870</td>
+        <td>1554</td>
+        <td>April 14, 2008</td>
+    </tr>
+    <tr>
+        <td>117</td>
+        <td>62820</td>
+        <td>849</td>
+        <td>October 9, 2008</td>
+    </tr>
+    <tr>
+        <td>117</td>
+        <td>70464</td>
+        <td>684</td>
+        <td>May 8, 2008</td>
+    </tr>
+    <tr>
+        <td>117<sup>6</sup></td>
+        <td>181410</td>
+        <td>1641</td>
+        <td>April, 2009</td>
+    </tr>
+    <tr>
+        <td>116<sup>6</sup></td>
+        <td>10212</td>
+        <td>1614</td>
+        <td>December 31, 2008</td>
+    </tr>
+    <tr>
+        <td>116</td>
+        <td>12120</td>
+        <td>1052</td>
+        <td>November 7, 2009</td>
+    </tr>
+    <tr>
+        <td>116</td>
+        <td>18336</td>
+        <td>2024</td>
+        <td>October 21, 2009</td>
+    </tr>
+    <tr>
+        <td>116</td>
+        <td>19866</td>
+        <td>1780</td>
+        <td>January 21, 2010</td>
+    </tr>
+    <tr>
+        <td>116</td>
+        <td>77840</td>
+        <td>3083</td>
+        <td>April 2, 2008</td>
+    </tr>
+    <tr>
+        <td>116<sup>8</sup></td>
+        <td>199152</td>
+        <td>1138</td>
+        <td>April, 2009</td>
+    </tr>
+    <tr>
+        <td>115<sup>11</sup></td>
+        <td>14994</td>
+        <td>1664</td>
+        <td>2009-2010</td>
+    </tr>
+    <tr>
+        <td>115</td>
+        <td>45792</td>
+        <td>847</td>
+        <td>October 6, 2008</td>
+    </tr>
+    <tr>
+        <td>115<sup>2</sup></td>
+        <td>48462</td>
+        <td>1294</td>
+        <td>April 1, 2007</td>
+    </tr>
+    <tr>
+        <td>115</td>
+        <td>80232</td>
+        <td>1095</td>
+        <td>September 25, 2008</td>
+    </tr>
+    <tr>
+        <td>115</td>
+        <td>82728</td>
+        <td>2418</td>
+        <td>November 23, 2007</td>
+    </tr>
+    <tr>
+        <td>115</td>
+        <td>98616</td>
+        <td>1141</td>
+        <td>November 7, 2009</td>
+    </tr>
+    <tr>
+        <td>115</td>
+        <td>98616</td>
+        <td>1426</td>
+        <td>November 15, 2009</td>
+    </tr>
+    <tr>
+        <td>115<sup>2</sup></td>
+        <td>83064</td>
+        <td>798</td>
+        <td>March 6, 2008</td>
+    </tr>
+    <tr>
+        <td>115<sup>11</sup></td>
+        <td>151752</td>
+        <td>1209</td>
+        <td>June, 2009</td>
+    </tr>
+    <tr>
+        <td>115<sup>15</sup></td>
+        <td>157752</td>
+        <td>785</td>
+        <td>2009</td>
+    </tr>
+    <tr>
+        <td>115<sup>2</sup></td>
+        <td>171018</td>
+        <td>1008</td>
+        <td>August 25, 2009</td>
+    </tr>
+    <tr>
+        <td>115<sup>4</sup></td>
+        <td>175182</td>
+        <td>1050</td>
+        <td>March, 2009</td>
+    </tr>
+    <tr>
+        <td>115<sup>11</sup></td>
+        <td>507924</td>
+        <td>690</td>
+        <td>September 13, 2009</td>
+    </tr>
+    <tr>
+        <td>115<sup>12</sup></td>
+        <td>519330</td>
+        <td>1555</td>
+        <td>August, 2009</td>
+    </tr>
+    <tr>
+        <td>114</td>
+        <td>12120</td>
+        <td>1052</td>
+        <td>November 7, 2009</td>
+    </tr>
+    <tr>
+        <td>114</td>
+        <td>17544</td>
+        <td>850</td>
+        <td>December 8, 2007</td>
+    </tr>
+    <tr>
+        <td>114</td>
+        <td>19380</td>
+        <td>1191</td>
+        <td>July 11, 2007</td>
+    </tr>
+    <tr>
+        <td>114</td>
+        <td>19866</td>
+        <td>2409</td>
+        <td>February 6, 2010</td>
+    </tr>
+    <tr>
+        <td>114</td>
+        <td>20076</td>
+        <td>1354</td>
+        <td>February 26, 2009</td>
+    </tr>
+    <tr>
+        <td>114<sup>13</sup></td>
+        <td>26820</td>
+        <td>1944</td>
+        <td>2010</td>
+    </tr>
+    <tr>
+        <td>114</td>
+        <td>37146</td>
+        <td>3994</td>
+        <td>November 22, 2008</td>
+    </tr>
+    <tr>
+        <td>114</td>
+        <td>82236</td>
+        <td>871</td>
+        <td>October 2, 2007</td>
+    </tr>
+    <tr>
+        <td>114<sup>7</sup></td>
+        <td>505536</td>
+        <td>483</td>
+        <td>August, 2009</td>
+    </tr>
+    <tr>
+        <td>114<sup>10</sup></td>
+        <td>737160</td>
+        <td>2145</td>
+        <td>December, 2009</td>
+    </tr>
+</table>
+<sup>2</sup><b>Frank Schickel</b><br>
+<sup>3</sup><b>Markus Tervooren</b><br>
+<sup>4</sup><b>Max Dettweiler</b><br>
+<sup>5</sup><b>Mikael Klasson</b><br>
+<sup>6</sup><b>Andreas Schindel</b><br>
+<sup>7</sup>kriZp<br>
+<sup>8</sup><b>Ignacio Santos</b><br>
+<sup>9</sup><b>Greg Childers</b><br>
+<sup>10</sup><b>Serge Batalov</b><br>
+<sup>11</sup><b>Jonathan DeMarrais</b><br>
+<sup>12</sup><b>Dmitry Domanov</b><br>
+<sup>13</sup><b>Mersenne Forum</b><br>
+<sup>14</sup><b>Karsten Bonath</b><br>
+<sup>15</sup><b>David Stevens</b><br>
+<sup>16</sup><b>Tom Womack</b>
+</body>
+</html>
+<hr>
+
+<p>Clifford Stern<br>
+Santa Monica, California<br>
+<a href="mailto:ax810@lafn.org">ax810@lafn.org</a></p>
+
+<p>This page last updated December 20, 2010.</p>
+
+</body>
+</html>

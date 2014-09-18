@@ -1,0 +1,26 @@
+These are the files I use to run the website at <http://dubslow.tk/aliquot/>.
+The html/ folder is where you should point your server, and the py/ folder
+contains the scripts used. They are meant to be run primarily from cron;
+this is my current crontab:
+
+7 * * * * /home/bill/bin/allseq.py >> /home/bill/bin/allseq.log 2>&1
+47 18,6 * * * /home/bill/bin/alimerge.py >> /home/bill/bin/alimerge.log 2>&1
+
+Adjust the directories as necessary.
+
+allseq.py can also be run manually; in that case, it takes the sequences to be
+updated as arguments.
+
+Most of the scripts have some sort of directory hard coded into them -- be sure
+to examine the top of each of them and set the directories accordingly. allseq.py
+has some other settings that are hardcoded, such as which sequences are broken
+in the FDB, and you can also tell it to drop sequences.
+
+If you want email alerts from the allseq.py and alimerge.py, you'll need to put
+your information in myutils.py -- setup should be the same as e.g. Thunderbird.
+It is currently configured for Gmail as a reference.
+
+Let me know via Github or MersenneForum PM if something doesn't work right -- 
+I'm not sure if everything has been properly sanitized from my files. For
+instance, the Python files might need their working directory adjusted to
+find each other.
