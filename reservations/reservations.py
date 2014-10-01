@@ -227,7 +227,7 @@ def spider(last_pid):
           add = []
           drop = []
           for line in msg.splitlines():
-               if 'R' in line or 'A' in line:
+               if 'R' in line or 'A' in line or 'T' in line:
                     for s in re.findall(r'(?<![0-9])[0-9]{5,6}(?![0-9])', line): # matches only 5/6 digit numbers
                          add.append(int(s))
                elif 'U' in line or 'D' in line:
@@ -237,7 +237,7 @@ def spider(last_pid):
           ld = len(drop)
           if la or ld:
                Print('{}: {} adding {}, dropping {}'.format(pid, name, repr(add), repr(drop)))
-               spider_msg.append('P{}: Add {}, Drop {}'.format(pid, la, ld))
+               spider_msg.append('{}: Add {}, Drop {}'.format(name, la, ld))
                add_db(db, name, add)
                drop_db(db, name, drop)
           
