@@ -32,9 +32,13 @@ import re
 
 if 'http' in info:
      txt = blogotubes(info)
-     info = dir+'/AllSeq.txt'
-     with open(info, 'w') as f:
-          f.write(txt)
+     if txt is None:
+          print("Couldn't get info, no info will be updated")
+          info = None
+     else:
+          info = dir+'/AllSeq.txt'
+          with open(info, 'w') as f:
+               f.write(txt)
 
 if 'http' in resfile: 
      # Copied from allseq.py
@@ -125,6 +129,8 @@ def drop_db(db, name, seqs):
           print("Only {} seqs were removed, {} were supposed to be dropped".format(b-c, b))
 
 def get_info(seq, file=info):
+     if file is None:
+          return None
      with open(file, 'r') as f:
           for line in f:
                l = line.split()
@@ -136,12 +142,13 @@ def update(info=info):
      db = read_db()
      list = sorted(db.keys())
      c = len(list)
-     with open(info, 'r') as f:
-          i = 0
-          for l in [line.split() for line in f]:
-               if int(l[0]) == list[i]:
-                    db[list[i]].index, db[list[i]].size = int(l[1][:-1]), int(l[3])
-                    i = (i+1)%c
+     if info is not None:
+          with open(info, 'r') as f:
+               i = 0
+               for l in [line.split() for line in f]:
+                    if int(l[0]) == list[i]:
+                         db[list[i]].index, db[list[i]].size = int(l[1][:-1]), int(l[3])
+                         i = (i+1)%c
      write_db(db)
 
 from shutil import copy
