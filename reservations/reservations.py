@@ -231,15 +231,15 @@ def spider(last_pid):
      spider_msg = []
      
      def process_msg(pid, name, msg):
-          add = []
-          drop = []
+          add = []; addkws = ('Reserv', 'reserv', 'Add', 'add', 'Tak', 'tak')
+          drop = []; dropkws = ('Unreserv', 'unreserv', 'Drop', 'drop', 'Releas', 'releas')
           for line in msg.splitlines():
-               if 'R' in line or 'A' in line or 'T' in line:
+               if any(kw in line for kw in dropkws):
                     for s in re.findall(r'(?<![0-9])[0-9]{5,6}(?![0-9])', line): # matches only 5/6 digit numbers
-                         add.append(int(s))
-               elif 'U' in line or 'D' in line:
-                    for s in re.findall(r'(?<![0-9])[0-9]{5,6}(?![0-9])', line):
                          drop.append(int(s))
+               elif any(kw in line for kw in addkws):
+                    for s in re.findall(r'(?<![0-9])[0-9]{5,6}(?![0-9])', line):
+                         add.append(int(s))
           la = len(add)
           ld = len(drop)
           if la or ld:
