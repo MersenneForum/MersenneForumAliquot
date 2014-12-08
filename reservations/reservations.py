@@ -27,6 +27,8 @@ Current reservations:
 [/code]
 """
 
+###############################################################################
+
 from myutils import linecount, Print, strftime, blogotubes, add_cookies
 import re
 
@@ -105,11 +107,14 @@ def write_db(db, file=resfile):
 
 def add_db(db, name, seqs):
      for seq in seqs:
-          info = get_info(seq)
-          if not info:
-               print("Warning: seq", seq, "doesn't appear to be in the list")
+          if seq in db:
+               print("Warning: seq", seq, "is owned by", db[seq].name, "but is trying to be reserved by", name+"!")
           else:
-               db[seq] = Sequence(seq, name, *info)
+               info = get_info(seq)
+               if not info:
+                    print("Warning: seq", seq, "doesn't appear to be in the list")
+               else:
+                    db[seq] = Sequence(seq, name, *info)
 
 def drop_db(db, name, seqs):
      b = c = len(seqs)
