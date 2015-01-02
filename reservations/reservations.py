@@ -320,8 +320,8 @@ def spider(last_pid):
                Print("WTF? {}, {}".format(tmp, highest_pid))
                highest_pid = tmp
      if spider_msg:
-          update()
           write_db(db)
+          update()
           send('Spider: ' + ' | '.join(spider_msg))
      return highest_pid
 
