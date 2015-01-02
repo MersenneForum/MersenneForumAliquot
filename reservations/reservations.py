@@ -35,7 +35,7 @@ import re
 if 'http' in info:
      txt = blogotubes(info)
      if txt is None:
-          print("Couldn't get info, no info will be updated")
+          Print("Couldn't get info, no info will be updated")
           info = None
      else:
           info = dir+'/AllSeq.txt'
@@ -103,7 +103,7 @@ def read_db(file=resfile):
                else:
                     seq.name = ' '.join(l[1:-2])
                db[seq.seq] = seq
-     print("Read {} seqs".format(len(db)))
+     Print("Read {} seqs".format(len(db)))
      return db
 
 def write_db(db, file=resfile):
@@ -112,16 +112,16 @@ def write_db(db, file=resfile):
           for seq in sorted(db.keys()):
                f.write(str(db[seq]))
                c += 1
-     print("Wrote {} seqs".format(c))
+     Print("Wrote {} seqs".format(c))
 
 def add_db(db, name, seqs):
      for seq in seqs:
           if seq in db:
-               print("Warning: seq", seq, "is owned by", db[seq].name, "but is trying to be reserved by", name+"!")
+               Print("Warning: seq", seq, "is owned by", db[seq].name, "but is trying to be reserved by", name+"!")
           else:
                info = get_info(seq)
                if not info:
-                    print("Warning: seq", seq, "doesn't appear to be in the list")
+                    Print("Warning: seq", seq, "doesn't appear to be in the list")
                else:
                     db[seq] = Sequence(seq, name, *info)
 
@@ -131,16 +131,16 @@ def drop_db(db, name, seqs):
           try:
                exists = db[seq].name == name
           except KeyError:
-               print("{} is not reserved at the moment".format(seq))
+               Print("{} is not reserved at the moment".format(seq))
                continue
           if exists:
                del db[seq]
                c -= 1
           else:
-               print("Warning: Seq {}: reservation {} doesn't match dropee {}".format(seq, db[seq].name, name))
+               Print("Warning: Seq {}: reservation {} doesn't match dropee {}".format(seq, db[seq].name, name))
 
      if c != 0:
-          print("Only {} seqs were removed, {} were supposed to be dropped".format(b-c, b))
+          Print("Only {} seqs were removed, {} were supposed to be dropped".format(b-c, b))
 
 def get_info(seq, file=info):
      if file is None:
@@ -175,9 +175,9 @@ def send(msg=''):
      body = template.format(seqs)
      size = len(body)
      if size >= 10000:
-          print("Error: post size = {} is too large".format(size))
+          Print("Error: post size = {} is too large".format(size))
      else:
-          print("There's room for ~{} more reservations".format( (10000-size)//35 ) )
+          Print("There's room for ~{} more reservations".format( (10000-size)//35 ) )
           edit_post(165249, body, 'Autoedit: '+msg)
 
 def edit_post(postid, body, reason=''):
@@ -201,7 +201,7 @@ def edit_post(postid, body, reason=''):
           url = 'http://www.mersenneforum.org/editpost.php?do=updatepost&amp;p='+postid
           if reason != '':
                if len(reason) > 200:
-                    print("Reason is too long, chop {} chars".format(len(reason)-200))
+                    Print("Reason is too long, chop {} chars".format(len(reason)-200))
                else:
                     data['reason'] = reason
           data['title'] = 'Aliquot sequence reservations'
@@ -226,11 +226,11 @@ def edit_post(postid, body, reason=''):
      #request.install_opener(request.build_opener(request.HTTPCookieProcessor(CookieJar())))
      add_cookies()
      if not login():
-          print("Failure 1")
+          Print("Failure 1")
           return
      page = blogotubes('http://www.mersenneforum.org/editpost.php?do=editpost&p='+postid)
      if username not in page: # Verify cookies installed properly
-          print("Failure 2")
+          Print("Failure 2")
           return
      stoken, phash, ptime = parse_tokens(page)
      data = fill_form(body, postid, stoken, phash, ptime, reason)
@@ -334,18 +334,18 @@ if __name__ == '__main__':
           backup()
           db = read_db()
           if len(argv[2:]) < 2:
-               print("Error: {} add <name> <seq> [<seq>...]".format(argv[0]))
+               Print("Error: {} add <name> <seq> [<seq>...]".format(argv[0]))
           else:
-               print("Add {} seqs".format(len(argv[3:])))
+               Print("Add {} seqs".format(len(argv[3:])))
                add_db(db, argv[2], [int(seq.replace(',','')) for seq in argv[3:]])
           write_db(db)
      elif argv[1] == 'drop':
           backup()
           db = read_db()
           if len(argv[2:]) < 2:
-               print("Error: {} add <name> <seq> [<seq>...]".format(argv[0]))
+               Print("Error: {} add <name> <seq> [<seq>...]".format(argv[0]))
           else:
-               print("Drop {} seqs".format(len(argv[3:])))
+               Print("Drop {} seqs".format(len(argv[3:])))
                drop_db(db, argv[2], [int(seq.replace(',','')) for seq in argv[3:]])
           write_db(db)
      elif argv[1] == 'print':
