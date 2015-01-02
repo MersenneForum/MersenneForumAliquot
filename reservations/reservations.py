@@ -50,8 +50,17 @@ if 'http' in resfile:
      ind = page.find('\n')
      page = page[ind+1:] # Dump the first line
      resfile = dir+'/reservations'
-     with open(resfile, 'w') as f:
-          f.write(page)     
+     try:
+          with open(resfile, 'r') as f:
+               local_data = f.read()
+     except:
+          with open(resfile, 'w') as f:
+               f.write(page)
+     else:
+          if local_data.strip() != page.strip():
+               Print("Warning: local file and forum post do not match!")
+               Print("Continuing using local data, any new information in the forum post will be lost!")
+               Print("Delete the local file to use the forum post as a working base.")
 
 class Sequence:
      def __init__(self, seq=0, name=None, index=0, size=0):
