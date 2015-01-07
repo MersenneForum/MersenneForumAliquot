@@ -9,7 +9,8 @@
 
 
 dir = '.' # Set this appropriately
-resfile = 'http://mersenneforum.org/showpost.php?p=165249'
+res_posts = (165249) # Tuple to be expanded as necessary
+resfile = dir+'/reservations'
 bup = dir+'/backup'
 pid_file = dir+'/last_pid'
 info = 'http://dubslow.tk/aliquot/AllSeq.txt'
@@ -22,6 +23,13 @@ For an archive of old reservations, click [URL="http://www.mersenneforum.org/sho
 For current driver/guide info, click [URL="http://dubslow.tk/aliquot/AllSeq.html"]here[/URL].
  
 Current reservations:
+[code][B]   Seq  Who             Index  Size  [/B]
+{}
+[/code]
+"""
+
+secondary_template = """This post has been hijacked for additional reservations.
+
 [code][B]   Seq  Who             Index  Size  [/B]
 {}
 [/code]
@@ -42,22 +50,25 @@ if 'http' in info:
           with open(info, 'w') as f:
                f.write(txt)
 
-if 'http' in resfile: 
+def get_reservations(pid):
      # Copied from allseq.py
-     page = blogotubes('http://www.mersenneforum.org/showpost.php?p=165249')
+     page = blogotubes('http://www.mersenneforum.org/showpost.php?p='+str(pid))
      # Isolate the [code] block with the reservations
      page = re.search(r'<pre.*?>(.*?)</pre>', page, flags=re.DOTALL).group(1)
      ind = page.find('\n')
      page = page[ind+1:] # Dump the first line
-     resfile = dir+'/reservations'
+     return page
+
+if res_posts: 
+     reservations = '\n'.join(data for data in map(get_reservations, res_posts))
      try:
           with open(resfile, 'r') as f:
                local_data = f.read()
      except:
           with open(resfile, 'w') as f:
-               f.write(page)
+               f.write(reservations)
      else:
-          if local_data.strip() != page.strip():
+          if local_data.strip() != reservations.strip():
                Print("Warning: local file and forum post do not match!")
                Print("Continuing using local data, any new information in the forum post will be lost!")
                Print("Delete the local file to use the forum post as a working base.")
@@ -96,9 +107,10 @@ def read_db(file=resfile):
                except ValueError: # Some lines have no data, only <seq name>
                     seq.name = ' '.join(l[1:])
                     try:
-                         seq.index, seq.size = get_info(seq.seq)
+                         if info:
+                              seq.index, seq.size = get_info(seq.seq)
                     except TypeError:
-                         Print(seq.seq, "does'nt exist!")
+                         Print(seq.seq, "doesn't exist!")
                          continue
                else:
                     seq.name = ' '.join(l[1:-2])
@@ -119,11 +131,12 @@ def add_db(db, name, seqs):
           if seq in db:
                Print("Warning: seq", seq, "is owned by", db[seq].name, "but is trying to be reserved by", name+"!")
           else:
-               info = get_info(seq)
-               if not info:
-                    Print("Warning: seq", seq, "doesn't appear to be in the list")
-               else:
-                    db[seq] = Sequence(seq, name, *info)
+               if info:
+                    info = get_info(seq)
+                    if not info:
+                         Print("Warning: seq has no in", seq, "doesn't appear to be in the list")
+                    else:
+                         db[seq] = Sequence(seq, name, *info)
 
 def drop_db(db, name, seqs):
      b = c = len(seqs)
