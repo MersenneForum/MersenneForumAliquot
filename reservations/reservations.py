@@ -184,14 +184,35 @@ def backup(f1=resfile, f2=bup):
 
 def send(msg=''):
      with open(resfile, 'r') as f:
-          seqs = f.read()
-     body = template.format(seqs)
-     size = len(body)
-     if size >= 10000:
-          Print("Error: post size = {} is too large".format(size))
-     else:
-          Print("There's room for ~{} more reservations".format( (10000-size)//35 ) )
-          edit_post(165249, body, 'Autoedit: '+msg)
+          # first res post gets the main template, the rest get the secondary
+          size = len(template)
+          size_of_seq = 36
+          max = 10000 - size_of_seq
+          seqs = []
+          for seq in f:
+               seqs.append(seq)
+               size += size_of_seq
+               if size > max:
+                    break
+          body = template.format(''.join(seqs))
+          bodies = [body]
+          # The rest get the secondary template
+          for post in res_posts[1:]:
+               seqs = []
+               size = len(secondary_template)
+               for seq in f:
+                    seqs.append(seq)
+                    size += size_of_seq
+                    if size > max:
+                         break
+               bodies.append(secondary_template.format(''.join(seqs)))
+          size = len(list(f))
+          if size > 0:
+               Print("Error: {} seqs couldn't fit into the posts".format(size))
+          else:
+               Print("There's room for ~{} more reservations".format( (10000-len(bodies[-1]))//36 ) )
+               for post, body in zip(res_posts, bodies):
+                    edit_post(post, body, 'Autoedit: '+msg)
 
 def edit_post(postid, body, reason=''):
      postid = str(postid)
