@@ -9,7 +9,7 @@
 
 
 dir = '.' # Set this appropriately
-res_posts = (165249) # Tuple to be expanded as necessary
+res_posts = (165249,) # Tuple to be expanded as necessary
 resfile = dir+'/reservations'
 bup = dir+'/backup'
 pid_file = dir+'/last_pid'
