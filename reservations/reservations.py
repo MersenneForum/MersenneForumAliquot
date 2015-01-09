@@ -132,11 +132,11 @@ def add_db(db, name, seqs):
                Print("Warning: seq", seq, "is owned by", db[seq].name, "but is trying to be reserved by", name+"!")
           else:
                if info:
-                    info = get_info(seq)
-                    if not info:
-                         Print("Warning: seq has no in", seq, "doesn't appear to be in the list")
+                    infos = get_info(seq)
+                    if not infos:
+                         Print("Warning:", seq, "doesn't appear to be in the list")
                     else:
-                         db[seq] = Sequence(seq, name, *info)
+                         db[seq] = Sequence(seq, name, *infos)
 
 def drop_db(db, name, seqs):
      b = c = len(seqs)
