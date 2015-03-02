@@ -9,7 +9,7 @@
 
 
 dir = '.' # Set this appropriately
-res_posts = (165249,) # Tuple to be expanded as necessary
+res_posts = (165249, 392101) # Tuple to be expanded as necessary
 resfile = dir+'/reservations'
 bup = dir+'/backup'
 pid_file = dir+'/last_pid'
@@ -58,11 +58,13 @@ def get_reservations(pid):
      # Isolate the [code] block with the reservations
      page = re.search(r'<pre.*?>(.*?)</pre>', page, flags=re.DOTALL).group(1)
      ind = page.find('\n')
-     page = page[ind+1:] # Dump the first line
-     return page
+     if ind == -1: # No newline means only "<b>Seq Who Index Size</b>", i.e. empty, so no reservations
+          return ""
+     else:
+          return page[ind+1:] # Dump the first line == "<b>Seq Who Index Size</b>"
 
 if res_posts: 
-     reservations = '\n'.join(data for data in map(get_reservations, res_posts))
+     reservations = '\n'.join(data for data in map(get_reservations, res_posts) if data)
      try:
           with open(resfile, 'r') as f:
                local_data = f.read()
