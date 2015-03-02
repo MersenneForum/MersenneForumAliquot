@@ -295,20 +295,6 @@ def spider(last_pid):
                spider_msg.append('{}: Add {}, Drop {}'.format(name, la, ld))
                add_db(db, name, add)
                drop_db(db, name, drop)
-          
-     def process_page(posts, last_pid):
-          lowest_pid = posts[0][0]
-          highest_pid = posts[-1][0]
-          for post in posts:
-               pid = post[0]
-               if pid < lowest_pid: # Since they are processed in order, this shouldn't happen...
-                    Print("Found an out of order PID! {}, {}".format(lowest_pid, pid))
-                    lowest_pid = pid
-               if pid > highest_pid: # This OTOH should always be true
-                    highest_pid = pid 
-               if pid > last_pid:
-                    process_msg(*post)
-          return lowest_pid, highest_pid
      
      # All of my previous html parsing needs have been simple enough that regexs were sufficient,
      # and a proper parser would have been overkill; this, though, is much closer to the border, and if I
@@ -339,25 +325,35 @@ def spider(last_pid):
           posts = re.findall(r'<!-- post #([0-9]{6,7}) -->(.*?)<!-- / post #\1 -->', page, re.DOTALL)
           for post in posts:
                #name, msg = parse_post(post[1])
-               out.append((int(post[0]),) + parse_post(post[1]))
+               out.append(  (int(post[0]),) + parse_post(post[1])  )
           return out
+
+     def order_posts(page):
+          if page != sorted(page, key=lambda post: post[0]):
+               raise ValueError("Out of order posts! Pids:\n{}".format([post[0] for post in page]))
+          return page[0][0]
      
-     page = blogotubes(wobsite+'10000') # vBulletin rounds to last page
-     lowest_pid, highest_pid = process_page(parse_page(page), last_pid)
+     all_pages = [parse_page(blogotubes(wobsite+'10000'))] # vBulletin rounds to last page
+     lowest_pid = order_posts(all_pages[0])
      while lowest_pid > last_pid: # It's probable that we missed some posts on previous page
           page_num = re.search('<td class="vbmenu_control" style="font-weight:normal">Page ([0-9]+)', page).group(1)
           page_num = str(int(page_num)-1)
-          Print("Checking page", page_num)
-          page = blogotubes(wobsite+page_num)
-          lowest_pid, tmp = process_page(parse_page(page), last_pid)
-          if tmp > highest_pid: # should never happen
-               Print("WTF? {}, {}".format(tmp, highest_pid))
-               highest_pid = tmp
+          Print("Looks like posts were missed, checking page", page_num)
+          all_pages.insert(0, parse_page(blogotubes(wobsite+page_num)))
+          lowest_pid = order_posts(all_pages[0])
+
+     all_posts = [post for page in all_pages for post in page]
+     order_posts(all_posts) # Assert order, ignore lowest pid retval
+
+     for post in all_posts:
+          process_msg(*post)
+
      if spider_msg:
           write_db(db)
           update()
           send('Spider: ' + ' | '.join(spider_msg))
-     return highest_pid
+
+     return all_posts[-1][0] # Highest PID processed
 
 if __name__ == '__main__':
      from sys import argv
