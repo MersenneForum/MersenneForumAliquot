@@ -18,6 +18,8 @@ template2 = dir + 'template2.html'
 seqfile = dir + 'AllSeqs.txt'
 datefmt = '%Y-%m-%d %H:%M:%S'
 
+res_post_ids = (165249,)
+
 per_hour = 55
 sleep_time = 60
 total = linecount(JSON)
@@ -149,23 +151,24 @@ def current_update(per_hour):
                     break
      return this, start
 
-def get_reservations():
+def get_reservations(pids):
      reserves = {}
-     page = blogotubes('http://www.mersenneforum.org/showpost.php?p=165249&postcount=1', 
-               hdrs={'User-Agent': 'Dubslow/AliquotSequences'})
-     update = re.search(r'<!-- edit note -->.*Last fiddled with by [A-Za-z_0-9 -]+? on ([0-9a-zA-Z ]+) at <span class="time">([0-9:]{5})</span>', page, flags=re.DOTALL)
-     updated = update.group(1)+' '+update.group(2)
-     page = re.search(r'<pre.*?>(.*?)</pre>', page, flags=re.DOTALL).group(1)
-     # Isolate the [code] block with the reservations
-     for line in page.splitlines():
-          herp = re.match(r' {0,3}([0-9]{3,6})  ([0-9A-Za-z_. -]{1,16})', line) # "seq name"
-          try:
-               name = herp.group(2)
-          except: pass # Ignore non-matching lines
-          else:
-               if 'jacobs and' in name:
-                    name = 'jacobs and Richard Guy'
-               reserves[int(herp.group(1))] = name.strip()
+     for pid in pids:
+          page = blogotubes('http://www.mersenneforum.org/showpost.php?p={}&postcount=1'.format(str(pid)),
+                    hdrs={'User-Agent': 'Dubslow/AliquotSequences'})
+          update = re.search(r'<!-- edit note -->.*Last fiddled with by [A-Za-z_0-9 -]+? on ([0-9a-zA-Z ]+) at <span class="time">([0-9:]{5})</span>', page, flags=re.DOTALL)
+          updated = update.group(1)+' '+update.group(2)
+          # Isolate the [code] block with the reservations
+          page = re.search(r'<pre.*?>(.*?)</pre>', page, flags=re.DOTALL).group(1)
+          for line in page.splitlines():
+               herp = re.match(r' {0,3}([0-9]{3,6})  ([0-9A-Za-z_. -]{1,16})', line) # "seq name"
+               try:
+                    name = herp.group(2)
+               except: pass # Ignore non-matching lines
+               else:
+                    if 'jacobs and' in name:
+                         name = 'jacobs and Richard Guy'
+                    reserves[int(herp.group(1))] = name.strip()
      return reserves, updated
 
 def get_old_info(JSON, reserves, this, drop):
@@ -377,7 +380,7 @@ while True: # This means you can start it once and leave it, but by setting loop
           this = special
      else:
           this, start = current_update(per_hour)
-     reserves, updated = get_reservations()
+     reserves, updated = get_reservations(res_post_ids)
      data, oldinfo = get_old_info(JSON, reserves, this, drop)
      Print('Init complete, starting FDB queries')
 
