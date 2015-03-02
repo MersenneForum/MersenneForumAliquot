@@ -66,14 +66,13 @@ if res_posts:
      try:
           with open(resfile, 'r') as f:
                local_data = f.read()
-     except:
-          with open(resfile, 'w') as f:
-               f.write(reservations)
+     except: pass
      else:
           if local_data.strip() != reservations.strip():
                Print("Warning: local file and forum post do not match!")
-               Print("Continuing using local data, any new information in the forum post will be lost!")
-               Print("Delete the local file to use the forum post as a working base.")
+               Print("Continuing using forum data, local changes are being lost!")
+               with open(resfile, 'w') as f:
+                    f.write(reservations)
 
 ################################################################################
 # Begin class and function definitions, the remaining top-level logic is at the very bottom
