@@ -39,6 +39,7 @@ secondary_template = """This post has been hijacked for additional reservations.
 
 from myutils import linecount, Print, strftime, blogotubes, add_cookies
 import re
+from time import time
 
 # Some slight modifications of the default global variables
 
@@ -217,14 +218,25 @@ def send(msg=''):
                Print("Error: {} seqs couldn't fit into the posts".format(size))
           else:
                Print("There's room for ~{} more reservations".format( (10000-len(bodies[-1]))//36 ) )
+               editor = PostEditor()
+               if not editor.is_logged_in():
+                    return
                for post, body in zip(res_posts, bodies):
-                    edit_post(post, body, 'Autoedit: '+msg)
+                    if not editor.edit_post(post, body, 'Autoedit: '+msg):
+                         return
 
-def edit_post(postid, body, reason=''):
-     postid = str(postid)
-     #from urllib import request, parse, error
-     #from http.cookiejar import CookieJar
-     def login():
+#from time import time
+#from urllib import request, parse, error
+#from http.cookiejar import CookieJar
+class PostEditor:
+     def __init__(self):
+          self._logged_in = False
+          self._time = time()
+          #request.install_opener(request.build_opener(request.HTTPCookieProcessor(CookieJar())))
+          add_cookies()
+          self._logged_in = login()
+
+     def login(self):
           data = {'vb_login_username': username, 'vb_login_password': passwd}
           data['s'] = ''
           data['securitytoken'] = 'guest'
@@ -232,11 +244,17 @@ def edit_post(postid, body, reason=''):
           data['vb_login_md5password'] = ''
           data['vb_login_md5password_utf'] = ''
           data['cookieuser'] = '1'
-          #print('cookies?')
           page = blogotubes('http://www.mersenneforum.org/login.php?do=login', data=data)
-          return username in page
+          ret = username in page
+          if not ret:
+               Print("Failed to log in!")
+          return ret
 
-     def fill_form(body, postid, stoken, phash, ptime, reason=''):
+     def is_logged_in(self):
+          self._logged_in = time() - self._time < 300 and self._logged_in # Somewhat arbitrary 5 min timeout
+          return self._logged_in
+
+     def fill_form(self, body, postid, stoken, phash, ptime, reason=''):
           data = {}
           url = 'http://www.mersenneforum.org/editpost.php?do=updatepost&amp;p='+postid
           if reason != '':
@@ -256,27 +274,26 @@ def edit_post(postid, body, reason=''):
      
           return data
 
-     def parse_tokens(page):
-          import re
+     def parse_tokens(self, page):
           stoken = re.search(r'<input type="hidden" name="securitytoken" value="([0-9a-f-]*?)" />', page).group(1)
           phash = re.search(r'<input type="hidden" name="posthash" value="([0-9a-f]*?)" />', page).group(1)
           ptime = re.search(r'<input type="hidden" name="poststarttime" value="([0-9]*?)" />', page).group(1)
           return stoken, phash, ptime
 
-     #request.install_opener(request.build_opener(request.HTTPCookieProcessor(CookieJar())))
-     add_cookies()
-     if not login():
-          Print("Failure 1")
-          return
-     page = blogotubes('http://www.mersenneforum.org/editpost.php?do=editpost&p='+postid)
-     if username not in page: # Verify cookies installed properly
-          Print("Failure 2")
-          return
-     stoken, phash, ptime = parse_tokens(page)
-     data = fill_form(body, postid, stoken, phash, ptime, reason)
-     page = blogotubes('http://www.mersenneforum.org/editpost.php?do=updatepost&amp;p='+postid, data=data)
-     # Ignore response until I know what to check for
-     return page
+     def edit_post(self, postid, body, reason=''):
+          if not self.is_logged_in():
+               Print("Failure: can't edit post before logging in")
+               return
+          postid = str(postid)
+          page = blogotubes('http://www.mersenneforum.org/editpost.php?do=editpost&p='+postid)
+          if username not in page: # Verify cookies installed properly
+               Print("Failure: tried to edit post {} but not logged in!".format(postid))
+               return
+          stoken, phash, ptime = parse_tokens(page)
+          data = fill_form(body, postid, stoken, phash, ptime, reason)
+          page = blogotubes('http://www.mersenneforum.org/editpost.php?do=updatepost&amp;p='+postid, data=data)
+          # Ignore response until I know what to check for
+          return page
 
 def spider(last_pid):
      wobsite = 'http://www.mersenneforum.org/showthread.php?t=11588&page='
