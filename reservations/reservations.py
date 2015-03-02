@@ -40,6 +40,8 @@ secondary_template = """This post has been hijacked for additional reservations.
 from myutils import linecount, Print, strftime, blogotubes, add_cookies
 import re
 
+# Some slight modifications of the default global variables
+
 if 'http' in info:
      txt = blogotubes(info)
      if txt is None:
@@ -72,6 +74,9 @@ if res_posts:
                Print("Warning: local file and forum post do not match!")
                Print("Continuing using local data, any new information in the forum post will be lost!")
                Print("Delete the local file to use the forum post as a working base.")
+
+################################################################################
+# Begin class and function definitions, the remaining top-level logic is at the very bottom
 
 class Sequence:
      def __init__(self, seq=0, name=None, index=0, size=0):
@@ -277,6 +282,9 @@ def spider(last_pid):
      backup()
      db = read_db()
      spider_msg = []
+
+     ###############################################################################################
+     # This processes the parsed HTML and its add/drop commands, and actually affects the current reservations
      
      def process_msg(pid, name, msg):
           add = []; addkws = ('Reserv', 'reserv', 'Add', 'add', 'Tak', 'tak')
@@ -295,6 +303,11 @@ def spider(last_pid):
                spider_msg.append('{}: Add {}, Drop {}'.format(name, la, ld))
                add_db(db, name, add)
                drop_db(db, name, drop)
+
+     ###############################################################################################
+     # Begin the parsers, converts the various HTML into Python data structures for processing
+     # Also reverse stack order
+     # For each page of the thread, the parsers return a list of (post_id, author, html-replaced-post_body)
      
      # All of my previous html parsing needs have been simple enough that regexs were sufficient,
      # and a proper parser would have been overkill; this, though, is much closer to the border, and if I
@@ -328,10 +341,15 @@ def spider(last_pid):
                out.append(  (int(post[0]),) + parse_post(post[1])  )
           return out
 
+     #################################################################################################
+     # End parsers, first one tiny helper function
+
      def order_posts(page):
           if page != sorted(page, key=lambda post: post[0]):
                raise ValueError("Out of order posts! Pids:\n{}".format([post[0] for post in page]))
           return page[0][0]
+
+     # Now begin actual logic of top-level spider()
      
      all_pages = [parse_page(blogotubes(wobsite+'10000'))] # vBulletin rounds to last page
      lowest_pid = order_posts(all_pages[0])
@@ -354,6 +372,9 @@ def spider(last_pid):
           send('Spider: ' + ' | '.join(spider_msg))
 
      return all_posts[-1][0] # Highest PID processed
+
+#######################################################################################################
+# End of all function definitions
 
 if __name__ == '__main__':
      from sys import argv
