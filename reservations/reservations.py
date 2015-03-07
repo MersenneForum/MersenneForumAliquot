@@ -234,7 +234,7 @@ class PostEditor:
           self._time = time()
           #request.install_opener(request.build_opener(request.HTTPCookieProcessor(CookieJar())))
           add_cookies()
-          self._logged_in = login()
+          self._logged_in = self.login()
 
      def login(self):
           data = {'vb_login_username': username, 'vb_login_password': passwd}
