@@ -369,13 +369,15 @@ def spider(last_pid):
 
      # Now begin actual logic of top-level spider()
      
-     all_pages = [parse_page(blogotubes(wobsite+'10000'))] # vBulletin rounds to last page
+     html = blogotubes(wobsite+'10000')
+     all_pages = [parse_page(html)] # vBulletin rounds to last page
      lowest_pid = order_posts(all_pages[0])
      while lowest_pid > last_pid: # It's probable that we missed some posts on previous page
-          page_num = re.search('<td class="vbmenu_control" style="font-weight:normal">Page ([0-9]+)', all_pages[0]).group(1)
+          page_num = re.search('<td class="vbmenu_control" style="font-weight:normal">Page ([0-9]+)', html).group(1)
           page_num = str(int(page_num)-1)
           Print("Looks like posts were missed, checking page", page_num)
-          all_pages.insert(0, parse_page(blogotubes(wobsite+page_num)))
+          html = blogotubes(wobsite+page_num)
+          all_pages.insert(0, parse_page(html))
           lowest_pid = order_posts(all_pages[0])
 
      all_posts = [post for page in all_pages for post in page if post[0] > last_pid]
