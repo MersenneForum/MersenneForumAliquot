@@ -247,7 +247,7 @@ class PostEditor:
           page = blogotubes('http://www.mersenneforum.org/login.php?do=login', data=data)
           ret = username in page
           if not ret:
-               Print("Failed to log in!")
+               raise ValueError("Failed to log in!")
           return ret
 
      def is_logged_in(self):
@@ -282,13 +282,11 @@ class PostEditor:
 
      def edit_post(self, postid, body, reason=''):
           if not self.is_logged_in():
-               Print("Failure: can't edit post before logging in")
-               return
+               raise ValueError("Failure: can't edit post before logging in")
           postid = str(postid)
           page = blogotubes('http://www.mersenneforum.org/editpost.php?do=editpost&p='+postid)
           if username not in page: # Verify cookies installed properly
-               Print("Failure: tried to edit post {} but not logged in!".format(postid))
-               return
+               raise ValueError("Failure: tried to edit post {} but not logged in!".format(postid))
           stoken, phash, ptime = self.parse_tokens(page)
           data = self.fill_form(body, postid, stoken, phash, ptime, reason)
           page = blogotubes('http://www.mersenneforum.org/editpost.php?do=updatepost&amp;p='+postid, data=data)
