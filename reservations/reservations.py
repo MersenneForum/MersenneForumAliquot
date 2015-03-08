@@ -378,7 +378,7 @@ def spider(last_pid):
           all_pages.insert(0, parse_page(blogotubes(wobsite+page_num)))
           lowest_pid = order_posts(all_pages[0])
 
-     all_posts = [post for page in all_pages for post in page]
+     all_posts = [post for page in all_pages for post in page if post[0] > last_pid]
      order_posts(all_posts) # Assert order, ignore lowest pid retval
 
      for post in all_posts:
