@@ -289,8 +289,8 @@ class PostEditor:
           if username not in page: # Verify cookies installed properly
                Print("Failure: tried to edit post {} but not logged in!".format(postid))
                return
-          stoken, phash, ptime = parse_tokens(page)
-          data = fill_form(body, postid, stoken, phash, ptime, reason)
+          stoken, phash, ptime = self.parse_tokens(page)
+          data = self.fill_form(body, postid, stoken, phash, ptime, reason)
           page = blogotubes('http://www.mersenneforum.org/editpost.php?do=updatepost&amp;p='+postid, data=data)
           # Ignore response until I know what to check for
           return page
