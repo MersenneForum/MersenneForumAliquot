@@ -136,7 +136,11 @@ def write_db(db, file=resfile):
 def add_db(db, name, seqs):
      for seq in seqs:
           if seq in db:
-               Print("Warning: seq", seq, "is owned by", db[seq].name, "but is trying to be reserved by", name+"!")
+               other = db[seq].name
+               if name == other:
+                    Print("Warning:", name, "already owns", seq)
+               else:
+                    Print("Warning: seq", seq, "is owned by", other, "but is trying to be reserved by", name+"!")
           else:
                if info:
                     infos = get_info(seq)
@@ -221,9 +225,9 @@ def send(msg=''):
                editor = PostEditor()
                if not editor.is_logged_in():
                     return
-               for post, body in zip(res_posts, bodies):
-                    if not editor.edit_post(post, body, 'Autoedit: '+msg):
-                         return
+               for postid, body in zip(res_posts, bodies):
+                    if not editor.edit_post(postid, body, 'Autoedit: '+msg):
+                         return postid
 
 #from time import time
 #from urllib import request, parse, error
@@ -360,15 +364,15 @@ def spider(last_pid):
      #################################################################################################
      # End parsers, first one tiny helper function
 
-     def order_posts(page):
-          if page != sorted(page, key=lambda post: post[0]):
-               raise ValueError("Out of order posts! Pids:\n{}".format([post[0] for post in page]))
-          return page[0][0]
+     def order_posts(posts):
+          if posts != sorted(posts, key=lambda post: post[0]):
+               raise ValueError("Out of order posts! Pids:\n{}".format([post[0] for post in posts]))
+          return posts[0][0]
 
      # Now begin actual logic of top-level spider()
      
-     html = blogotubes(wobsite+'10000')
-     all_pages = [parse_page(html)] # vBulletin rounds to last page
+     html = blogotubes(wobsite+'10000') # vBulletin rounds to last page
+     all_pages = [parse_page(html)]
      lowest_pid = order_posts(all_pages[0])
      while lowest_pid > last_pid: # It's probable that we missed some posts on previous page
           page_num = re.search('<td class="vbmenu_control" style="font-weight:normal">Page ([0-9]+)', html).group(1)
@@ -390,7 +394,7 @@ def spider(last_pid):
      if spider_msg:
           write_db(db)
           update()
-          send('Spider: ' + ' | '.join(spider_msg))
+          send('Spider: ' + ' | '.join(spider_msg)) # For now, doesn't check if send was successful
 
      return all_posts[-1][0] # Highest PID processed
 
