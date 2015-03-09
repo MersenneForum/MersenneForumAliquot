@@ -16,6 +16,7 @@ pid_file = dir+'/last_pid'
 info = 'http://dubslow.tk/aliquot/AllSeq.txt'
 username = 'Dubslow'
 passwd = '<nope>'
+txtfiles = {'yoyo@home': 'http://yafu.myfirewall.org/yafu/download/ali/ali.txt.all'}
 template = """[B]For newcomers:[/B] Please post reservations here. There are workers that extend aliquot sequences; reservations here flag the workers off a sequence so no effort is wasted.
  
 For an archive of old reservations, click [URL="http://www.mersenneforum.org/showthread.php?t=14330"]here[/URL].
@@ -304,6 +305,29 @@ def spider(last_pid):
      spider_msg = []
 
      ###############################################################################################
+     # First the standalone func that processes mass text file reservations
+     def parse_text_file(reservee, url):
+          old = {seq.seq for seq in db.values() if seq.name == reservee}
+          txt = blogotubes(url)
+          current = set()
+          for line in txt.splitlines():
+               if re.match(r'(?<![0-9])[0-9]{5,6}(?![0-9])', line):
+                    seq = int(line)
+                    if seq in current:
+                         Print("Duplicate sequence? {} {}".format(seq, url))
+                    else:
+                         current.add(seq)
+               else:
+                    Print("Unknown line from {}: {}".format(url, line))
+          # easy peasy lemon squeezy
+          done = old - current
+          new = current - old
+          if done or new:
+               spider_msg.append('{}: Add {}, Drop {}'.format(reservee, len(new), len(done)))
+               drop_db(db, reservee, done)
+               add_db(db, reservee, new)
+
+     ###############################################################################################
      # This processes the parsed HTML and its add/drop commands, and actually affects the current reservations
      
      def process_msg(pid, name, msg):
@@ -390,6 +414,9 @@ def spider(last_pid):
 
      for post in all_posts:
           process_msg(*post)
+
+     for reservee, url in txtfiles.items():
+          parse_text_file(reservee, url)
 
      if spider_msg:
           write_db(db)
