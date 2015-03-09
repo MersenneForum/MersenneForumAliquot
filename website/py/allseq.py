@@ -18,7 +18,7 @@ template2 = dir + 'template2.html'
 seqfile = dir + 'AllSeqs.txt'
 datefmt = '%Y-%m-%d %H:%M:%S'
 
-res_post_ids = (165249,)
+res_post_ids = (165249, 397318, 397319, 397320)
 
 per_hour = 55
 sleep_time = 60
