@@ -38,8 +38,8 @@ broken = {319860: (1072, 2825523558447041736665230216235917892232717165769067317
           327852: (1251, 686850216844208461856962371309231689049988200182761949020962964975366230549349069889648461306631311470409163996946786),
           322686: (687, 170921357703045988815106803517563569500400870845245911612925827675762925228478605703846804323434039553487731143700150)
           }
-#broken = {747720: (1977171370480, 67)}
-# A dict of tuples of {broken seq: (new_start_val, offset)}
+#broken = {747720: (67, 1977171370480)}
+# A dict of tuples of {broken seq: (offset, new_start_val)}
 error_msg = ''
 
 for arg in sys.argv[1:]:
@@ -161,7 +161,7 @@ def get_reservations(pids):
           # Isolate the [code] block with the reservations
           page = re.search(r'<pre.*?>(.*?)</pre>', page, flags=re.DOTALL).group(1)
           for line in page.splitlines():
-               herp = re.match(r' {0,3}([0-9]{3,6})  ([0-9A-Za-z_. -]{1,16})', line) # "seq name"
+               herp = re.match(r' {0,3}([0-9]{3,6})  ([0-9A-Za-z_@. -]{1,16})', line) # "seq name"
                try:
                     name = herp.group(2)
                except: pass # Ignore non-matching lines
