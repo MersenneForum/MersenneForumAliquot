@@ -407,13 +407,13 @@ def spider(last_pid):
           lowest_pid = order_posts(all_pages[0])
 
      all_posts = [post for page in all_pages for post in page if post[0] > last_pid]
-     if not all_posts:
+     if all_posts:
+          order_posts(all_posts) # Assert order, ignore lowest pid retval
+          for post in all_posts:
+               process_msg(*post)
+          last_pid = all_posts[-1][0] # Highest PID processed
+     else:
           Print("No new posts!")
-          return last_pid
-     order_posts(all_posts) # Assert order, ignore lowest pid retval
-
-     for post in all_posts:
-          process_msg(*post)
 
      for reservee, url in txtfiles.items():
           parse_text_file(reservee, url)
@@ -423,7 +423,7 @@ def spider(last_pid):
           update()
           send('Spider: ' + ' | '.join(spider_msg)) # For now, doesn't check if send was successful
 
-     return all_posts[-1][0] # Highest PID processed
+     return last_pid
 
 #######################################################################################################
 # End of all function definitions
