@@ -13,7 +13,7 @@ aliquot() -- Equivalent to sigma(n) - n
 get_guide()
 get_class()
 is_driver()
-two_s_count()
+twos_count()
 
 The main datatype of this module is (instances of) the Factors class. All of the 
 functions are capable of taking a Factors() object as their argument; they are
@@ -99,9 +99,9 @@ False
 {3: 1, 5: 1}
 >>> print(_) # "_" is a special variable containing the previous result
 3 * 5
->>> a.two_s_count(_)
+>>> a.twos_count(_)
 3
->>> 3 - _ # The power of 2 minus the two_s_count of v=sigma(2**3) is the class
+>>> 3 - _ # The power of 2 minus the twos_count of v=sigma(2**3) is the class
 0
 >>> a.get_class(2**3*3*5)
 0
@@ -157,7 +157,7 @@ def get_class(n=0, guide=None, powers=True):
      if guide is None:
           guide = get_guide(n, powers)
      v = Factors({key: powe for key, powe in guide.items() if key != 2 and powe > 0})
-     return guide[2] - two_s_count(v)
+     return guide[2] - twos_count(v)
 
 def is_driver(n=0, guide=None):
      if guide is None:
@@ -165,5 +165,10 @@ def is_driver(n=0, guide=None):
      v = Factors({key: powe for key, powe in guide.items() if key != 2 and powe > 0})
      return sigma(v) % 2**(guide[2]-1) == 0
 
-def two_s_count(t): # The power of two of sigma(t)
-     return factor(sigma(t))[2] # sigma will sanitize t for us
+def twos_count(t): # The power of two of sigma(t)
+     t = sigma(t)
+     # To count the trailing zero bits (i.e. power of 2), first subtract one, then xor
+     # The former takes xxxx1000 to xxxx0111, and xor will leave (ans+1) bits set to 1
+     t ^= (t-1)
+     t >>= 1 # Toss the extra bit before counting them
+     return t.bit_length()
