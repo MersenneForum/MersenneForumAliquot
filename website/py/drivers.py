@@ -1,0 +1,204 @@
+#! /usr/bin/env python3
+
+import aliquot as aq
+import numtheory as nt
+import json, re
+from myutils import blogotubes
+
+# Some of the data handling code is copied from allseq.py
+data_file = 'http://dubslow.tk/aliquot/AllSeq.json'
+
+composite = re.compile(r' <a href="index.php\?id=([0-9]+?)"><font color="#002099">[0-9.]+?</font></a><sub>&lt;')
+smallfact = re.compile(r' <a href="index.php\?id=[0-9]+?"><font color="#000000">([0-9^]+?)</font></a>')
+largefact = re.compile(r' <a href="index.php\id=([0-9]+?)"><font color="#000000">[0-9]+?[.]{3}[0-9]{2}</font></a><sub>&lt;')
+largenum = re.compile(r'<td align="center">(([0-9\s]|(<br>))+?)</td>')
+
+if 'http' in data_file:
+     print("Getting the current data")
+     txt = blogotubes(data_file)
+     if txt is None:
+          raise ValueError("Couldn't get data file")
+     else:
+          data_file = 'AllSeq.json'
+          with open(data_file, 'w') as f:
+               f.write(txt)
+
+def read_data():
+     with open(data_file, 'r') as f:
+          data = json.load(f)['aaData']     
+     return {seq[0]: Sequence(lst=seq) for seq in data}
+
+def get_num(id):
+     page = blogotubes('http://factordb.com/index.php?showid='+id)
+     num = largenum.search(page).group(1)
+     num = re.sub(r'[^0-9]', '', num)
+     return int(num)
+
+def get_id_info(id):
+     base = 'http://factordb.com/index.php?id='
+     page = blogotubes(base+str(id))
+     if not page or 'FF' in page:
+          return None
+     smalls = smallfact.findall(page)
+     largeids = largefact.findall(page)
+     compid = composite.search(page).group(1)
+     #print(compid, "\n{}\n##########################################\n\n{}".format(smalls, page))
+     larges = list(map(get_num, largeids))
+     comp = get_num(compid)
+     return nt.Factors(' * '.join(smalls + larges)), comp
+
+def examine_seq(seq):
+     # We need a way to filter which sequences we query the FDB about.
+     # For now, we can only handle driver*(even powered primes)*composite, so ignore all others.
+     
+     # Also, although this doesn't strictly match the previous criterion, the allseq.py script
+     # truncates all primes greater than ~10 digits and assumes they have no exponent.
+     # This assumption doesn't match the previous criterion but exceptions are very rare,
+     # so we work off it and ignore sequences with a 'P' in them.
+     if 'P' in seq.factors:
+          return
+
+     guide = nt.Factors(seq.guide)
+     factors = nt.Factors(seq.factors)
+     for prime in factors:
+          if factors[prime] % 2 == 1 and prime not in guide: # The current filtering criterion
+               return
+     # Also check for class == 2...
+     if aq.get_class(nt.Factors(seq.factors)) != 2:
+          return
+     # We only want to bother asking the FDB about actual drivers
+     if not aq.is_driver(seq.guide):
+          return
+     # Now we have sufficient reason to get details on this line
+     #print("Getting detailed data for {}: {}".format(seq.seq, seq.factors))
+     info = get_id_info(seq.id)
+     if info is None:
+          #print("Sequence {} is out of date (or invalid FDB response)".format(seq.seq))
+          return
+     g = str(aq.get_guide(info[0], powers=False))
+     if g != seq.guide:
+          print("Sequence {} guide {} doesn't match data ({})".format(seq.seq, g, seq.guide))
+          return
+
+     out = analyze(*info)
+     if out:
+          print("{:>6} may have a driver that's ready to break (composite is 1 mod 4): {}".format(seq.seq, seq.factors))
+
+def analyze(facts, composite):
+     """Takes the known parts of the current step in the sequence, together with the
+     remaining composite and determines if this step may break the driver (assuming
+     the composite is a semi-prime).
+     
+     returns None on error (or raises an exception)
+     returns False if the driver is guaranteed to remain
+     returns True if the driver *may* break (determined by Clifford Stern's analysis)
+     
+     Currently the only focus is class 2 drivers (such as perfect numbers with an
+     even power). Class 1 drivers can only be broken by large primes. Class 3 and
+     greater TBD (help with describing the possible cases is appreciated)"""
+     if not isinstance(facts, nt.Factors):
+          raise TypeError("analyze() expects a numtheory.Factors instance for its first arg")
+
+     guide = aq.get_guide(facts)
+     cls = aq.get_class(guide=guide)
+     
+     if cls < 2:
+          print("Class less than 2")
+          return False
+     if cls > 2:
+          print("Class greater than 2")
+          return None #raise ValueError("analyze() can't handle class 3 or greater yet")
+
+     # http://dubslow.tk/aliquot/analysis.html
+     # The requirement for a driver breaking ("mutation") is that "the 2s count of
+     # t is equal to or less than the class of (2^a)*v", where 2^a*v is the guide,
+     # and t is the set of prime factors with odd powers (and s is the primes with
+     # even powers).
+     s = nt.Factors()
+     t = nt.Factors()
+     for prime in facts:
+          if prime not in guide:
+               if facts[prime] % 2 == 0:
+                    s[prime] = facts[prime]
+               else:
+                    t[prime] = facts[prime]
+
+     # For class 2 guides/drivers, the semi-prime in question must be the only part of t
+     if len(t.keys()) > 0:
+          #print("Have a odd power prime cofactor: {}".format(t))
+          return False
+     # Finally, if t is a semi-prime, its constituents must each be == 1 (mod 4),
+     # which implies that t must also be such (but the latter doesn't imply the
+     # former, for of course t may also be two primes == 3 (mod 4)).
+     return composite % 4 == 1
+
+
+################################################################################
+# Copied from allseq.py
+
+class Sequence(list):
+     _map = {'seq': 0,
+             'size': 1,
+             'index': 2,
+             'id': 3,
+             'guide': 4,
+             'factors': 5,
+             'cofact': 6,
+             'clas': 7,
+             'time': 8,
+             'progress': 9,
+             'res': 10,
+             'driver': 11 }
+     
+     def __setattr__(self, name, value): # Black magic meta programming to make certain attributes access the list
+          try:                           # (This is why I love Python.)
+               self[Sequence._map[name]] = value
+          except KeyError:
+               object.__setattr__(self, name, value)
+     
+     def __getattribute__(self, name):
+          try:
+               return self[Sequence._map[name]]
+          except KeyError:
+               return object.__getattribute__(self, name)
+     
+     def __init__(self, seq=0, size=0, index=0, id=0, guide=None, factors=None, time=None, lst=None):
+          if lst is not None:
+               super().__init__(lst)
+               if seq: self.seq = seq
+               if index: self.index = index
+               if size: self.size = size
+               if time: self.time = time
+               if factors: self.factors = factors
+               if id: self.id = id
+               if guide: self.guide = guide
+          else:
+               super().__init__([None for i in range(len(Sequence._map))])
+               self.seq = seq
+               self.index = index
+               self.size = size
+               self.id = id
+               self.guide = guide
+               self.time = time
+               self.factors = factors
+               self.res = ''
+               self.driver = ''
+               self.progress = 'Unknown'
+     
+     def well_formed(self):
+          return self.seq and self.size and self.index and self.factors
+     
+     def __str__(self):
+          if self.well_formed():
+               return "{:>6d} {:>5d}. sz {:>3d} {:s}\n".format(ali.seq, ali.index, ali.size, ali.factors)
+          else:
+               raise AttributeError('Not fully described! Seq:', self.seq)
+
+# The main function
+
+def main():
+     data = read_data()
+     for seq in data:
+          examine_seq(data[seq])
+
+main()
