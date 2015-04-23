@@ -56,33 +56,34 @@ def examine_seq(seq):
      # This assumption doesn't match the previous criterion but exceptions are very rare,
      # so we work off it and ignore sequences with a 'P' in them.
      if 'P' in seq.factors:
-          return
+          return None
 
      guide = nt.Factors(seq.guide)
      factors = nt.Factors(seq.factors)
      for prime in factors:
           if factors[prime] % 2 == 1 and prime not in guide: # The current filtering criterion
-               return
+               return None
      # Also check for class == 2...
      if aq.get_class(nt.Factors(seq.factors)) != 2:
-          return
+          return None
      # We only want to bother asking the FDB about actual drivers
      if not aq.is_driver(seq.guide):
-          return
+          return None
      # Now we have sufficient reason to get details on this line
      #print("Getting detailed data for {}: {}".format(seq.seq, seq.factors))
      info = get_id_info(seq.id)
      if info is None:
           #print("Sequence {} is out of date (or invalid FDB response)".format(seq.seq))
-          return
+          return None
      g = str(aq.get_guide(info[0], powers=False))
      if g != seq.guide:
           print("Sequence {} guide {} doesn't match data ({})".format(seq.seq, g, seq.guide))
-          return
+          return None
 
      out = analyze(*info)
      if out:
-          print("{:>6} may have a driver that's ready to break (composite is 1 mod 4): {}".format(seq.seq, seq.factors))
+          return info
+     return None
 
 def analyze(facts, composite):
      """Takes the known parts of the current step in the sequence, together with the
@@ -132,6 +133,20 @@ def analyze(facts, composite):
      # former, for of course t may also be two primes == 3 (mod 4)).
      return composite % 4 == 1
 
+# The main function
+def main():
+     # This and other code in this and other modules is sometimes a bit confusing
+     # because I use 'seq' for both just the integer of the sequence leader
+     # *and* the corresponding Sequence object
+     # data is a dictionary mapping the ints to the Sequence objects
+     # `for seq in data` is iterating over the keys, so there seq is just an int
+     data = read_data()
+     targets = [data[seq] for seq in data if examine_seq(data[seq])]
+     # OTOH targets is a list of the Sequence objects, so here seq is the object not the int
+     targets.sort(key=lambda seq: seq.cofact)
+     for seq in targets:
+          print("{:>6} may have a driver that's ready to break (composite is 1 mod 4): {}".format(seq.seq, seq.factors))
+               
 
 ################################################################################
 # Copied from allseq.py
@@ -193,12 +208,5 @@ class Sequence(list):
                return "{:>6d} {:>5d}. sz {:>3d} {:s}\n".format(ali.seq, ali.index, ali.size, ali.factors)
           else:
                raise AttributeError('Not fully described! Seq:', self.seq)
-
-# The main function
-
-def main():
-     data = read_data()
-     for seq in data:
-          examine_seq(data[seq])
 
 main()
