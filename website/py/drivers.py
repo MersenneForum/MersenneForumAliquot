@@ -63,11 +63,16 @@ def examine_seq(seq):
      for prime in factors:
           if factors[prime] % 2 == 1 and prime not in guide: # The current filtering criterion
                return None
-     # Also check for class == 2...
-     if aq.get_class(nt.Factors(seq.factors)) != 2:
-          return None
      # We only want to bother asking the FDB about actual drivers
      if not aq.is_driver(seq.guide):
+          return None
+     # Also check for class == 2...
+     clsss = aq.get_class(nt.Factors(seq.factors))
+     if clsss < 2:
+          return None
+     elif clsss > 2:
+          if seq.guide != "2^3 * 3":
+               print("Sequence {:>6} has a driver but also has class {}: {}".format(seq.seq, clsss, seq.factors))
           return None
      # Now we have sufficient reason to get details on this line
      #print("Getting detailed data for {}: {}".format(seq.seq, seq.factors))
