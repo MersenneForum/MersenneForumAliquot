@@ -419,7 +419,7 @@ while True: # This means you can start it once and leave it, but by setting loop
      # Create broken sequences HTML
      if broken:
           # horizontal table: create a list of tuples containing each column (i.e. each sequence)
-          entries = (('''<a href="http://factordb.com/sequences.php?se=1&aq={}&action=last20">{}</a>'''.format(broken[seq][1], seq), str(broken[seq][0])) for seq in broken)
+          entries = (('''<a href="http://factordb.com/sequences.php?se=1&aq={}&action=last20">{}</a>'''.format(broken[seq][1], seq), str(broken[seq][0])) for seq in sorted(broken))
           row1, row2 = zip(*entries) # zip converts column data into row order
           r1 = ''.join('<td>{}</td>'.format(datum) for datum in row1)
           r2 = ''.join('<td>{}</td>'.format(datum) for datum in row2)
