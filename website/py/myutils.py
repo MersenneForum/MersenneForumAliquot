@@ -174,3 +174,5 @@ def email(*args): # HTML, attachments, cc?
           s(acc, acc, args[0], args[1], host, port, True, acc, pw)
      elif len(args) == 3:
           s(args[0], acc, args[1], args[2], host, port, True, acc, pw)
+     else:
+          raise ValueError("email() expects two or three arguments")

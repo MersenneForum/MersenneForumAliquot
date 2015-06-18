@@ -24,4 +24,7 @@ for ali in olddat:
           else:
                big = current, seq
           Print(big[0], 'seems to have merged with', big[1])
-          email('Aliquot merge!' '{} seems to have merged with {}'.format(big[0], big[1]))
+          try:
+               email('Aliquot merge!', '{} seems to have merged with {}'.format(big[0], big[1]))
+          except Exception as e:
+               Print("alimerge email failed")
