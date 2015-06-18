@@ -418,17 +418,20 @@ while True: # This means you can start it once and leave it, but by setting loop
           if isinstance(ali.progress, int):
                totprog += 1          
 
-     # Create broken sequences string
-     borken_html = 'none currently</p>'
+     # Create broken sequences HTML
      if broken:
           # horizontal table: create a list of tuples containing each column (i.e. each sequence)
           entries = (('''<a href="http://factordb.com/sequences.php?se=1&aq={}&action=last20">{}</a>'''.format(broken[seq][1], seq), str(broken[seq][0])) for seq in broken)
           row1, row2 = zip(*entries) # zip converts column data into row order
           r1 = ''.join('<td>{}</td>'.format(datum) for datum in row1)
           r2 = ''.join('<td>{}</td>'.format(datum) for datum in row2)
-          borken_html = '</p><br /><table><tr><th scope="row">Sequence</th>{}</tr><tr><th scope="row">Index offset</th>{}</tr></table>'.format(r1, r2)
+          borken_html = '<table><tr><th scope="row">Sequence</th>{}</tr><tr><th scope="row">Index offset</th>{}</tr></table>'.format(r1, r2)
+          unborken_html = ''
+     else:
+          borken_html = ''
+          unborken_html = 'none currently.'
 
-     html = html.format(updated, borken_html) # Imbue the template with the reservation time and broken sequences
+     html = html.format(updated, unborken_html, borken_html) # Imbue the template with the reservation time and broken sequences
      
      # Put stats table in json-able format
      lentable = []; lencount = 0
