@@ -372,7 +372,7 @@ def updateseq(old):
                Print(reqs, 'page requests,', queries, 'db queries since', when)
                error_msg += 'Reached query limit. Derp.\n'
 
-while True: # This means you can start it once and leave it, but by setting loop = False you can make it one-and-done
+def main():
      print('\n'+strftime(datefmt))     
      if special:
           this = special
@@ -473,10 +473,15 @@ while True: # This means you can start it once and leave it, but by setting loop
                Print('Message:', error_msg)
 
      Print('Written HTML and saved state.')
-     
-     if not quitting and loop:
-          Print('Sleeping.')
-          sleeping = True
-          sleep(sleep_time)
-          sleeping = False
-     else: sys.exit()
+
+if __name__ == "__main__":
+     while True: # This means you can start it once and leave it, but by setting loop = False you can make it one-and-done
+          main()
+
+          if not quitting and loop:
+               Print('Sleeping.')
+               sleeping = True
+               sleep(sleep_time)
+               sleeping = False
+          else:
+               sys.exit()
