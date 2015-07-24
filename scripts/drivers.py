@@ -14,7 +14,7 @@ smallfact = re.compile(r' <a href="index.php\?id=[0-9]+?"><font color="#000000">
 largefact = re.compile(r' <a href="index.php\id=([0-9]+?)"><font color="#000000">[0-9]+?[.]{3}[0-9]{2}</font></a><sub>&lt;')
 largenum = re.compile(r'<td align="center">(([0-9\s]|(<br>))+?)</td>')
 
-if 'http' in data_file:
+if __name__ == "__main__" and 'http' in data_file:
      print("Getting the current data")
      txt = blogotubes(data_file)
      if txt is None:

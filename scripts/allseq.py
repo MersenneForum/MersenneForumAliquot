@@ -22,7 +22,6 @@ res_post_ids = (165249, 397318, 397319, 397320, 397912)
 
 per_hour = 55
 sleep_time = 60
-total = linecount(JSON)
 special = [] # If I need to update a specific set of sequences
 loop = False
 drop = []
@@ -373,7 +372,8 @@ def updateseq(old):
                error_msg += 'Reached query limit. Derp.\n'
 
 def main():
-     print('\n'+strftime(datefmt))     
+     print('\n'+strftime(datefmt))
+     total = linecount(JSON)
      if special:
           this = special
      else:
