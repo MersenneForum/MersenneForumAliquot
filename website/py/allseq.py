@@ -6,7 +6,7 @@ from time import strftime, gmtime, sleep, strptime
 from collections import Counter
 from aliquot import get_guide, get_class, is_driver
 from myutils import linecount, email, Print
-import re, sys, signal, json
+import re, sys, signal, json, os
 dir = './'
 FILE = dir + 'AllSeq.html'
 TXT = dir + 'AllSeq.txt'
@@ -16,6 +16,7 @@ STATSON = dir + 'statistics.json'
 template = dir + 'template.html'
 template2 = dir + 'template2.html'
 seqfile = dir + 'AllSeqs.txt'
+lockfile = dir + 'allseq.lock'
 datefmt = '%Y-%m-%d %H:%M:%S'
 
 res_post_ids = (165249, 397318, 397319, 397320, 397912)
@@ -40,11 +41,18 @@ broken = {319860: (1072, 2825523558447041736665230216235917892232717165769067317
 # A dict of tuples of {broken seq: (offset, new_start_val)}
 error_msg = ''
 
+if os.path.exists(lockfile):
+    print('Didn\'t start: lockfile is present')
+    sys.exit(-1)
+
+open(lockfile, 'a').close()
+
 for arg in sys.argv[1:]:
      try:
           special.append(int(arg))
      except ValueError:
           print('Error: Args are sequences to be run')
+          os.remove(lockfile)
           sys.exit(-1)
 
 composite = re.compile(r'= <a.+<font color="#002099">[0-9.]+</font></a><sub>&lt;(?P<C>[0-9]+)')
@@ -119,6 +127,7 @@ def handler(sig, frame):
      global quitting
      quitting = True
      if sleeping:
+          os.remove(lockfile)
           sys.exit()
 signal.signal(signal.SIGTERM, handler); signal.signal(signal.SIGINT, handler)
 
@@ -479,4 +488,6 @@ while True: # This means you can start it once and leave it, but by setting loop
           sleeping = True
           sleep(sleep_time)
           sleeping = False
-     else: sys.exit()
+     else:
+          os.remove(lockfile)
+          sys.exit()
