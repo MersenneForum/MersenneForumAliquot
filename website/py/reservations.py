@@ -1,4 +1,4 @@
-#! /usr/bin/python3
+#!/opt/rh/python33/root/usr/bin/python
 
 # Run from a cron file like "reservations.py spider" however often to parse
 # the MF thread and update its head post. Be sure the dir, username and password 
@@ -8,12 +8,12 @@
 # update it as necessary.
 
 
-dir = '.' # Set this appropriately
+dir = '/var/www/rechenkraft.net/aliquot' # Set this appropriately
 res_posts = (165249, 397318, 397319, 397320, 397912) # Tuple to be expanded as necessary
 resfile = dir+'/reservations'
 bup = dir+'/backup'
 pid_file = dir+'/last_pid'
-info = 'http://dubslow.tk/aliquot/AllSeq.txt'
+info = 'http://www.rechenkraft.net/aliquot/AllSeq.txt'
 username = 'Dubslow'
 passwd = '<nope>'
 txtfiles = {'yoyo@home': 'http://yafu.myfirewall.org/yafu/download/ali/ali.txt.all'}
@@ -65,18 +65,18 @@ def get_reservations(pid):
      else:
           return page[ind+1:] # Dump the first line == "<b>Seq Who Index Size</b>"
 
-if res_posts: 
-     reservations = '\n'.join(data for data in map(get_reservations, res_posts) if data)
-     try:
-          with open(resfile, 'r') as f:
-               local_data = f.read()
-     except: pass
-     else:
-          if local_data.strip() != reservations.strip():
-               Print("Warning: local file and forum post do not match!")
-               Print("Continuing using forum data, local changes are being lost!")
-               with open(resfile, 'w') as f:
-                    f.write(reservations)
+#if res_posts:
+#     reservations = '\n'.join(data for data in map(get_reservations, res_posts) if data)
+#     try:
+#          with open(resfile, 'r') as f:
+#               local_data = f.read()
+#     except: pass
+#     else:
+#          if local_data.strip() != reservations.strip():
+#               Print("Warning: local file and forum post do not match!")
+#               Print("Continuing using forum data, local changes are being lost!")
+#               with open(resfile, 'w') as f:
+#                    f.write(reservations)
 
 ################################################################################
 # Begin class and function definitions, the remaining top-level logic is at the very bottom
@@ -421,7 +421,7 @@ def spider(last_pid):
      if spider_msg:
           write_db(db)
           update()
-          send('Spider: ' + ' | '.join(spider_msg)) # For now, doesn't check if send was successful
+          #send('Spider: ' + ' | '.join(spider_msg)) # For now, doesn't check if send was successful
 
      return last_pid
 

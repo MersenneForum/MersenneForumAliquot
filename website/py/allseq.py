@@ -18,7 +18,8 @@ template2 = dir + 'template2.html'
 seqfile = dir + 'AllSeqs.txt'
 datefmt = '%Y-%m-%d %H:%M:%S'
 
-res_post_ids = (165249, 397318, 397319, 397320, 397912)
+#res_post_ids = (165249, 397318, 397319, 397320, 397912)
+res_post_ids = [ 1 ]
 
 per_hour = 55
 sleep_time = 60
@@ -152,8 +153,8 @@ def current_update(per_hour):
 def get_reservations(pids):
      reserves = {}
      for pid in pids:
-          page = blogotubes('http://www.mersenneforum.org/showpost.php?p={}&postcount=1'.format(str(pid)),
-                    hdrs={'User-Agent': 'Dubslow/AliquotSequences'})
+          page = blogotubes('http://www.rechenkraft.net/aliquot/res_post.php?p={}&postcount=1'.format(str(pid)),
+                    hdrs={'User-Agent': 'RechenkraftBot/AliquotSequences'})
           update = re.search(r'<!-- edit note -->.*Last fiddled with by [A-Za-z_0-9 -]+? on ([0-9a-zA-Z ]+) at <span class="time">([0-9:]{5})</span>', page, flags=re.DOTALL)
           updated = update.group(1)+' '+update.group(2)
           # Isolate the [code] block with the reservations
