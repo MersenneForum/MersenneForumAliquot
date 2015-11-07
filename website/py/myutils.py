@@ -162,17 +162,17 @@ def blogotubes(url, encoding='utf-8', hdrs=None, data=None):
      else:
           return page
 
-host ='smtp.gmail.com'
-port = 587
+host ='localhost'
+port = 25
 mode = 'tls'
-acc = '<sthg>@gmail.com'
+acc = 'technik@rechenkraft.net'
 pw = ''
 from emailing import send_email as s
 def email(*args): # HTML, attachments, cc?
      '''(Subject, Message) or (Recipient, Subject, Message)'''
      if len(args) == 2:
-          s(acc, acc, args[0], args[1], host, port, True, acc, pw)
+          s(acc, acc, args[0], args[1], host, port, False)
      elif len(args) == 3:
-          s(args[0], acc, args[1], args[2], host, port, True, acc, pw)
+          s(args[0], acc, args[1], args[2], host, port, False)
      else:
           raise ValueError("email() expects two or three arguments")

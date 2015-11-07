@@ -1,9 +1,9 @@
-#! /usr/bin/python3
+#!/opt/rh/python33/root/usr/bin/python
 from time import strftime
 import json
 from myutils import email
 
-JSON = '../html/AllSeq.json'
+JSON = '/var/www/rechenkraft.net/aliquot/AllSeq.json'
 def Print(*args):
      print(strftime('%F - %H:%M:%S'), *args)
 Print('Merge finder starting')

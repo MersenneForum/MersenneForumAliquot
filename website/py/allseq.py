@@ -1,4 +1,4 @@
-#! /usr/bin/python3 -u
+#!/opt/rh/python33/root/usr/bin/python -u
 # -u to force line buffering of stdout
 
 from urllib import request, parse, error
@@ -7,7 +7,7 @@ from collections import Counter
 from aliquot import get_guide, get_class, is_driver
 from myutils import linecount, email, Print
 import re, sys, signal, json
-dir = './'
+dir = '/var/www/rechenkraft.net/aliquot/'
 FILE = dir + 'AllSeq.html'
 TXT = dir + 'AllSeq.txt'
 STATS = dir + 'statistics.html'
@@ -213,7 +213,7 @@ def cofactor(s):
 def blogotubes(url, encoding='utf-8', hdrs=None):
      global error_msg
      if hdrs is None:
-          hdrs = {'User-Agent': 'MersenneForum/Dubslow/AliquotSequences'}
+          hdrs = {'User-Agent': 'MersenneForum/RechenkraftBot/AliquotSequences'}
      global quitting
      req = request.Request(url, headers = hdrs )
      try:
