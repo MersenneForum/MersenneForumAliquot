@@ -163,7 +163,7 @@
      date it was last updated. Each update is run at 7 past the hour, but the page won't actually change until a few minutes after that (depending on the FDB). To further reduce FDB load,
      the script queries the FDB ID of the last unfactored line from the previous update. Only if that line is factored does the script actually request the much heavier sequence status page.</p>
      
-     <p>Drivers and guides: I wrote a short <a href="aliquot.txt">Python module</a>, based on the definitions and notes from Clifford Stern's <a href="analysis.html">Analysis page</a>,
+     <p>Drivers and guides: I wrote a short <a href="https://github.com/dubslow/MersenneForumAliquot/blob/master/website/py/aliquot.py">Python module</a>, based on the definitions and notes from Clifford Stern's <a href="analysis.html">Analysis page</a>,
      in order to classify the sequences in the table. The only exception to Clifford's definitions I use is to present the power of two as a "guide" if a "proper" guide is lacking.
      The guide column does show proper drivers, though there is a checkbox to exclude sequences controlled by a driver (as well as a box to exclude sequences with a 
      (pesky) 3 in them). The class shown is exactly the "class" described by Clifford in his page.</p>
@@ -189,6 +189,7 @@
      <br>
      <div class="cen">
           <p>All times are UTC. Reservations are as of {:s}. <br />
+          <!--<p>All times are UTC. <strong>Reservations are not up to date!</strong> <br /> -->
                          These sequences are currently broken: {:s}</p>
           {:s}
      </div>
