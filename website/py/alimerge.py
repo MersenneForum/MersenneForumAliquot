@@ -28,3 +28,5 @@ for ali in olddat:
                email('Aliquot merge!', '{} seems to have merged with {}'.format(big[0], big[1]))
           except Exception as e:
                Print("alimerge email failed")
+
+Print('Merge finder finished')
