@@ -16,7 +16,7 @@ STATSON = dir + 'statistics.json'
 template = dir + 'template.html'
 template2 = dir + 'template2.html'
 seqfile = dir + 'AllSeqs.txt'
-lockfile = dir + 'allseq.lock'
+lockfile = sys.argv[0] + '.lock'
 datefmt = '%Y-%m-%d %H:%M:%S'
 
 res_post_ids = (165249, 397318, 397319, 397320, 397912)
@@ -368,6 +368,7 @@ def updateseq(old, reserves):
 
 
 def main(special=None):
+     global error_msg
      print('\n'+strftime(datefmt))
      total = linecount(JSON)
      if special:
@@ -460,7 +461,7 @@ def main(special=None):
           Print("Next start is", start)
           with open(sys.argv[0]+'.conf', 'w') as conf: # Save how many sequences we updated
                conf.write(str(start)+'\n')
-     
+
      if error_msg:
           try:
                email('Aliquot failure!', error_msg)
