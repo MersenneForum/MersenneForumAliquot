@@ -6,8 +6,8 @@ from time import strftime, gmtime, sleep, strptime
 from collections import Counter
 from aliquot import get_guide, get_class, is_driver
 from myutils import linecount, email, Print
-import re, sys, signal, json
-dir = './'
+import re, sys, signal, json, os
+dir = '../html/'
 FILE = dir + 'AllSeq.html'
 TXT = dir + 'AllSeq.txt'
 STATS = dir + 'statistics.html'
@@ -16,13 +16,13 @@ STATSON = dir + 'statistics.json'
 template = dir + 'template.html'
 template2 = dir + 'template2.html'
 seqfile = dir + 'AllSeqs.txt'
+lockfile = dir + 'allseq.lock'
 datefmt = '%Y-%m-%d %H:%M:%S'
 
 res_post_ids = (165249, 397318, 397319, 397320, 397912)
 
 per_hour = 55
 sleep_time = 60
-special = [] # If I need to update a specific set of sequences
 loop = False
 drop = []
 broken = {319860: (1072, 2825523558447041736665230216235917892232717165769067317116537832686621082273062400083298623866666431871912457614030538),
@@ -38,13 +38,6 @@ broken = {319860: (1072, 2825523558447041736665230216235917892232717165769067317
 #broken = {747720: (67, 1977171370480)}
 # A dict of tuples of {broken seq: (offset, new_start_val)}
 error_msg = ''
-
-for arg in sys.argv[1:]:
-     try:
-          special.append(int(arg))
-     except ValueError:
-          print('Error: Args are sequences to be run')
-          sys.exit(-1)
 
 composite = re.compile(r'= <a.+<font color="#002099">[0-9.]+</font></a><sub>&lt;(?P<C>[0-9]+)')
 smallfact = re.compile(r'(?:<font color="#000000">)([0-9^]+)(?:</font></a>)(?!<sub>)')
@@ -108,9 +101,9 @@ class Sequence(list):
      
      def __str__(self):
           if self.well_formed():
-               return "{:>6d} {:>5d}. sz {:>3d} {:s}\n".format(ali.seq, ali.index, ali.size, ali.factors)
+               return "{:>6d} {:>5d}. sz {:>3d} {:s}\n".format(self.seq, self.index, self.size, self.factors)
           else:
-               raise AttributeError('Not fully described! Seq:', self.seq)
+               raise ValueError('Not fully described! Seq:', self.seq)
      
 quitting = False
 sleeping = False
@@ -118,8 +111,10 @@ def handler(sig, frame):
      global quitting
      quitting = True
      if sleeping:
+          os.remove(lockfile)
           sys.exit()
-signal.signal(signal.SIGTERM, handler); signal.signal(signal.SIGINT, handler)
+signal.signal(signal.SIGTERM, handler)
+signal.signal(signal.SIGINT, handler)
 
 def current_update(per_hour):
      this = []
@@ -241,12 +236,12 @@ def id_created(i):
      month = strftime('%m', strptime(date.group(1), '%B'))
      return '-'.join(iter((year, month, day)))
 
-def check(old, tries=3):
+def check(old, tries=3, reserves=None, special=None):
      if tries <= 0: 
           Print('Bad sequence or id! Seq:', old.seq)
           return old
      if old.id is None or old.id == 0 or special:
-          return updateseq(old)
+          return updateseq(old, reserves)
      # else:
      page = blogotubes('http://factordb.com/index.php?id='+str(old.id))
      if quitting: return old
@@ -256,11 +251,11 @@ def check(old, tries=3):
                old.progress = id_created(old.id)
           return old
      elif 'FF' in page or 'P' in page:
-          return updateseq(old)
+          return updateseq(old, reserves)
      else:
-          return check(old, tries-1)
+          return check(old, tries-1, special)
 
-def updateseq(old):
+def updateseq(old, reserves):
      global error_msg
      tries = 5
      if old.seq in broken:
@@ -371,7 +366,8 @@ def updateseq(old):
                Print(reqs, 'page requests,', queries, 'db queries since', when)
                error_msg += 'Reached query limit. Derp.\n'
 
-def main():
+
+def main(special=None):
      print('\n'+strftime(datefmt))
      total = linecount(JSON)
      if special:
@@ -387,7 +383,7 @@ def main():
           if quitting:
                data.append(old)
                continue
-          ali = check(old)
+          ali = check(old, reserves=reserves, special=special)
           if ali: 
                data.append(ali)
                if not quitting: 
@@ -474,14 +470,43 @@ def main():
 
      Print('Written HTML and saved state.')
 
-if __name__ == "__main__":
-     while True: # This means you can start it once and leave it, but by setting loop = False you can make it one-and-done
-          main()
 
-          if not quitting and loop:
-               Print('Sleeping.')
-               sleeping = True
-               sleep(sleep_time)
-               sleeping = False
+################################################################################
+# Start actual code execution
+
+if __name__ == "__main__":
+     if os.path.exists(lockfile):
+          Print("Didn't start: lockfile is present")
+          sys.exit(-1)
+
+     open(lockfile, 'a').close()
+
+     try:
+          special = [int(arg) for arg in sys.argv[1:]]
+     except ValueError:
+          print('Error: Args are sequences to be run')
+          os.remove(lockfile)
+          sys.exit(-1)
+
+     if special:
+          loop = False
+     else:
+          special = None
+
+     while True:
+     # This means you can start it once and leave it, but by setting loop = False you can make it one-and-done
+     # This would be a good place for a do...while syntax
+          try:
+               main(special)
+          except Exception:
+               raise # Errors are unhandled except to interrupt a sleeping loop, and to cleanup via finally
           else:
-               sys.exit()
+               if loop and not quitting:
+                    Print('Sleeping.')
+                    sleeping = True
+                    sleep(sleep_time)
+                    sleeping = False
+               else:
+                    break
+          finally:
+               os.remove(lockfile)
