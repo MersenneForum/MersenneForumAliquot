@@ -23,7 +23,6 @@ res_post_ids = (165249, 397318, 397319, 397320, 397912)
 
 per_hour = 55
 sleep_time = 60
-total = linecount(JSON)
 loop = False
 drop = []
 broken = {319860: (1072, 2825523558447041736665230216235917892232717165769067317116537832686621082273062400083298623866666431871912457614030538),
@@ -369,7 +368,8 @@ def updateseq(old, reserves):
 
 
 def main(special=None):
-     print('\n'+strftime(datefmt))     
+     print('\n'+strftime(datefmt))
+     total = linecount(JSON)
      if special:
           this = special
      else:
@@ -474,35 +474,39 @@ def main(special=None):
 ################################################################################
 # Start actual code execution
 
-if os.path.exists(lockfile):
-    Print("Didn't start: lockfile is present")
-    sys.exit(-1)
+if __name__ == "__main__":
+     if os.path.exists(lockfile):
+          Print("Didn't start: lockfile is present")
+          sys.exit(-1)
 
-open(lockfile, 'a').close()
+     open(lockfile, 'a').close()
 
-try:
-     special = [int(arg) for arg in sys.argv[1:]]
-except ValueError:
-     print('Error: Args are sequences to be run')
-     os.remove(lockfile)
-     sys.exit(-1)
-
-if special:
-     loop = False
-else:
-     special = None
-
-while True:
-# This means you can start it once and leave it, but by setting loop = False you can make it one-and-done
      try:
-          main(special)
-     except Exception:
-          raise # Errors are unhandled except to interrupt a sleeping loop, and to cleanup via finally
-     else:
-          if not quitting and loop:
-               Print('Sleeping.')
-               sleeping = True
-               sleep(sleep_time)
-               sleeping = False
-     finally:
+          special = [int(arg) for arg in sys.argv[1:]]
+     except ValueError:
+          print('Error: Args are sequences to be run')
           os.remove(lockfile)
+          sys.exit(-1)
+
+     if special:
+          loop = False
+     else:
+          special = None
+
+     while True:
+     # This means you can start it once and leave it, but by setting loop = False you can make it one-and-done
+     # This would be a good place for a do...while syntax
+          try:
+               main(special)
+          except Exception:
+               raise # Errors are unhandled except to interrupt a sleeping loop, and to cleanup via finally
+          else:
+               if loop and not quitting:
+                    Print('Sleeping.')
+                    sleeping = True
+                    sleep(sleep_time)
+                    sleeping = False
+               else:
+                    break
+          finally:
+               os.remove(lockfile)
