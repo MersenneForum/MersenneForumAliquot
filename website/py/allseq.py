@@ -102,9 +102,9 @@ class Sequence(list):
      
      def __str__(self):
           if self.well_formed():
-               return "{:>6d} {:>5d}. sz {:>3d} {:s}\n".format(ali.seq, ali.index, ali.size, ali.factors)
+               return "{:>6d} {:>5d}. sz {:>3d} {:s}\n".format(self.seq, self.index, self.size, self.factors)
           else:
-               raise AttributeError('Not fully described! Seq:', self.seq)
+               raise ValueError('Not fully described! Seq:', self.seq)
      
 quitting = False
 sleeping = False
