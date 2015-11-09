@@ -7,7 +7,7 @@ from collections import Counter
 from aliquot import get_guide, get_class, is_driver
 from myutils import linecount, email, Print
 import re, sys, signal, json, os
-dir = './'
+dir = '../html/'
 FILE = dir + 'AllSeq.html'
 TXT = dir + 'AllSeq.txt'
 STATS = dir + 'statistics.html'
@@ -24,7 +24,6 @@ res_post_ids = (165249, 397318, 397319, 397320, 397912)
 per_hour = 55
 sleep_time = 60
 total = linecount(JSON)
-special = [] # If I need to update a specific set of sequences
 loop = False
 drop = []
 broken = {319860: (1072, 2825523558447041736665230216235917892232717165769067317116537832686621082273062400083298623866666431871912457614030538),
@@ -40,20 +39,6 @@ broken = {319860: (1072, 2825523558447041736665230216235917892232717165769067317
 #broken = {747720: (67, 1977171370480)}
 # A dict of tuples of {broken seq: (offset, new_start_val)}
 error_msg = ''
-
-if os.path.exists(lockfile):
-    print('Didn\'t start: lockfile is present')
-    sys.exit(-1)
-
-open(lockfile, 'a').close()
-
-for arg in sys.argv[1:]:
-     try:
-          special.append(int(arg))
-     except ValueError:
-          print('Error: Args are sequences to be run')
-          os.remove(lockfile)
-          sys.exit(-1)
 
 composite = re.compile(r'= <a.+<font color="#002099">[0-9.]+</font></a><sub>&lt;(?P<C>[0-9]+)')
 smallfact = re.compile(r'(?:<font color="#000000">)([0-9^]+)(?:</font></a>)(?!<sub>)')
@@ -129,7 +114,8 @@ def handler(sig, frame):
      if sleeping:
           os.remove(lockfile)
           sys.exit()
-signal.signal(signal.SIGTERM, handler); signal.signal(signal.SIGINT, handler)
+signal.signal(signal.SIGTERM, handler)
+signal.signal(signal.SIGINT, handler)
 
 def current_update(per_hour):
      this = []
@@ -251,12 +237,12 @@ def id_created(i):
      month = strftime('%m', strptime(date.group(1), '%B'))
      return '-'.join(iter((year, month, day)))
 
-def check(old, tries=3):
+def check(old, tries=3, reserves=None, special=None):
      if tries <= 0: 
           Print('Bad sequence or id! Seq:', old.seq)
           return old
      if old.id is None or old.id == 0 or special:
-          return updateseq(old)
+          return updateseq(old, reserves)
      # else:
      page = blogotubes('http://factordb.com/index.php?id='+str(old.id))
      if quitting: return old
@@ -266,11 +252,11 @@ def check(old, tries=3):
                old.progress = id_created(old.id)
           return old
      elif 'FF' in page or 'P' in page:
-          return updateseq(old)
+          return updateseq(old, reserves)
      else:
-          return check(old, tries-1)
+          return check(old, tries-1, special)
 
-def updateseq(old):
+def updateseq(old, reserves):
      global error_msg
      tries = 5
      if old.seq in broken:
@@ -381,7 +367,8 @@ def updateseq(old):
                Print(reqs, 'page requests,', queries, 'db queries since', when)
                error_msg += 'Reached query limit. Derp.\n'
 
-while True: # This means you can start it once and leave it, but by setting loop = False you can make it one-and-done
+
+def main(special=None):
      print('\n'+strftime(datefmt))     
      if special:
           this = special
@@ -396,7 +383,7 @@ while True: # This means you can start it once and leave it, but by setting loop
           if quitting:
                data.append(old)
                continue
-          ali = check(old)
+          ali = check(old, reserves=reserves, special=special)
           if ali: 
                data.append(ali)
                if not quitting: 
@@ -482,12 +469,40 @@ while True: # This means you can start it once and leave it, but by setting loop
                Print('Message:', error_msg)
 
      Print('Written HTML and saved state.')
-     
-     if not quitting and loop:
-          Print('Sleeping.')
-          sleeping = True
-          sleep(sleep_time)
-          sleeping = False
+
+
+################################################################################
+# Start actual code execution
+
+if os.path.exists(lockfile):
+    Print("Didn't start: lockfile is present")
+    sys.exit(-1)
+
+open(lockfile, 'a').close()
+
+try:
+     special = [int(arg) for arg in sys.argv[1:]]
+except ValueError:
+     print('Error: Args are sequences to be run')
+     os.remove(lockfile)
+     sys.exit(-1)
+
+if special:
+     loop = False
+else:
+     special = None
+
+while True:
+# This means you can start it once and leave it, but by setting loop = False you can make it one-and-done
+     try:
+          main(special)
+     except Exception:
+          raise # Errors are unhandled except to interrupt a sleeping loop, and to cleanup via finally
      else:
+          if not quitting and loop:
+               Print('Sleeping.')
+               sleeping = True
+               sleep(sleep_time)
+               sleeping = False
+     finally:
           os.remove(lockfile)
-          sys.exit()
