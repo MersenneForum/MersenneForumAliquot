@@ -2,10 +2,10 @@
 <html>
 <head>
      <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
-     <meta name="author" content="William (Bill) Winslow">
+     <meta name="author" content="Bill Winslow">
      <meta name="description" content="Making status updates on Aliquot Sequences easier. :)" >
-     <link rel="icon" href="http://img4.wikia.nocookie.net/__cb20110423145435/bungie/images/3/32/Twinkie_7thMarathon.gif">
-     <link rel="Shortcut Icon" href="http://img4.wikia.nocookie.net/__cb20110423145435/bungie/images/3/32/Twinkie_7thMarathon.gif">
+     <link rel="icon" href="http://mersenneforum.org/favicon.ico">
+     <link rel="Shortcut Icon" href="http://mersenneforum.org/favicon.ico">
      <style type="text/css">
           body      {{ background: #0000D2;
                     font-family: "sans serif"; 
@@ -13,6 +13,8 @@
           .cen      {{ text-align: center; }}
           .just     {{ margin-left: 6%;
                     margin-right: 6%; }}
+          footer    {{ text-align: center;
+                    font-size: 70%; }}
           a         {{ color: #FF9B00; }}
           a.lol     {{ color: #FF8300; }}
           .dataTables_wrapper {{ 
@@ -124,14 +126,14 @@
        //$('#button').mousedown( redraw );
      }});
      </script>
-     <title>The tru7h, the whole tru7h, and nothing but the tru7h.</title>
+     <title>Current status of aliquot sequences with start term below 1 million</title>
 </head>
 <body>
-     <h1 class="cen">Welcome!</h1><br>
-     <div class="cen just"><h4>This is a page I put together inspired by schickel's AllSeq.txt, combined with the fact that finding a recent copy was a pain in the butt.
-     This is supposed to make things easier (including easier sorting and data mining).</h4>
-     
-     <p>This uses Syd's wonderful <a href="http://factordb.com/help.php?page=0">Factor DataBase</a> to get FDB's last <a href="http://factordb.com/sequences.php">known information</a>
+     <h3 class="cen">Current status of aliquot sequences with start term below 1 million</h3><br>
+     <div class="cen just">
+     <p>This is a page I put together inspired by schickel's AllSeq.txt, combined with the fact that finding a recent copy was a pain in the butt.
+     This is supposed to make things easier (including easier sorting and data mining).
+     This uses Syd's wonderful <a href="http://factordb.com/help.php?page=0">Factor DataBase</a> to get FDB's last <a href="http://factordb.com/sequences.php">known information</a>
      about an <a href="http://en.wikipedia.org/wiki/Aliquot_sequence">Aliquot sequence</a>. As such, if a worker hasn't updated the DB in a while or the DB has errors in a sequence,
      well... there's not much I can do about it.</p></div>
      
@@ -212,6 +214,10 @@
        <tbody>
        </tbody>
      </table>
-     <img src="facepalm_picard_riker.jpg" class="center" alt="Fin du page">
+     <footer>
+       <img src="facepalm_picard_riker.jpg" class="center" alt="Fin du page">
+       <p>This site was created by Dubslow, with contributions from (so far just) ChristianB.</p>
+       <p>The source code is maintained <a href="https://github.com/dubslow/MersenneForumAliquot">here</a>.</p>
+     </footer>
 </body>
 </html>
