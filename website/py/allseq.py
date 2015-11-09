@@ -500,13 +500,13 @@ if __name__ == "__main__":
                main(special)
           except Exception:
                raise # Errors are unhandled except to interrupt a sleeping loop, and to cleanup via finally
-          else:
-               if loop and not quitting:
-                    Print('Sleeping.')
-                    sleeping = True
-                    sleep(sleep_minutes*60)
-                    sleeping = False
-               else:
-                    break
           finally:
                os.remove(lockfile)
+
+          if loop and not quitting:
+               Print('Sleeping.')
+               sleeping = True
+               sleep(sleep_minutes*60)
+               sleeping = False
+          else:
+               break
