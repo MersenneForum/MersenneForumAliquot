@@ -22,7 +22,7 @@ datefmt = '%Y-%m-%d %H:%M:%S'
 res_post_ids = (165249, 397318, 397319, 397320, 397912)
 
 per_hour = 55
-sleep_time = 60
+sleep_minutes = 60
 loop = False
 drop = []
 broken = {319860: (1072, 2825523558447041736665230216235917892232717165769067317116537832686621082273062400083298623866666431871912457614030538),
@@ -500,13 +500,13 @@ if __name__ == "__main__":
                main(special)
           except Exception:
                raise # Errors are unhandled except to interrupt a sleeping loop, and to cleanup via finally
-          else:
-               if loop and not quitting:
-                    Print('Sleeping.')
-                    sleeping = True
-                    sleep(sleep_time)
-                    sleeping = False
-               else:
-                    break
           finally:
                os.remove(lockfile)
+
+          if loop and not quitting:
+               Print('Sleeping.')
+               sleeping = True
+               sleep(sleep_minutes*60)
+               sleeping = False
+          else:
+               break
