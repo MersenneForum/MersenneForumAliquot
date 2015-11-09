@@ -16,6 +16,7 @@ STATSON = dir + 'statistics.json'
 template = dir + 'template.html'
 template2 = dir + 'template2.html'
 seqfile = dir + 'AllSeqs.txt'
+statefile = sys.argv[0] + '.conf'
 lockfile = sys.argv[0] + '.lock'
 datefmt = '%Y-%m-%d %H:%M:%S'
 
@@ -118,9 +119,13 @@ signal.signal(signal.SIGINT, handler)
 
 def current_update(per_hour):
      this = []
-     with open(sys.argv[0]+'.conf', 'r') as conf: # Read which sequences to update
-          start = int(conf.readline())
-          Print('Start:', start)
+     try:
+          with open(statefile, 'r') as conf: # Read which sequences to update
+               start = int(conf.readline())
+     except FileNotFoundError as e:
+          Print('State file not found, starting from sequence 0')
+          start = 0
+     Print('Start:', start)
 
      if drop: # Remove a sequence from the file
           seqs = []
@@ -459,7 +464,7 @@ def main(special=None):
           if count != per_hour and start != 0:
                error_msg += 'Something went wrong. Only {} seqs were updated.\n'.format(count)
           Print("Next start is", start)
-          with open(sys.argv[0]+'.conf', 'w') as conf: # Save how many sequences we updated
+          with open(statefile, 'w') as conf: # Save how many sequences we updated
                conf.write(str(start)+'\n')
 
      if error_msg:
