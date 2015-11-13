@@ -6,8 +6,9 @@ from time import strftime, gmtime, sleep, strptime
 from collections import Counter
 from aliquot import get_guide, get_class, is_driver
 from myutils import linecount, email, Print
+from sequence import Sequence
 import re, sys, signal, json, os
-dir = '../html/'
+dir = '../website/html/'
 FILE = dir + 'AllSeq.html'
 TXT = dir + 'AllSeq.txt'
 STATS = dir + 'statistics.html'
@@ -47,64 +48,6 @@ stuff = re.compile('<td bgcolor="#BBBBBB">n</td>\n<td bgcolor="#BBBBBB">Digits</
 created = re.compile('([JFMASOND][a-z]{2,8}) ([0-9]{1,2}), ([0-9]{4})') # strftime('%d', strptime(month, "%B"))
 #oldpage = re.compile('(<tr> <td>([0-9]+?)</td> <td>([0-9]+?)</td>.*?<td>)[0-9A-Za-z_ ]*?</td> </tr>') # Kept for historical purposes
 #oldjson = re.compile(r'(\[([0-9]+?), ([0-9]+?), ([0-9]+?), .*?)[0-9A-Za-z_ ]*?"\]') # Ditto
-
-class Sequence(list):
-     _map = {'seq': 0,
-             'size': 1,
-             'index': 2,
-             'id': 3,
-             'guide': 4,
-             'factors': 5,
-             'cofact': 6,
-             'clas': 7,
-             'time': 8,
-             'progress': 9,
-             'res': 10,
-             'driver': 11 }
-     
-     def __setattr__(self, name, value): # Black magic meta programming to make certain attributes access the list
-          try:                           # (This is why I love Python.)
-               self[Sequence._map[name]] = value
-          except KeyError:
-               object.__setattr__(self, name, value)
-     
-     def __getattribute__(self, name):
-          try:
-               return self[Sequence._map[name]]
-          except KeyError:
-               return object.__getattribute__(self, name)
-     
-     def __init__(self, seq=0, size=0, index=0, id=0, guide=None, factors=None, time=None, lst=None):
-          if lst is not None:
-               super().__init__(lst)
-               if seq: self.seq = seq
-               if index: self.index = index
-               if size: self.size = size
-               if time: self.time = time
-               if factors: self.factors = factors
-               if id: self.id = id
-               if guide: self.guide = guide
-          else:
-               super().__init__([None for i in range(len(Sequence._map))])
-               self.seq = seq
-               self.index = index
-               self.size = size
-               self.id = id
-               self.guide = guide
-               self.time = time
-               self.factors = factors
-               self.res = ''
-               self.driver = ''
-               self.progress = 'Unknown'
-     
-     def well_formed(self):
-          return self.seq and self.size and self.index and self.factors
-     
-     def __str__(self):
-          if self.well_formed():
-               return "{:>6d} {:>5d}. sz {:>3d} {:s}\n".format(self.seq, self.index, self.size, self.factors)
-          else:
-               raise ValueError('Not fully described! Seq:', self.seq)
      
 quitting = False
 sleeping = False
@@ -185,7 +128,7 @@ def get_old_info(JSON, reserves, this, drop):
                try:
                     oldinfo.append(tmp[seq])
                except KeyError:
-                    oldinfo.append(Sequence(seq, index=-1))
+                    oldinfo.append(Sequence(seq=seq, index=-1))
           return data, oldinfo
           
 def guide(string):
@@ -278,7 +221,7 @@ def updateseq(old, reserves):
                smalls = smallfact.findall(page)
                bigs = largefact.findall(page)
                if info: # Make sure we can actually get size/index info before in depth parsing
-                    ali = Sequence(seq, int(info.group('size')), int(info.group('index')), int(info.group('id')))
+                    ali = Sequence(seq=seq, size=int(info.group('size')), index=int(info.group('index')), id=int(info.group('id')))
                     ali.time = strftime(datefmt, gmtime())
                     ali.res = reserves.get(seq, '')
                     if 'Not all factors known' in page:
