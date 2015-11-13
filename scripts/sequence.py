@@ -18,8 +18,8 @@ class Sequence(list):
              'res':      (10, ''),
              'driver':   (11, '')
             }
-     _defaults = [None] * len(self._map)
-     for attr, tup in self._map.items():
+     _defaults = [None] * len(_map)
+     for attr, tup in _map.items():
           _defaults[tup[0]] = tup[1]
 
      def __setattr__(self, name, value): # Attributes are secretly just a specific slot on the list
@@ -30,7 +30,7 @@ class Sequence(list):
      
      def __getattribute__(self, name):
           try:
-               return self[self._map[name][0]]
+               return self[Sequence._map[name][0]]
           except KeyError:
                return super().__getattribute__(name)
      
@@ -50,7 +50,7 @@ class Sequence(list):
           else:
                super().__init__(self._defaults)
           # Toss unknown keys
-          for kw in kwargs:
+          for kw, val in kwargs.items():
                if kw in self._map:
                     self.__setattr__(kw, val)               
 
@@ -61,7 +61,7 @@ class Sequence(list):
           if self.well_formed():
                return "{:>6d} {:>5d}. sz {:>3d} {:s}\n".format(self.seq, self.index, self.size, self.factors)
           else:
-               raise ValueError('Not fully described! Seq:', self.seq)
+               raise ValueError('Not fully described! Seq: '+str(self.seq))
 
      def reservation_string(self):
           '''str(Sequence) gives the AllSeq.txt format, this gives the MF reservations post format'''
@@ -70,6 +70,6 @@ class Sequence(list):
           if not self.res:
                return ''
           out = "{:>6d}  {:15s} {:>5d}  {:>3d}\n".format(self.seq, self.res, self.index, self.size)
-          if 'jacobs and' in self.name:
+          if 'jacobs and' in self.res:
                out += '        Richard Guy\n'
           return out
