@@ -9,12 +9,16 @@
 
 from sequence import Sequence
 
-dir = '.' # Set this appropriately
+reservation_page = 'http://www.mersenneforum.org/showpost.php'
 res_posts = (165249, 397318, 397319, 397320, 397912) # Tuple to be expanded as necessary
+use_local_reservations = False
+
+dir = '.' # Set this appropriately
 resfile = dir+'/reservations'
 bup = dir+'/backup'
 pid_file = dir+'/last_pid'
 info = dir+'/AllSeq.txt'
+
 username = 'Dubslow'
 passwd = '<nope>'
 txtfiles = {'yoyo@home': 'http://yafu.myfirewall.org/yafu/download/ali/ali.txt.all'}
@@ -57,7 +61,7 @@ if 'http' in info:
 
 def get_reservations(pid):
      # Copied from allseq.py
-     page = blogotubes('http://www.mersenneforum.org/showpost.php?p='+str(pid))
+     page = blogotubes(reservation_page + '?p='+str(pid))
      # Isolate the [code] block with the reservations
      page = re.search(r'<pre.*?>(.*?)</pre>', page, flags=re.DOTALL).group(1)
      ind = page.find('\n')
@@ -66,7 +70,7 @@ def get_reservations(pid):
      else:
           return page[ind+1:] # Dump the first line == "<b>Seq Who Index Size</b>"
 
-if res_posts: 
+if res_posts and not use_local_reservations: 
      reservations = '\n'.join(data for data in map(get_reservations, res_posts) if data)
      try:
           with open(resfile, 'r') as f:
@@ -413,7 +417,8 @@ def spider(last_pid):
      if spider_msg:
           write_db(db)
           update()
-          send('Spider: ' + ' | '.join(spider_msg)) # For now, doesn't check if send was successful
+          if not use_local_reservations:
+               send('Spider: ' + ' | '.join(spider_msg)) # For now, doesn't check if send was successful
 
      return last_pid
 
@@ -422,9 +427,10 @@ def spider(last_pid):
 
 if __name__ == '__main__':
      err = "Error: commands are 'add', 'drop', 'send', 'update', 'print', or 'spider'"
-     from sys import argv
+     from sys import argv, exit
      if len(argv) < 2:
           print(err)
+          exit(-1)
      if argv[1] == 'send':
           if len(argv[2:]) < 1: argv.append('')
           send(' '.join(argv[2:]))
@@ -464,3 +470,4 @@ if __name__ == '__main__':
                f.write(str(last_pid) + '\n')
      else:
           print(err)
+          exit(-1)

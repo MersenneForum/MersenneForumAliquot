@@ -21,6 +21,7 @@ statefile = sys.argv[0] + '.conf'
 lockfile = sys.argv[0] + '.lock'
 datefmt = '%Y-%m-%d %H:%M:%S'
 
+reservation_page = 'http://www.mersenneforum.org/showpost.php'
 res_post_ids = (165249, 397318, 397319, 397320, 397912)
 
 per_hour = 55
@@ -94,7 +95,7 @@ def current_update(per_hour):
 def get_reservations(pids):
      reserves = {}
      for pid in pids:
-          page = blogotubes('http://www.mersenneforum.org/showpost.php?p={}&postcount=1'.format(str(pid)),
+          page = blogotubes(reservation_page + '?p={}&postcount=1'.format(str(pid)),
                     hdrs={'User-Agent': 'Dubslow/AliquotSequences'})
           update = re.search(r'<!-- edit note -->.*Last fiddled with by [A-Za-z_0-9 -]+? on ([0-9a-zA-Z ]+) at <span class="time">([0-9:]{5})</span>', page, flags=re.DOTALL)
           updated = update.group(1)+' '+update.group(2)
