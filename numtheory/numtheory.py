@@ -34,7 +34,10 @@ class Factors(dict):
           return 0
 
      def _parse(self, string):
-          facts = [fact.strip() for fact in string.split('*')]
+          if '·' in string:
+               facts = [fact.strip() for fact in string.split('·')]
+          else:
+               facts = [fact.strip() for fact in string.split('*')]
           for fact in facts:
                try:
                     fact, power = fact.split('^')
@@ -59,10 +62,12 @@ class Factors(dict):
           return num
      
      def int(self, recalc=False):
-          if recalc or not hasattr(self, 'num'):
-               return self._unparse()
-          else:
-               return self.num
+          if not recalc:
+               try:
+                    return self.num
+               except AttributeError as e:
+                    pass               
+          return self._unparse()
      
      def __int__(self):
           return self.int()
@@ -87,13 +92,13 @@ class Factors(dict):
           if len(facts) == 0:
                return '1'
           else:
-               return sep.join([power_str(self, key) for key in facts])
+               return sep.join(power_str(self, key) for key in facts)
      
      def __str__(self):
           return self.str()
 
      def __repr__(self):
-          return '{'+', '.join(['{}: {}'.format(k,v) for k,v in self.items()])+'}'
+          return '{' + ', '.join(['{}: {}'.format(k,v) for k,v in self.items()]) + '}'
 
 def _sanitize(arg):
      if isinstance(arg, dict):
@@ -154,17 +159,25 @@ def set_cache(depth=10**6):
 
 set_cache(10**5)
 
-def factor(num, depth=0, factors=None, start=3):
+def _positive(n, func):
      try:
-          num = int(num)
-     except TypeError as e:
-          e.args = (e.args[0].replace('int', 'factor'),)
-          raise
-     except ValueError as f:
-          f.args = (f.args[0].replace('int', 'factor'),)
-          raise
-     if num <= 0:
-          raise ValueError('factor() expects an int > 0')
+          out = int(n)
+          if out <= 0:
+               raise ValueError
+     except ValueError:
+          raise ValueError("{}() expects a positive integer!".format(func))
+     return n
+
+def quick_pow_of_two(n):
+     n = _positive(n)
+     # To count the trailing zero bits (i.e. power of 2), first subtract one, then xor
+     # The former takes xxxx1000 to xxxx0111, and xor will leave (ans+1) bits set to 1
+     # Put another way, writing n=2^a * v, v odd, then n ^ (n-1) = 2^(a+1) - 1 (no matter v)
+     out = (n ^ (n-1)) >> 1
+     return out.bit_length()
+
+def factor(num, depth=0, factors=None, start=3):
+     num = _positive(num, "factor")
 
      if factors is None:
           factors = Factors()
@@ -178,8 +191,8 @@ def factor(num, depth=0, factors=None, start=3):
           return factors
 
      if num & 1 == 0:
-          factors[2] += 1
-          return factor(num>>1, depth, factors, start)
+          factors[2] = quick_pow_of_two(num)
+          return factor(num>>factors[2], depth, factors, start)
 
      try:
           sqrt = int(sr(num)) + 1
@@ -238,12 +251,7 @@ def is_prime(n, depth=0): # Similar to factor(), except abort after first factor
      '''\
 Returns ... if a manual depth is given and there are no factors below that depth.
 Tell me if you think of a better idea.'''
-     try:
-          n = int(n)
-          if n <= 0:
-               raise ValueError
-     except ValueError:
-          raise ValueError("is_prime() expects a positive int!")
+     n = _positive(n, "is_prime")
 
      if n in _primes[:5]: return True
      # Short circuit for very small primes, where sqrt() is long relative to
@@ -443,11 +451,7 @@ def miller_rabin(n, b=2):
 
      # First find the power of two in n-1
      d = n-1
-     s = 0 # Count the trailing zero bits
-     while d & 1 == 0:
-          d >>= 1
-          s += 1
-     # Now n-1 = 2^s*d, d odd
+     s = quick_pow_of_two(d)
      x = pow(b, d, n)
      if x == 1 or x == n-1:
           return True
@@ -506,15 +510,6 @@ def powmod(b, n, m, verbose=False):
           b = b**2 % m
           n >>= 1
      return out
-
-def _positive(n, func):
-     try:
-          out = int(n)
-          if out <= 0:
-               raise ValueError
-     except ValueError:
-          raise ValueError("{}() expects a positive integer!".format(func))
-     return n
 
 def phi(n):
      # Calculate the Euler totient function using the Euler product
@@ -850,6 +845,7 @@ def halve_degree(coeffs, verbose=False):
      '''Takes a list of coefficients, index corresponding to power as usual. 
 The list is assumed to be the coeffs from 0 to deg/2 + 1.'''
      coeffs.reverse()
+     l = len(coeffs)
      new = [None for i in range(l)]
      for i in range(l-1, -1, -1):
           # http://www.mersennewiki.org/index.php/SNFS_Polynomial_Selection
@@ -868,19 +864,27 @@ The list is assumed to be the coeffs from 0 to deg/2 + 1.'''
                         # because watching the terms go to zero is neat.
      return new
 
-def binomial(n, k):
-     if n < 0 or k < 0: 
-          return
-     if n < k:
-          n, k = k, n
-     if k < n / 2: # This isn't backwards: look closely at the loops
-          k = n - k
+from functools import lru_cache
+
+@lru_cache(maxsize=128)
+def _binomial(n, k):
      out = 1
      for i in range(k+1, n+1):
           out *= i
      for i in range(2, n-k+1):
           out //= i
      return out
+
+def binomial(n, k):
+     if n < 0 or k < 0: 
+          return
+     # Uniqeify the args before caching them
+     if n < k:
+          n, k = k, n
+     if k < n / 2: # This isn't backwards: look closely at the loops
+          k = n - k
+
+     return _binomial(n, k)
 
 def reduce(num, den):
      # Reduce a fraction to lowest terms
@@ -889,7 +893,8 @@ def reduce(num, den):
 
 _list = [0, 1]
 def fib(n):
-     if n < 0: return "Error!"
+     if n < 0:
+          raise ValueError("fib needs non-negative integer (not {})".format(n))
      global _list
      l = len(_list)
      if l <= n:

@@ -126,7 +126,7 @@ a: 9  v: 3 * 11 * 31  guide: 2^9 * 3 * 11 * 31  class: 0
 a: 10  v: 23 * 89  guide: 2^10 * 23 * 89  class: 6
 """
 
-from numtheory import is_prime, prp, Factors, factor, _sanitize, sigma
+from numtheory import is_prime, prp, Factors, factor, _sanitize, sigma, quick_pow_of_two
      
 def aliquot(n):
      n = _sanitize(n)
@@ -166,9 +166,4 @@ def is_driver(n=0, guide=None):
      return sigma(v) % 2**(guide[2]-1) == 0
 
 def twos_count(t): # The power of two of sigma(t)
-     t = sigma(t)
-     # To count the trailing zero bits (i.e. power of 2), first subtract one, then xor
-     # The former takes xxxx1000 to xxxx0111, and xor will leave (ans+1) bits set to 1
-     t ^= (t-1)
-     t >>= 1 # Toss the extra bit before counting them
-     return t.bit_length()
+     return quick_pow_of_two(sigma(t))
