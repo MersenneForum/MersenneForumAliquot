@@ -54,8 +54,8 @@ def examine_seq(seq):
      # Also, although this doesn't strictly match the previous criterion, the allseq.py script
      # truncates all primes greater than ~10 digits and assumes they have no exponent.
      # This assumption doesn't match the previous criterion but exceptions are very rare,
-     # so we work off it and ignore sequences with a 'P' in them.
-     if 'P' in seq.factors:
+     # so we work off it and ignore sequences with a 'P' in them (and reserved sequences).
+     if 'P' in seq.factors or seq.res:
           return None
 
      guide = nt.Factors(seq.guide)
