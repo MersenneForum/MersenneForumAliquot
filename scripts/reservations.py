@@ -22,7 +22,7 @@ template = """[B]For newcomers:[/B] Please post reservations here. There are wor
  
 For an archive of old reservations, click [URL="http://www.mersenneforum.org/showthread.php?t=14330"]here[/URL].
  
-For current driver/guide info, click [URL="http://dubslow.tk/aliquot/AllSeq.html"]here[/URL].
+For current driver/guide info, click [URL="http://rechenkraft.net/aliquot/AllSeq.html"]here[/URL].
  
 Current reservations:
 [code][B]   Seq  Who             Index  Size  [/B]

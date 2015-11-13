@@ -3,7 +3,7 @@
 This is a module I've slowly built up as my number theory class progresses, with
 some factoring functionality moved here from the aliquot.py module used for my
 Aliquot sequences webpage. The aliquot.py module is here:
-<http://dubslow.tk/aliquot/aliquot.txt>
+<https://github.com/dubslow/MersenneForumAliquot/blob/master/numtheory/aliquot.py>
 """
 
 class Factors(dict):

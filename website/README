@@ -1,4 +1,4 @@
-These are the HTML files I use to run the website formerly at
+These are the HTML files I used to run the website formerly at
 <http://dubslow.tk/aliquot/>. The html/ folder is where you should point your
 server, and the ../scripts/ folder contains the scripts used. They are meant to
 be run primarily from cron; this is my current crontab:

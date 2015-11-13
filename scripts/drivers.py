@@ -7,7 +7,7 @@ import json, re
 from myutils import blogotubes
 
 # Some of the data handling code is copied from allseq.py
-data_file = 'http://dubslow.tk/aliquot/AllSeq.json'
+data_file = 'http://rechenkraft.net/aliquot/AllSeq.json'
 
 composite = re.compile(r' <a href="index.php\?id=([0-9]+?)"><font color="#002099">[0-9.]+?</font></a><sub>&lt;')
 smallfact = re.compile(r' <a href="index.php\?id=[0-9]+?"><font color="#000000">([0-9^]+?)</font></a>')
@@ -116,7 +116,7 @@ def analyze(facts, composite):
           print("Class greater than 2")
           return None #raise ValueError("analyze() can't handle class 3 or greater yet")
 
-     # http://dubslow.tk/aliquot/analysis.html
+     # http://rechenkraft.net/aliquot/analysis.html
      # The requirement for a driver breaking ("mutation") is that "the 2s count of
      # t is equal to or less than the class of (2^a)*v", where 2^a*v is the guide,
      # and t is the set of prime factors with odd powers (and s is the primes with
