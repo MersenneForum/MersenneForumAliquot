@@ -1,8 +1,8 @@
 #! /usr/bin/env python3
 
-import aliquot as aq
-import numtheory as nt
-from allseq import Sequence
+from numtheory import aliquot as aq
+from numtheory import numtheory as nt
+from sequence import Sequence
 import json, re
 from myutils import blogotubes
 
