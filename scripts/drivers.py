@@ -1,19 +1,20 @@
 #! /usr/bin/env python3
 
-import aliquot as aq
-import numtheory as nt
+from numtheory import aliquot as aq
+from numtheory import numtheory as nt
+from sequence import Sequence
 import json, re
 from myutils import blogotubes
 
 # Some of the data handling code is copied from allseq.py
-data_file = 'http://dubslow.tk/aliquot/AllSeq.json'
+data_file = 'http://rechenkraft.net/aliquot/AllSeq.json'
 
 composite = re.compile(r' <a href="index.php\?id=([0-9]+?)"><font color="#002099">[0-9.]+?</font></a><sub>&lt;')
 smallfact = re.compile(r' <a href="index.php\?id=[0-9]+?"><font color="#000000">([0-9^]+?)</font></a>')
 largefact = re.compile(r' <a href="index.php\id=([0-9]+?)"><font color="#000000">[0-9]+?[.]{3}[0-9]{2}</font></a><sub>&lt;')
 largenum = re.compile(r'<td align="center">(([0-9\s]|(<br>))+?)</td>')
 
-if 'http' in data_file:
+if __name__ == "__main__" and 'http' in data_file:
      print("Getting the current data")
      txt = blogotubes(data_file)
      if txt is None:
@@ -54,8 +55,8 @@ def examine_seq(seq):
      # Also, although this doesn't strictly match the previous criterion, the allseq.py script
      # truncates all primes greater than ~10 digits and assumes they have no exponent.
      # This assumption doesn't match the previous criterion but exceptions are very rare,
-     # so we work off it and ignore sequences with a 'P' in them.
-     if 'P' in seq.factors:
+     # so we work off it and ignore sequences with a 'P' in them (and reserved sequences).
+     if 'P' in seq.factors or seq.res:
           return None
 
      guide = nt.Factors(seq.guide)
@@ -115,7 +116,7 @@ def analyze(facts, composite):
           print("Class greater than 2")
           return None #raise ValueError("analyze() can't handle class 3 or greater yet")
 
-     # http://dubslow.tk/aliquot/analysis.html
+     # http://rechenkraft.net/aliquot/analysis.html
      # The requirement for a driver breaking ("mutation") is that "the 2s count of
      # t is equal to or less than the class of (2^a)*v", where 2^a*v is the guide,
      # and t is the set of prime factors with odd powers (and s is the primes with
@@ -151,67 +152,6 @@ def main():
      targets.sort(key=lambda seq: seq.cofact)
      for seq in targets:
           print("{:>6} may have a driver that's ready to break (composite is 1 mod 4): {}".format(seq.seq, seq.factors))
-               
 
-################################################################################
-# Copied from allseq.py
-
-class Sequence(list):
-     _map = {'seq': 0,
-             'size': 1,
-             'index': 2,
-             'id': 3,
-             'guide': 4,
-             'factors': 5,
-             'cofact': 6,
-             'clas': 7,
-             'time': 8,
-             'progress': 9,
-             'res': 10,
-             'driver': 11 }
-     
-     def __setattr__(self, name, value): # Black magic meta programming to make certain attributes access the list
-          try:                           # (This is why I love Python.)
-               self[Sequence._map[name]] = value
-          except KeyError:
-               object.__setattr__(self, name, value)
-     
-     def __getattribute__(self, name):
-          try:
-               return self[Sequence._map[name]]
-          except KeyError:
-               return object.__getattribute__(self, name)
-     
-     def __init__(self, seq=0, size=0, index=0, id=0, guide=None, factors=None, time=None, lst=None):
-          if lst is not None:
-               super().__init__(lst)
-               if seq: self.seq = seq
-               if index: self.index = index
-               if size: self.size = size
-               if time: self.time = time
-               if factors: self.factors = factors
-               if id: self.id = id
-               if guide: self.guide = guide
-          else:
-               super().__init__([None for i in range(len(Sequence._map))])
-               self.seq = seq
-               self.index = index
-               self.size = size
-               self.id = id
-               self.guide = guide
-               self.time = time
-               self.factors = factors
-               self.res = ''
-               self.driver = ''
-               self.progress = 'Unknown'
-     
-     def well_formed(self):
-          return self.seq and self.size and self.index and self.factors
-     
-     def __str__(self):
-          if self.well_formed():
-               return "{:>6d} {:>5d}. sz {:>3d} {:s}\n".format(ali.seq, ali.index, ali.size, ali.factors)
-          else:
-               raise AttributeError('Not fully described! Seq:', self.seq)
-
-main()
+if __name__ == "__main__":
+     main()

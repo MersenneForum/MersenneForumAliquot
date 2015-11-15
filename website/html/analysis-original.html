@@ -5,38 +5,27 @@
 <meta http-equiv="Content-Type"
 content="text/html; charset=utf-8">
 <meta name="GENERATOR" content="Microsoft FrontPage Express 2.0">
-<title>Aliquot Sequences Analysis</title>
-<script type="text/x-mathjax-config">
-MathJax.Hub.Config({
-  tex2jax: {
-    inlineMath: [['$','$'], ['\\(','\\)']],
-    processEscapes: true
-  }
-});
-</script>
-<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-<style type="text/css">
-     footer    { text-align: center;
-               font-size: 70%; }
-</style>
+<title>Analysis</title>
 </head>
 
 <body bgcolor="#AEFFFF">
-<p>Note: This is an updated-tech version (with one corrected typo) of what used to be <a href="http://www.lafn.org/~ax810/analysis.htm">this</a> web page,
-written by Clifford Stern and archived by the Wayback Machine on June 6th, 2011. If the link works for you,
-please tell me so that I may take down this page. The original archive from the Wayback Machine (with typo
-included [exercise!]) can be found <a href="analysis-original.html">here</a>.</p>
+<p>Note: Aside from this note, this is an almost exact duplicate of what used to be <a href="http://www.lafn.org/~ax810/analysis.htm">this</a> web page,
+written by Clifford Stern and archived by the Wayback Machine on June 6th, 2011. If the link works for you, please tell me so that I may take down this page.</p>
 
 <p align="center"><font size="5"><b>ANALYSIS</b></font></p>
 
 <p>Let's review the definitions of drivers and guides, as
 documented in <a
 href="ftp://ftp.frontiernet.net/pub/users/aliquot/3630finishes.pdf">3630finishes.pdf</a>:<br>
-A <b>guide</b> consists of $2^a$ ($a \gt 0$)
-along with a subset of the prime factors of $\sigma(2^a)$.<br/>
+A <b>guide</b> consists of 2<font size="4"><sup><i>a </i></sup></font>(<i>a</i>&gt;0)
+along with a subset of the prime factors of <nobr><img src="sigma.jpg"
+alt="sigma" width="14" height="18">(2<font size="4"><sup><i>a</i></sup></font>) .</nobr><br>
 A<b> driver</b> is a special type of guide that takes
-the form $2^a v$
-where $v \mid \sigma(2^a)$ and $2^{a-1} \mid \sigma(v)$. The second
+the form <img src="2av.gif" alt="(2^a)*v" width="25" height="18">
+where <i>v</i> | <nobr><img src="sigma.jpg" alt="sigma" width="14"
+height="18">(2<font size="4"><sup><i>a</i></sup></font>)</nobr> and 2<sup><i>a-<font
+size="2">1</font></i></sup> | <nobr><img src="sigma.jpg"
+alt="sigma" width="14" height="18">(<i>v</i>) .</nobr> The second
 statement enables <b>2 </b>to qualify as a driver, and
 is descriptively termed the <b>downdriver</b>. In
 addition, <b>2</b><sup><sup><b>3</b></sup></sup><b>
@@ -44,13 +33,15 @@ addition, <b>2</b><sup><sup><b>3</b></sup></sup><b>
 
 <p>I propose to extend the lexicon of aliquot sequences as
 follows:<br>
-For the odd integer $t \gt 1$, write $\sigma(t) = 2^b \cdot u$ where $u$ is odd. Then $b$
-is defined as the <b>2s count</b> of $t$. ([tooz], not [too-es]) <br />
-Let $v$ be the product of a subset of the prime factors of
-$\sigma(2^a)$ and $b$ the
-2s count of $v$. Define the <b>class</b> of the
-guide $2^a v$ to
-be $a - b$. Here are how various drivers and guides fit into
+For the odd integer t&gt;1, write <img src="sigma.jpg"
+alt="sigma" width="14" height="18">(<i>t</i>) = 2<font size="4"><sup><i>b
+</i></sup></font>· <i>u</i> where <i>u</i> is odd. Then <i>b
+</i>is defined as<i> </i>the <b>2s count</b> of <i>t</i>.<br>
+Let <i>v</i> be the product of a subset of the prime factors of
+2<font size="4"><sup><i>a </i></sup></font>and <i>b</i> the
+2s count of <i>v</i>. Define the <b>class</b> of the
+guide <img src="2av.gif" alt="(2^a)*v" width="25" height="18"> to
+be <i>a-b.</i> Here are how various drivers and guides fit into
 the resulting classes:</p>
 
 <p><font size="4"><b><u>Class -1</u></b></font><font
@@ -80,29 +71,32 @@ size="3"> 11 </font>·<font size="3"> 31</font></p>
 </u></b></font>2^3<br>
 2^5 · 3</p>
 
-<p>Let $n_i = 2^a v \cdot s \cdot t$ be a member of an aliquot sequence where 
-$2^a v$ is its guide,
-$s$ is the product of the odd prime factors of $n_i$ 
-whose exponents are even and $t \gt 1$ the product
-of the remaining factors. Let a change in the exponent $a$
+<p>Let n<sub>i </sub>= <img src="2av.gif" alt="(2^a)*v"
+width="25" height="18"> ·<font size="3"> <i>s</i> </font>·<font
+size="3"> <i>t </i>be a member of an aliquot sequence where </font><img
+src="2av.gif" alt="(2^a)*v" width="25" height="18"> is its guide,
+s is the product of the odd prime factors of n<sub>i </sub><font
+size="3">whose exponents are even and </font>t&gt;1 the product
+of the remaining factors. Let a change in the exponent <i>a</i>
 be termed a <b>mutation</b>. This occurs only when the
-2s count of $t$ is equal to or less than the class of $2^a v$. In the
-former case, the exponent $a$ increases and in the latter,
-$a$ is reduced to the 2s count of $t$. The
+2s count of <i>t</i> is equal to or less than the class of <img
+src="2av.gif" alt="(2^a)*v" width="25" height="18">. In the
+former case, the exponent <i>a </i>increases and in the latter,
+<i>a </i>is reduced to the 2s count of <i>t</i>. The
 stability of a guide depends upon its class: the smaller the
 class, the more stable the guide. For example, a class 2 guide
-will <b>mutate</b> if $t$ is the product of two
-primes of the form $4n+1$ or is a prime of the form $8n+3$ or $4n+1$.
-But a class 1 guide mutates only when $t$ is a prime of
-the form $4n+1$. When the class of a driver is zero or -1, a small
-2s count of $t$ is not sufficient in itself to effect a
-change in the exponent $a$ because the 2s count of $t$
+will <b>mutate</b> if <i>t</i> is the product of two
+primes of the form 4n+1 or is a prime of the form 8n+3 or 4n+1.
+But a class 1 guide mutates only when <i>t</i> is a prime of
+the form 4n+1. When the class of a driver is zero or -1, a small
+2s count of <i>t</i> is not sufficient in itself to effect a
+change in the exponent <i>a </i>because the 2s count of <i>t</i>
 is always greater than zero. Help is required from one of the
-components of $v$ by having its exponent aquire an even
+components of <i>v</i> by having its exponent aquire an even
 power in order to temporarily raise the driver's class above
 zero. For example, when the 2^2 · 7 driver takes the form 2^2 ·
 7^2, its class of -1 temporarily increases by 3 (the 2s count of
-7) so a mutation will occur when the 2s count of $t$ is 2
+7) so a mutation will occur when the 2s count of <i>t</i> is 2
 or 1.</p>
 
 <p>A sequence decreases in a significant and reliable way only
@@ -120,14 +114,12 @@ sequence beyond the range of practical computation, especially
 those of class -1. When a sequence is adrift, not propelled by a
 driver or guide, it is at constant risk of aquiring one that
 sends it upwards: every time the exponent of 2 changes, there is
-a chance that the new $2^a$ is
-accompanied by one or more of the factors of $\sigma(2^a)$,
+a chance that the new 2<sup><i>a </i></sup>is
+accompanied by one or more of the factors of <nobr><img src="sigma.jpg"
+alt="sigma" width="14" height="18">(2<sup><i>a</i></sup>),</nobr>
 thus producing a driver, or a guide such as 2^3 · 5 or 2^5 · 7.
 It is inevitable that this will happen as a sequence goes through
 a long series of mutations. </p>
 
-     <footer>
-       <p>This page renders mathematics with <a href="https://www.mathjax.org/">MathJax</a>.</p>
-     </footer>
 </body>
 </html>

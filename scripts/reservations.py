@@ -7,13 +7,18 @@
 # (should be in the 300K area) into the pid_file specified below. The script will
 # update it as necessary.
 
+from sequence import Sequence
+
+reservation_page = 'http://www.mersenneforum.org/showpost.php'
+res_posts = (165249, 397318, 397319, 397320, 397912) # Tuple to be expanded as necessary
+use_local_reservations = False
 
 dir = '.' # Set this appropriately
-res_posts = (165249, 397318, 397319, 397320, 397912) # Tuple to be expanded as necessary
 resfile = dir+'/reservations'
 bup = dir+'/backup'
 pid_file = dir+'/last_pid'
-info = 'http://dubslow.tk/aliquot/AllSeq.txt'
+info = dir+'/AllSeq.txt'
+
 username = 'Dubslow'
 passwd = '<nope>'
 txtfiles = {'yoyo@home': 'http://yafu.myfirewall.org/yafu/download/ali/ali.txt.all'}
@@ -21,7 +26,7 @@ template = """[B]For newcomers:[/B] Please post reservations here. There are wor
  
 For an archive of old reservations, click [URL="http://www.mersenneforum.org/showthread.php?t=14330"]here[/URL].
  
-For current driver/guide info, click [URL="http://dubslow.tk/aliquot/AllSeq.html"]here[/URL].
+For current driver/guide info, click [URL="http://rechenkraft.net/aliquot/AllSeq.html"]here[/URL].
  
 Current reservations:
 [code][B]   Seq  Who             Index  Size  [/B]
@@ -56,7 +61,7 @@ if 'http' in info:
 
 def get_reservations(pid):
      # Copied from allseq.py
-     page = blogotubes('http://www.mersenneforum.org/showpost.php?p='+str(pid))
+     page = blogotubes(reservation_page + '?p='+str(pid))
      # Isolate the [code] block with the reservations
      page = re.search(r'<pre.*?>(.*?)</pre>', page, flags=re.DOTALL).group(1)
      ind = page.find('\n')
@@ -65,12 +70,14 @@ def get_reservations(pid):
      else:
           return page[ind+1:] # Dump the first line == "<b>Seq Who Index Size</b>"
 
-if res_posts: 
+if res_posts and not use_local_reservations: 
      reservations = '\n'.join(data for data in map(get_reservations, res_posts) if data)
      try:
           with open(resfile, 'r') as f:
                local_data = f.read()
-     except: pass
+     except:
+          with open(resfile, 'w') as f:
+               f.write(reservations)
      else:
           if local_data.strip() != reservations.strip():
                Print("Warning: local file and forum post do not match!")
@@ -79,22 +86,7 @@ if res_posts:
                     f.write(reservations)
 
 ################################################################################
-# Begin class and function definitions, the remaining top-level logic is at the very bottom
-
-class Sequence:
-     def __init__(self, seq=0, name=None, index=0, size=0):
-          self.seq = seq
-          self.size = size
-          self.index = index
-          self.name = name
-     
-     def __str__(self):
-          #   966  Paul Zimmermann   893  178
-          #933436  unconnected     12448  168
-          out = "{:>6d}  {:15s} {:>5d}  {:>3d}\n".format(self.seq, self.name, self.index, self.size)
-          if 'jacobs and' in self.name:
-               out += '        Richard Guy\n'
-          return out
+# Begin function definitions, the remaining top-level logic is at the very bottom
 
 def read_db(file=resfile):
      db = {}
@@ -113,7 +105,7 @@ def read_db(file=resfile):
                     seq.index = int(l[-2])
                     seq.size = int(l[-1])
                except ValueError: # Some lines have no data, only <seq name>
-                    seq.name = ' '.join(l[1:])
+                    seq.res = ' '.join(l[1:])
                     try:
                          if info:
                               seq.index, seq.size = get_info(seq.seq)
@@ -121,7 +113,7 @@ def read_db(file=resfile):
                          Print(seq.seq, "doesn't exist!")
                          continue
                else:
-                    seq.name = ' '.join(l[1:-2])
+                    seq.res = ' '.join(l[1:-2])
                db[seq.seq] = seq
      Print("Read {} seqs".format(len(db)))
      return db
@@ -130,14 +122,14 @@ def write_db(db, file=resfile):
      c = 0
      with open(file, 'w') as f:
           for seq in sorted(db.keys()):
-               f.write(str(db[seq]))
+               f.write(db[seq].reservation_string())
                c += 1
      Print("Wrote {} seqs".format(c))
 
 def add_db(db, name, seqs):
      for seq in seqs:
           if seq in db:
-               other = db[seq].name
+               other = db[seq].res
                if name == other:
                     Print("Warning:", name, "already owns", seq)
                else:
@@ -148,13 +140,13 @@ def add_db(db, name, seqs):
                     if not infos:
                          Print("Warning:", seq, "doesn't appear to be in the list")
                     else:
-                         db[seq] = Sequence(seq, name, *infos)
+                         db[seq] = Sequence(seq=seq, res=name, index=infos[0], size=infos[1])
 
 def drop_db(db, name, seqs):
      b = c = len(seqs)
      for seq in seqs:
           try:
-               exists = db[seq].name == name
+               exists = db[seq].res == name
           except KeyError:
                Print("{} is not reserved at the moment".format(seq))
                continue
@@ -162,7 +154,7 @@ def drop_db(db, name, seqs):
                del db[seq]
                c -= 1
           else:
-               Print("Warning: Seq {}: reservation {} doesn't match dropee {}".format(seq, db[seq].name, name))
+               Print("Warning: Seq {}: reservation {} doesn't match dropee {}".format(seq, db[seq].res, name))
 
      if c != 0:
           Print("Only {} seqs were removed, {} were supposed to be dropped".format(b-c, b))
@@ -219,16 +211,17 @@ def send(msg=''):
                          break
                bodies.append(secondary_template.format(''.join(seqs)))
           size = len(list(f))
-          if size > 0:
-               Print("Error: {} seqs couldn't fit into the posts".format(size))
-          else:
-               Print("There's room for ~{} more reservations".format( (10000-len(bodies[-1]))//36 ) )
-               editor = PostEditor()
-               if not editor.is_logged_in():
-                    return
-               for postid, body in zip(res_posts, bodies):
-                    if not editor.edit_post(postid, body, 'Autoedit: '+msg):
-                         return postid
+
+     if size > 0:
+          Print("Error: {} seqs couldn't fit into the posts".format(size))
+     else:
+          Print("There's room for ~{} more reservations".format( (10000-len(bodies[-1]))//36 ) )
+          editor = PostEditor()
+          if not editor.is_logged_in():
+               return
+          for postid, body in zip(res_posts, bodies):
+               if not editor.edit_post(postid, body, 'Autoedit: '+msg):
+                    return postid
 
 #from time import time
 #from urllib import request, parse, error
@@ -276,7 +269,7 @@ class PostEditor:
           data['posthash'] = phash
           data['poststarttime'] = ptime
           data['sbutton'] = 'Save Changes'
-     
+
           return data
 
      def parse_tokens(self, page):
@@ -307,7 +300,7 @@ def spider(last_pid):
      ###############################################################################################
      # First the standalone func that processes mass text file reservations
      def parse_text_file(reservee, url):
-          old = {seq.seq for seq in db.values() if seq.name == reservee}
+          old = {seq.seq for seq in db.values() if seq.res == reservee}
           txt = blogotubes(url)
           current = set()
           for line in txt.splitlines():
@@ -393,11 +386,14 @@ def spider(last_pid):
                raise ValueError("Out of order posts! Pids:\n{}".format([post[0] for post in posts]))
           return posts[0][0]
 
+     #################################################################################################
      # Now begin actual logic of top-level spider()
-     
+
      html = blogotubes(wobsite+'10000') # vBulletin rounds to last page
      all_pages = [parse_page(html)]
      lowest_pid = order_posts(all_pages[0])
+     if not last_pid: # If this is the first time running the script
+          last_pid = lowest_pid # On first time run, ignore all but the last page
      while lowest_pid > last_pid: # It's probable that we missed some posts on previous page
           page_num = re.search('<td class="vbmenu_control" style="font-weight:normal">Page ([0-9]+)', html).group(1)
           page_num = str(int(page_num)-1)
@@ -421,7 +417,8 @@ def spider(last_pid):
      if spider_msg:
           write_db(db)
           update()
-          send('Spider: ' + ' | '.join(spider_msg)) # For now, doesn't check if send was successful
+          if not use_local_reservations:
+               send('Spider: ' + ' | '.join(spider_msg)) # For now, doesn't check if send was successful
 
      return last_pid
 
@@ -429,7 +426,11 @@ def spider(last_pid):
 # End of all function definitions
 
 if __name__ == '__main__':
-     from sys import argv
+     err = "Error: commands are 'add', 'drop', 'send', 'update', 'print', or 'spider'"
+     from sys import argv, exit
+     if len(argv) < 2:
+          print(err)
+          exit(-1)
      if argv[1] == 'send':
           if len(argv[2:]) < 1: argv.append('')
           send(' '.join(argv[2:]))
@@ -459,10 +460,14 @@ if __name__ == '__main__':
      elif argv[1] == 'update':
           update()
      elif argv[1] == 'spider':
-          with open(pid_file, 'r') as f:
-               last_pid = int(f.read())
+          try:
+               with open(pid_file, 'r') as f:
+                    last_pid = int(f.read())
+          except FileNotFoundError:
+               last_pid = None
           last_pid = spider(last_pid)
           with open(pid_file, 'w') as f:
                f.write(str(last_pid) + '\n')
      else:
-          print("Error: commands are 'add', 'drop', 'send', 'update', 'print', or 'spider'")
+          print(err)
+          exit(-1)

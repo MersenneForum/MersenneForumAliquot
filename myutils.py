@@ -83,14 +83,14 @@ def opnpoly(k, b, n, c, deg, hi=None):
      # on http://www.mersenneforum.org/showpost.php?p=54606&postcount=39 and
      # http://www.mersenneforum.org/showthread.php?t=15773.
      # Currently it only works for prime b & n, n > 13. (Rather, results are
-     # guaranteed to be pseudo-optimal only under those conditions. The code 
+     # guaranteed to be pseudo-optimal only under those conditions. The code
      # will work in some other cases, but it might not be the best option. I
      # plan to add in some other cases later.)
 
      N = k * b**n + c
      out = "c{deg}: {cdeg}\nc0: {c0}\nm: {m}\nskew: {skew}\ntype: snfs\nsize: {size}"
 
-     def low_poly(k, b, n, c, N, deg):      
+     def low_poly(k, b, n, c, N, deg):
           # Round down to multiple of deg
           m, cdeg = divmod(n, deg)
           m = b**m
@@ -167,12 +167,37 @@ port = 25
 mode = 'tls'
 acc = 'technik@rechenkraft.net'
 pw = ''
-from emailing import send_email as s
+
 def email(*args): # HTML, attachments, cc?
      '''(Subject, Message) or (Recipient, Subject, Message)'''
      if len(args) == 2:
-          s(acc, acc, args[0], args[1], host, port, False)
+          send_email(acc, acc, args[0], args[1], host, port, False)
      elif len(args) == 3:
-          s(args[0], acc, args[1], args[2], host, port, False)
+          send_email(args[0], acc, args[1], args[2], host, port, False)
      else:
           raise ValueError("email() expects two or three arguments")
+
+import smtplib
+from email.utils import formatdate
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+
+def send_email(to, frm, sbjct, txt, host, port, tls=True, acct=None, pswd=None):
+     """To, From, Subject, Body, Server, Port, Account, Password"""
+     msg = MIMEMultipart()
+
+     if isinstance(to, list):
+          to = ', '.join(to)
+     msg['To'] = to
+     msg['Subject'] = sbjct
+     msg['From'] = frm
+     msg['Date'] = formatdate(localtime=True)
+
+     msg.attach(MIMEText(txt))
+
+     server = smtplib.SMTP(host, port)
+     if tls:
+          server.starttls()
+     if acct or pswd:
+          server.login(acct, pswd)
+     server.send_message(msg)

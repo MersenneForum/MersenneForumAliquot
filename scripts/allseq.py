@@ -6,6 +6,7 @@ from time import strftime, gmtime, sleep, strptime
 from collections import Counter
 from aliquot import get_guide, get_class, is_driver
 from myutils import linecount, email, Print
+from sequence import Sequence
 import re, sys, signal, json, os
 dir = '/var/www/rechenkraft.net/aliquot/'
 FILE = dir + 'AllSeq.html'
@@ -16,16 +17,15 @@ STATSON = dir + 'statistics.json'
 template = dir + 'template.html'
 template2 = dir + 'template2.html'
 seqfile = dir + 'AllSeqs.txt'
-lockfile = dir + 'allseq.lock'
+statefile = sys.argv[0] + '.conf'
+lockfile = sys.argv[0] + '.lock'
 datefmt = '%Y-%m-%d %H:%M:%S'
 
-#res_post_ids = (165249, 397318, 397319, 397320, 397912)
-res_post_ids = [ 1 ]
+reservation_page = 'http://www.rechenkraft.net/aliqueit/res_post.php'
+res_post_ids = (1)
 
 per_hour = 55
-sleep_time = 60
-total = linecount(JSON)
-special = [] # If I need to update a specific set of sequences
+sleep_minutes = 60
 loop = False
 drop = []
 broken = {319860: (1072, 2825523558447041736665230216235917892232717165769067317116537832686621082273062400083298623866666431871912457614030538),
@@ -42,20 +42,6 @@ broken = {319860: (1072, 2825523558447041736665230216235917892232717165769067317
 # A dict of tuples of {broken seq: (offset, new_start_val)}
 error_msg = ''
 
-if os.path.exists(lockfile):
-    print('Didn\'t start: lockfile is present')
-    sys.exit(-1)
-
-open(lockfile, 'a').close()
-
-for arg in sys.argv[1:]:
-     try:
-          special.append(int(arg))
-     except ValueError:
-          print('Error: Args are sequences to be run')
-          os.remove(lockfile)
-          sys.exit(-1)
-
 composite = re.compile(r'= <a.+<font color="#002099">[0-9.]+</font></a><sub>&lt;(?P<C>[0-9]+)')
 smallfact = re.compile(r'(?:<font color="#000000">)([0-9^]+)(?:</font></a>)(?!<sub>)')
 largefact = re.compile(r'(?:<font color="#000000">[0-9^.]+</font></a><sub>&lt;)([0-9]+)')
@@ -64,64 +50,6 @@ created = re.compile('([JFMASOND][a-z]{2,8}) ([0-9]{1,2}), ([0-9]{4})') # strfti
 #oldpage = re.compile('(<tr> <td>([0-9]+?)</td> <td>([0-9]+?)</td>.*?<td>)[0-9A-Za-z_ ]*?</td> </tr>') # Kept for historical purposes
 #oldjson = re.compile(r'(\[([0-9]+?), ([0-9]+?), ([0-9]+?), .*?)[0-9A-Za-z_ ]*?"\]') # Ditto
 
-class Sequence(list):
-     _map = {'seq': 0,
-             'size': 1,
-             'index': 2,
-             'id': 3,
-             'guide': 4,
-             'factors': 5,
-             'cofact': 6,
-             'clas': 7,
-             'time': 8,
-             'progress': 9,
-             'res': 10,
-             'driver': 11 }
-     
-     def __setattr__(self, name, value): # Black magic meta programming to make certain attributes access the list
-          try:                           # (This is why I love Python.)
-               self[Sequence._map[name]] = value
-          except KeyError:
-               object.__setattr__(self, name, value)
-     
-     def __getattribute__(self, name):
-          try:
-               return self[Sequence._map[name]]
-          except KeyError:
-               return object.__getattribute__(self, name)
-     
-     def __init__(self, seq=0, size=0, index=0, id=0, guide=None, factors=None, time=None, lst=None):
-          if lst is not None:
-               super().__init__(lst)
-               if seq: self.seq = seq
-               if index: self.index = index
-               if size: self.size = size
-               if time: self.time = time
-               if factors: self.factors = factors
-               if id: self.id = id
-               if guide: self.guide = guide
-          else:
-               super().__init__([None for i in range(len(Sequence._map))])
-               self.seq = seq
-               self.index = index
-               self.size = size
-               self.id = id
-               self.guide = guide
-               self.time = time
-               self.factors = factors
-               self.res = ''
-               self.driver = ''
-               self.progress = 'Unknown'
-     
-     def well_formed(self):
-          return self.seq and self.size and self.index and self.factors
-     
-     def __str__(self):
-          if self.well_formed():
-               return "{:>6d} {:>5d}. sz {:>3d} {:s}\n".format(ali.seq, ali.index, ali.size, ali.factors)
-          else:
-               raise AttributeError('Not fully described! Seq:', self.seq)
-     
 quitting = False
 sleeping = False
 def handler(sig, frame):
@@ -130,13 +58,18 @@ def handler(sig, frame):
      if sleeping:
           os.remove(lockfile)
           sys.exit()
-signal.signal(signal.SIGTERM, handler); signal.signal(signal.SIGINT, handler)
+signal.signal(signal.SIGTERM, handler)
+signal.signal(signal.SIGINT, handler)
 
 def current_update(per_hour):
      this = []
-     with open(sys.argv[0]+'.conf', 'r') as conf: # Read which sequences to update
-          start = int(conf.readline())
-          Print('Start:', start)
+     try:
+          with open(statefile, 'r') as conf: # Read which sequences to update
+               start = int(conf.readline())
+     except FileNotFoundError as e:
+          Print('State file not found, starting from sequence 0')
+          start = 0
+     Print('Start:', start)
 
      if drop: # Remove a sequence from the file
           seqs = []
@@ -162,8 +95,8 @@ def current_update(per_hour):
 def get_reservations(pids):
      reserves = {}
      for pid in pids:
-          page = blogotubes('http://www.rechenkraft.net/aliquot/res_post.php?p={}&postcount=1'.format(str(pid)),
-                    hdrs={'User-Agent': 'RechenkraftBot/AliquotSequences'})
+          page = blogotubes(reservation_page + '?p={}&postcount=1'.format(str(pid)),
+                    hdrs={'User-Agent': 'Dubslow/AliquotSequences'})
           update = re.search(r'<!-- edit note -->.*Last fiddled with by [A-Za-z_0-9 -]+? on ([0-9a-zA-Z ]+) at <span class="time">([0-9:]{5})</span>', page, flags=re.DOTALL)
           updated = update.group(1)+' '+update.group(2)
           # Isolate the [code] block with the reservations
@@ -196,9 +129,9 @@ def get_old_info(JSON, reserves, this, drop):
                try:
                     oldinfo.append(tmp[seq])
                except KeyError:
-                    oldinfo.append(Sequence(seq, index=-1))
+                    oldinfo.append(Sequence(seq=seq, index=-1))
           return data, oldinfo
-          
+
 def guide(string):
      """Returns a tuple of (str_of_guide, class_with_powers, is_driver)"""
      if 'terminated' in string:
@@ -207,7 +140,7 @@ def guide(string):
           return "Garbage", -9, False
      else:
           dr = get_guide(string, powers=False) # dr is an instance of "Factors"
-          if get_class(guide=dr) > 3: 
+          if get_class(guide=dr) > 3:
                drs = '2^{}'.format(dr[2]) # Replace an unstable "guide" with simply 2^n
           else:
                drs = str(dr) # str specified by "Factors" class
@@ -252,12 +185,12 @@ def id_created(i):
      month = strftime('%m', strptime(date.group(1), '%B'))
      return '-'.join(iter((year, month, day)))
 
-def check(old, tries=3):
-     if tries <= 0: 
+def check(old, tries=3, reserves=None, special=None):
+     if tries <= 0:
           Print('Bad sequence or id! Seq:', old.seq)
           return old
      if old.id is None or old.id == 0 or special:
-          return updateseq(old)
+          return updateseq(old, reserves)
      # else:
      page = blogotubes('http://factordb.com/index.php?id='+str(old.id))
      if quitting: return old
@@ -267,11 +200,11 @@ def check(old, tries=3):
                old.progress = id_created(old.id)
           return old
      elif 'FF' in page or 'P' in page:
-          return updateseq(old)
+          return updateseq(old, reserves)
      else:
-          return check(old, tries-1)
+          return check(old, tries-1, special)
 
-def updateseq(old):
+def updateseq(old, reserves):
      global error_msg
      tries = 5
      if old.seq in broken:
@@ -289,7 +222,7 @@ def updateseq(old):
                smalls = smallfact.findall(page)
                bigs = largefact.findall(page)
                if info: # Make sure we can actually get size/index info before in depth parsing
-                    ali = Sequence(seq, int(info.group('size')), int(info.group('index')), int(info.group('id')))
+                    ali = Sequence(seq=seq, size=int(info.group('size')), index=int(info.group('index')), id=int(info.group('id')))
                     ali.time = strftime(datefmt, gmtime())
                     ali.res = reserves.get(seq, '')
                     if 'Not all factors known' in page:
@@ -325,7 +258,7 @@ def updateseq(old):
                                    Print('>'*10 + 'ERROR BAD SEQ MATCH')
                                    error_msg += 'Seq {} had garbage values too many times\n'.format(seq)
                                    return old
-                              else: 
+                              else:
                                    Print('Retrying ('+str(tries), 'tries left)')
                               sleep(5)
                               continue
@@ -346,7 +279,7 @@ def updateseq(old):
                                    Print('>'*10 + 'ERROR SMALL COFACTOR')
                                    error_msg += 'Seq {} had a small cofactor\n'.format(seq)
                                    return old
-                              else: 
+                              else:
                                    Print('Seq:', seq, 'small cofactor, retrying ('+str(tries), 'tries left) factors:', factors)
                               sleep(5)
                               continue
@@ -382,8 +315,11 @@ def updateseq(old):
                Print(reqs, 'page requests,', queries, 'db queries since', when)
                error_msg += 'Reached query limit. Derp.\n'
 
-while True: # This means you can start it once and leave it, but by setting loop = False you can make it one-and-done
-     print('\n'+strftime(datefmt))     
+
+def main(special=None):
+     global error_msg
+     print('\n'+strftime(datefmt))
+     total = linecount(JSON)
      if special:
           this = special
      else:
@@ -397,10 +333,10 @@ while True: # This means you can start it once and leave it, but by setting loop
           if quitting:
                data.append(old)
                continue
-          ali = check(old)
-          if ali: 
+          ali = check(old, reserves=reserves, special=special)
+          if ali:
                data.append(ali)
-               if not quitting: 
+               if not quitting:
                     count += 1
                     Print(count, 'sequences complete:', old.seq)
           sleep(1)
@@ -409,7 +345,7 @@ while True: # This means you can start it once and leave it, but by setting loop
           html = f.read()
      with open(template2, 'r') as f:
           stats = f.read()
-     
+
      #dato = {ali.seq: ali for ali in data}
      #data = [dato[seq] for seq in set(dato.keys())]
      # Now get all the stats (i.e. count all the instances of stuff)
@@ -422,9 +358,9 @@ while True: # This means you can start it once and leave it, but by setting loop
           progs[ali.progress] += 1
           cofacts[ali.cofact] += 1
           txtdata += str(ali)
-          
+
           if isinstance(ali.progress, int):
-               totprog += 1          
+               totprog += 1
 
      # Create broken sequences HTML
      if broken:
@@ -440,7 +376,7 @@ while True: # This means you can start it once and leave it, but by setting loop
           unborken_html = 'none currently.'
 
      html = html.format(updated, unborken_html, borken_html) # Imbue the template with the reservation time and broken sequences
-     
+
      # Put stats table in json-able format
      lentable = []; lencount = 0
      sizetable = [ [key, value] for key, value in sizes.items() ]
@@ -451,7 +387,7 @@ while True: # This means you can start it once and leave it, but by setting loop
      guidetable = [ [key, value] for key, value in guides.items() ]
      progtable = [ [key, value] for key, value in progs.items() ]
      stats = stats.format(totinc=totlen/totsiz, avginc=avginc/total, totprog=totprog, progcent=totprog/total)
-     
+
      # Write all the data and webpages
      with open(FILE, 'w') as f:
           f.write(html)
@@ -472,9 +408,9 @@ while True: # This means you can start it once and leave it, but by setting loop
           if count != per_hour and start != 0:
                error_msg += 'Something went wrong. Only {} seqs were updated.\n'.format(count)
           Print("Next start is", start)
-          with open(sys.argv[0]+'.conf', 'w') as conf: # Save how many sequences we updated
+          with open(statefile, 'w') as conf: # Save how many sequences we updated
                conf.write(str(start)+'\n')
-     
+
      if error_msg:
           try:
                email('Aliquot failure!', error_msg)
@@ -483,12 +419,44 @@ while True: # This means you can start it once and leave it, but by setting loop
                Print('Message:', error_msg)
 
      Print('Written HTML and saved state.')
-     
-     if not quitting and loop:
-          Print('Sleeping.')
-          sleeping = True
-          sleep(sleep_time)
-          sleeping = False
-     else:
+
+
+################################################################################
+# Start actual code execution
+
+if __name__ == "__main__":
+     if os.path.exists(lockfile):
+          Print("Didn't start: lockfile is present")
+          sys.exit(-1)
+
+     open(lockfile, 'a').close()
+
+     try:
+          special = [int(arg) for arg in sys.argv[1:]]
+     except ValueError:
+          print('Error: Args are sequences to be run')
           os.remove(lockfile)
-          sys.exit()
+          sys.exit(-1)
+
+     if special:
+          loop = False
+     else:
+          special = None
+
+     while True:
+     # This means you can start it once and leave it, but by setting loop = False you can make it one-and-done
+     # This would be a good place for a do...while syntax
+          try:
+               main(special)
+          except Exception:
+               raise # Errors are unhandled except to interrupt a sleeping loop, and to cleanup via finally
+          finally:
+               os.remove(lockfile)
+
+          if loop and not quitting:
+               Print('Sleeping.')
+               sleeping = True
+               sleep(sleep_minutes*60)
+               sleeping = False
+          else:
+               break

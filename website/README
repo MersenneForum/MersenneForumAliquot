@@ -1,7 +1,7 @@
-These are the files I use to run the website at <http://dubslow.tk/aliquot/>.
-The html/ folder is where you should point your server, and the py/ folder
-contains the scripts used. They are meant to be run primarily from cron;
-this is my current crontab:
+These are the HTML files I used to run the website formerly at
+<http://dubslow.tk/aliquot/>. The html/ folder is where you should point your
+server, and the ../scripts/ folder contains the scripts used. They are meant to
+be run primarily from cron; this is my current crontab:
 
 7 * * * * /home/bill/bin/allseq.py >> /home/bill/bin/allseq.log 2>&1
 47 18,6 * * * /home/bill/bin/alimerge.py >> /home/bill/bin/alimerge.log 2>&1

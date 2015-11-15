@@ -1,7 +1,7 @@
 #! /usr/bin/python3
 """
 This is module to do basic Aliquot sequence analysis as described by Clifford
-Stern at <http://dubslow.tk/aliquot/analysis.html>. This is version 2, with
+Stern at <http://rechenkraft.net/aliquot/analysis.html>. This is version 2, with
 a new PRP test and with the basic datatype moved to a different module.
 
 Provided functions:
@@ -24,9 +24,10 @@ valid string might be:
 Whitespace doesn't matter.
 
 The Factors class, factor() function and primality functions are provided in a 
-different module I've made locally; you can see the source for it at
-<http://dubslow.tk/aliquot/numtheory.txt>. In the future, I might look at adding
-Sage's abilities, or adding other factoring/primality methods of my own design.
+different module; you can see the source for it at
+<https://github.com/dubslow/MersenneForumAliquot/blob/master/numtheory/numtheory.py>.
+In the future, I might look at adding Sage's abilities, or adding other
+factoring/primality methods of my own design.
 
 The important functionality of the module also comes from the Factors class, which 
 is a subclass of dict(). The keys are the individual factors, and the corresponding
@@ -126,7 +127,7 @@ a: 9  v: 3 * 11 * 31  guide: 2^9 * 3 * 11 * 31  class: 0
 a: 10  v: 23 * 89  guide: 2^10 * 23 * 89  class: 6
 """
 
-from numtheory import is_prime, prp, Factors, factor, _sanitize, sigma
+from numtheory import is_prime, prp, Factors, factor, _sanitize, sigma, quick_pow_of_two
      
 def aliquot(n):
      n = _sanitize(n)
@@ -166,9 +167,4 @@ def is_driver(n=0, guide=None):
      return sigma(v) % 2**(guide[2]-1) == 0
 
 def twos_count(t): # The power of two of sigma(t)
-     t = sigma(t)
-     # To count the trailing zero bits (i.e. power of 2), first subtract one, then xor
-     # The former takes xxxx1000 to xxxx0111, and xor will leave (ans+1) bits set to 1
-     t ^= (t-1)
-     t >>= 1 # Toss the extra bit before counting them
-     return t.bit_length()
+     return quick_pow_of_two(sigma(t))
