@@ -28,7 +28,7 @@ def probable_semiprime_tau(n, x):
         have tau(n) = x. False guarantees tau != x, but True does not 
         guarantee tau = x.'''
      # tau(n) = tau(p) + tau(q) (=> tau(n) >= 2 right off the bat
-     if x < 2: return False
+     if x < 2: raise ValueError('x must be at least 2 (got {})'.format(x))
      possible_taus = [(y, x-y) for y in range(1, x//2+1)]
      allowable_residues = []
      for x1, x2 in possible_taus:
