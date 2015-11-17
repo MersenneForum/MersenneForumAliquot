@@ -1,4 +1,8 @@
 #! /usr/bin/python3
+
+import sys, _import_hack # _import_hack assumes that the numtheory package is in the parent directory of this directory
+                         # this should be removed when proper pip installation is supported (and ad hoc python scripts are no longer necessary)
+
 from time import strftime
 import json
 from myutils import email
