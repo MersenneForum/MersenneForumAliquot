@@ -322,7 +322,7 @@ def updateseq(old, reserves):
 def main(special=None):
      global error_msg
      print('\n'+strftime(datefmt))
-     total = linecount(JSON)
+     total = linecount(seqfile)
      if special:
           this = special
      else:
