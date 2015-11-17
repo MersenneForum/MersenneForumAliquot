@@ -3,9 +3,11 @@
 # Run from a cron file like "reservations.py spider" however often to parse
 # the MF thread and update its head post. Be sure the dir, username and password
 # are set correctly.
-# Before the very first run (and only before it) put the current last post ID
-# (should be in the 300K area) into the pid_file specified below. The script will
-# update it as necessary.
+# The very first run only checks the most recent page of reservation posts, since
+# there isn't yet a record of last post checked
+
+import sys, _import_hack # _import_hack assumes that the numtheory package is in the parent directory of this directory
+			 # this should be removed when proper pip installation is supported (and ad hoc python scripts are no longer necessary)
 
 from sequence import Sequence
 

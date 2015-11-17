@@ -1,13 +1,16 @@
 #!/opt/rh/python33/root/usr/bin/python -u
 # -u to force line buffering of stdout
 
+import sys, _import_hack # _import_hack assumes that the numtheory package is in the parent directory of this directory
+			 # this should be removed when proper pip installation is supported (and ad hoc python scripts are no longer necessary)
+
 from urllib import request, parse, error
 from time import strftime, gmtime, sleep, strptime
 from collections import Counter
-from aliquot import get_guide, get_class, is_driver
+from numtheory.aliquot import get_guide, get_class, is_driver
 from myutils import linecount, email, Print
 from sequence import Sequence
-import re, sys, signal, json, os
+import re, signal, json, os
 dir = '/var/www/rechenkraft.net/aliquot/'
 FILE = dir + 'AllSeq.html'
 TXT = dir + 'AllSeq.txt'

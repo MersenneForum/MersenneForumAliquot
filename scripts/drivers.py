@@ -1,7 +1,10 @@
 #! /usr/bin/env python3
 
+import sys, _import_hack # _import_hack assumes that the numtheory package is in the parent directory of this directory
+                         # this should be removed when proper pip installation is supported (and ad hoc python scripts are no longer necessary)
+
 from numtheory import aliquot as aq
-from numtheory import numtheory as nt
+import numtheory as nt
 from sequence import Sequence
 import json, re
 from myutils import blogotubes
