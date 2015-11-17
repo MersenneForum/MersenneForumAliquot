@@ -24,8 +24,8 @@ statefile = sys.argv[0] + '.conf'
 lockfile = sys.argv[0] + '.lock'
 datefmt = '%Y-%m-%d %H:%M:%S'
 
-reservation_page = 'http://www.rechenkraft.net/aliqueit/res_post.php'
-res_post_ids = (1)
+reservation_page = 'http://www.rechenkraft.net/aliquot/res_post.php'
+res_post_ids = [ 1 ]
 
 per_hour = 55
 sleep_minutes = 60
