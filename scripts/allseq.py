@@ -25,7 +25,7 @@ lockfile = sys.argv[0] + '.lock'
 datefmt = '%Y-%m-%d %H:%M:%S'
 
 reservation_page = 'http://www.mersenneforum.org/showpost.php'
-res_post_ids = (165249, 397318, 397319, 397320, 397912)
+res_post_ids = (165249, 397318, 397319, 397320, 397912, 416583, 416585, 416586)
 
 per_hour = 55
 sleep_minutes = 60

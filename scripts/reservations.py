@@ -12,7 +12,7 @@ import sys, _import_hack # _import_hack assumes that the numtheory package is in
 from sequence import Sequence
 
 reservation_page = 'http://www.mersenneforum.org/showpost.php'
-res_posts = (165249, 397318, 397319, 397320, 397912) # Tuple to be expanded as necessary
+res_posts = (165249, 397318, 397319, 397320, 397912, 416583, 416585, 416586) # Tuple to be expanded as necessary
 use_local_reservations = False
 
 dir = '.' # Set this appropriately
