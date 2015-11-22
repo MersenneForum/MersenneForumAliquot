@@ -162,9 +162,65 @@ def get_class(n=0, guide=None, powers=True):
 
 def is_driver(n=0, guide=None):
      if guide is None:
-          guide = get_guide(n, False)
-     v = Factors({key: powe for key, powe in guide.items() if key != 2 and powe > 0})
-     return sigma(v) % 2**(guide[2]-1) == 0
+          guide = get_guide(n, powers=False)
+     return get_class(guide=guide, False) <= 1
 
 def twos_count(t): # The power of two of sigma(t)
      return quick_pow_of_two(sigma(t))
+
+beta = quick_pow_of_two
+tau = twos_count
+
+#def tau(p):
+#     '''Indirectly calculates tau(p) by examining p mod powers of 2 (only works on odd primes)'''
+#     # tau(p) == x <=> p === 2^x-1 (mod 2^(x+1))
+#     # so
+#     x = 1
+#     two_to_x = 2
+#     two_to_x_1 = 4
+#     while p % two_to_x_1 != two_to_x - 1:
+#          x += 1
+#          two_to_x = two_to_x_1
+#          two_to_x_1 <<= 1
+#     return x
+
+def conditions_on_prime_if_tau_is_lte_x(x):
+     ''' returns (residue, modulus) meaning any prime with tau <= x, then p
+         must be `residue` mod `modulus`'''
+     if x < 1: raise ValueError('x must be at least 1 (got {})'.format(x))
+     # tau(p) = x <=> p+1 === 2^x mod 2^x+1
+     # => p===-1 mod 2^x
+     m = 1 << x
+     return m - 1, m << 1
+
+
+def probable_semiprime_tau(n, x):
+     '''Tests if the semi prime of unknown composition n=pq could possibly
+        have tau(n) = x. False guarantees tau != x, but True does not
+        guarantee tau = x.'''
+     # tau(n) = tau(p) + tau(q) => tau(n) >= 2 right off the bat
+     if x < 2: raise ValueError('x must be at least 2 (got {})'.format(x))
+     possible_taus = [(y, x-y) for y in range(1, x//2+1)]
+     allowable_residues = []
+     for x1, x2 in possible_taus:
+          r1, m1 = conditions_on_prime_if_tau_is_lte_x(x1)
+          r2, m2 = conditions_on_prime_if_tau_is_lte_x(x2)
+          # Now, by construction, x1 <= x2
+          # And so m1 <= m2, and so m1 | m2 (and in fact m2//m1 is a power of two of course)
+          if m2 % m1 != 0:
+               raise ValueError("limitation moduli don't divide (should both be powers of 2): {}, {}".format(m1, m2))
+          # Now we consider both primes mod m2, where we must "promote" the r1 residue to all its possible values
+          # mod m2
+          r1s = [(r1+i*m1) % m2 for i in range(m2//m1)]
+          #print('x = {}, x1 = {}, x2 = {}, m2 = {}, r2 = {}, r1s = {}'.format(x, x1, x2, m2, r2, r1s))
+          # For each possible r1 mod m2, the residue required is r1*r2, and see if n === r1*r2 (mod m2)
+          for r1 in r1s:
+               r = (r2*r1) % m2
+               if n % m2 == r:
+                    print("Given that n%{}={}, it's possible that p%{}={} and q%{}={}, meaning tau(p)={} and tau(q)={}, meaning tau(n) may yet be {}"
+                         .format(m2, r, m2, r1, m2, r2, x1, x2, x))
+                    allowable_residues.append((m2, (r1, r2)))
+     return allowable_residues
+
+def probable_semiprime_tau_lte_x(n, xprime):
+     return [(x, allowed_residues) for x in range(2, xprime+1) for allowed_residues in probable_semiprime_tau(n, x)]

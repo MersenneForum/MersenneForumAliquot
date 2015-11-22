@@ -169,6 +169,7 @@ def _positive(n, func):
      return n
 
 def quick_pow_of_two(n):
+     if n == 0: return 0
      n = _positive(n, 'quick_pow_of_two')
      # To count the trailing zero bits (i.e. power of 2), first subtract one, then xor
      # The former takes xxxx1000 to xxxx0111, and xor will leave (ans+1) bits set to 1

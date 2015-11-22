@@ -1,0 +1,538 @@
+
+<html>
+
+<head>
+<meta http-equiv="Content-Type"
+content="text/html; charset=utf-8">
+<title>Intro to Aliquot Sequences Analysis</title>
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [['$','$'], ['\\(','\\)']],
+    processEscapes: true
+  }
+});
+</script>
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<style type="text/css">
+     footer         { text-align: center;
+                      font-size: 70%; }
+     table, tr, th, td{ text-align: center;
+                      border: thin solid black;
+                      border-collapse: collapse; }
+     .red           { background-color: lightcoral; }
+     .yel           { background-color: khaki; }
+     .gre           { background-color: limegreen; }
+
+     /* http://www.2ality.com/2012/01/numbering-headingshtml.html (see comments too) */
+     body           { counter-reset: h3counter; }
+     h3:before      { content: counter(h3counter) ".\0000a0\0000a0"; }
+     h3             { counter-increment: h3counter;
+                      counter-reset: h4counter; }
+     h4:before      { content: counter(h3counter) "." counter(h4counter) "\0000a0\0000a0"; }
+     h4             {  counter-increment: h4counter; }
+</style>
+</head>
+
+<body bgcolor="#AEFFFF">
+
+
+<p align="center"><h2 id="top">An Elementary Introduction to Aliquot Sequence Analysis</h2></p>
+
+<p>This is a nearly-elementary introduction to the analysis of aliquot sequences, assuming only a very little
+bit of basic number theory, and using that to motivate and delve into the various defintions such as "guide"s,
+"class", "twos count", and others as related by <a href="analysis.html">Clifford Stern</a>, though I hope
+this is somewhat more pedagogically oriented. The reason I'm writing this is because the knowledge built
+herein was only acquired by myself after a couple of years of slowly digesting Mr. Stern's material with
+almost no comprehension, slowly working my way through it step by elementary step. This will also serve
+as a good reference.</p>
+
+<p>This guide starts from the basics: all that's assumed is a basic understanding of primality, unique
+factorizations, divisors (including such things as gcd), an understanding of why 6 is a
+perfect number, and some low level college mathematics notation. We'll develop the rest as we need it.</p>
+
+<h3 id="sigma">The sum of divisors function and aliquot sequences (or, the introduction to the introduction)</h3>
+
+<p>6 is a perfect number because the sum of its divisors, 1, 2, and 3, is 1+2+3=6. Except that this is a slight
+misunderstanding, because if 1 divides 6, then we must also say 6 divides 6 (consistent with the number
+theoretic definition of divisibility), and so the "actual" sum of divisors
+of 6 is 1+2+3+6=12. Lets formalize this: we define the sum of divisors function as $\sigma(n) =
+\sum_{d \mid n}{d}$. To allow 6 as a perfect number, we define the <i>aliquot function</i>, the sum of
+<i>proper</i> divisors,  as $a(n) =
+\sigma(n) - n$, and say that a perfect number is a number $n$ such that $a(n) = n$, or equivalently,
+$\sigma(n) = 2n$. But how many numbers are perfect in this sense? It is conjectured to be infinite, but
+as it turns out, there are very few known. It is relatively easy to prove (first done by Euclid) that if
+$2^n - 1$ is a prime number
+(a Mersenne prime), then $p = 2^{n-1}(2^n - 1)$ is a perfect number. To see this, first list the powers of 2
+that divide $p$: $1$, $2$, $2^2$, $2^3$, ..., $2^{n-1}$. Next, $(2^n - 1)$ is clearly a divisor, but finally we
+also have to include $2 \cdot (2^n - 1)$, $2^2 \cdot (2^n - 1)$, ..., $2^{n-1} \cdot (2^n - 1)$. (If $2^n - 1$
+were not prime, there would be other divisors besides $2^n - 1$ to worry about.) A general geometric series
+$\sum_{i=0}^{k}{r^k}$ sums to $\frac{r^{k+1} - 1}{r - 1}$, so where $r = 2$
+and $k = n - 1$, we have the powers of 2 from $1$ to $2^{n-1}$ sum to $S = \frac{2^{n-1 + 1}-1}{2-1} = 2^n -
+1$; meanwhile we note that the divisors containing $2^n - 1$ correspond to the same series multipled by
+$2^n - 1$, so that the sum of all the divisors, $\sigma(p)$, is equal to $S + (2^n - 1)S = S(1 + 2^n - 1) =
+2^n S = 2^n (2^n - 1) = 2 \cdot 2^{n-1}(2^n - 1) = 2p$, so $\sigma(p) = 2p$, and $p$ is indeed a perfect number.
+Proving the converse is slightly more involved, but it will be done in short order. Note that these perfect
+numbers are even; it is still an open mathematical problem of some interest whether or not there are any odd
+perfect numbers (most mathematicians believe not).</p>
+
+<p>Now we've got a handle on numbers where $a(n) = n$, but what about other numbers? Well, lets try a
+prime number. Let $p$ be any prime number; then its only divisors (by definition) are $1$ and $p$, so
+$\sigma(p) = p + 1$, and consequently $a(p) = \sigma(p) - p = 1$. (What's $a(1)$? Only $1$ divides $1$, so
+$a(1) = 1 - 1 = 0$. Meanwhile, $a(0)$ is not defined because it makes no sense to talk about the divisors of 0.)
+Well, that's interesting. Is it possible for $a(n)$ to be prime? Yes, for $a(4) = 1 + 2 + 4 - 4 = 3$. So we see
+that $a(a(4))$ = 1. Does this work for other numbers? Sure. Let's try 12: $a(12) = 1 + 2 + 3 + 4 + 6 = 16$ (note
+that in this case $a(n) \gt n$). Next, $a(16) = 1 + 2 + 4 + 8 = 15$, and $a(15) = 1 + 3 + 5 = 9$, and $a(9) = 1
++ 3 = 4$, and as we discussed, $a(4)$ is prime and thus $a(a(4)) = a(a(a(a(a(a(12)))))) = 1$. This iterated
+aliquot function application is called an <i>aliquot sequence</i>, and they are the main objects of interest on
+this page.</p>
+
+<p>And so we've seen that the aliquot sequence starting at $12$ <i>terminates</i> with $1$. Are there other
+ways an aliquot sequence can terminate? As it turns out, yes: consider $n = 220$. In order to calculate
+$a(220)$, we must first factor 220. This is fairly straight forward: $220 = 22 \cdot 10 =
+2 \cdot 11 \cdot 2 \cdot 5 = 2^2 \cdot 5 \cdot 11$. So its divisors include 1, 2, 4, 5, 11, 10, 20, 22, 44, 55,
+110, and 220; these (save for 220 itself) sum to 284. And so we continue: what is $a(284)$? Well there is a
+surprise in store here, for in fact $284 = 2^2 \cdot 71$, and $1 + 2 + 4 + 71 + 142$ is actually <i>220</i> once
+again! So $a(220) = 284$, and simultaneously $a(284) = 220$. These are called <i>amicable numbers</i>, and they
+demonstrate that it's possible for aliquot sequences to "terminate" without "reaching" a prime (and thus 1).
+Amicable numbers are an example of <i>aliquot cycles</i> of order 2; higher order sequences exist, such
+as that starting with $n=12496$: $a(12496) = 14288$, $a(14288) = 15472$, $a(15472) = 14536$, $a(14536) = 14264$,
+and finally $a(14264) = 12496$, for a cycle of order 5. There are several million amicable pairs known, 225
+cycles of order 4 known, the sole cycle above known of order 5, five cycles of order 6, three cycles of order 8,
+one cycle of order 9, one curious cycle of order 28, and perhaps strangely, no cycles whatsoever of order 3.
+Arguably perfect numbers are aliquot cycles of order 1 -- there are 48 known Mersenne primes, and thus 48 known
+cycles of order 1.</p>
+
+<p>And now, the big question. Are there numbers which commence an aliquot sequence that never terminates? That
+is, is there an aliquot sequence which never has a prime term and which never reaches a repeating cycle (of 
+order 1, 2, or otherwise)? Such a sequence would, by necessisity, grow without bound. This question is known as
+Catalan's aliquot sequence conjecture, and it remains open to this day. The smallest number whose aliquot
+sequence is as yet not known in its entirety is 276; as of writing, it has 1853 terms, with the last terms
+having nearly 190 digits. The rest of this page is dedicated to analysis of aliquot sequences as it relates to
+the ongoing computational research into unknown sequences.</p>
+
+<h3 id="background">Some more fundamentals</h3>
+
+<p>Now that we've defined $\sigma$ and $a$, it's time to take a small detour and learn about multiplicative
+functions. They are of large importance in elementary number theory, and we shall make use of their defining
+property quite a lot while studying $\sigma$.</p>
+
+<p>Definition: a number-theoretic function $f$ on integers is called <i>multiplicative</i> if, for any integers
+$m$ and $n$ where $gcd(m, n) = 1$, $f(m \cdot n) = f(m) \cdot f(n)$. (By extension, $f$ is called <i>completely
+multipicative</i> if the property holds even when $m$ and $n$ share some divisors.) For example: the identity
+function, $f(x) = x$, is multiplicative (in fact completely so) for $f(xy) = xy = x \cdot y = f(x) \cdot f(y)$.</p>
+
+<p>Our goal now is to prove that $\sigma$, the sum of divisors function, is also multiplicative. This will allow
+us to deduce a great deal of other things about $\sigma$. First, we'll start with a small helper theorem: given
+a multiplicative function $f$, define $F(n) = \sum_{d \mid n}{f(d)}$ as the sum of $f$ applied to the divisors
+of $n$. Then, $F$ too is multiplicative. Proof: Let $m$ and $n$ again share no common divisors (besides $1$).
+Then the divisors $d$ of $mn$ may be written as $d = rs$, where $r \mid m$ and $s \mid n$, and $gcd(r, s) = 1$
+(which follows from $gcd(m, n) = 1$). So $F(mn) = \sum_{d \mid mn}{f(d)} = \sum_{r \mid m, s \mid n}{f(rs)}$,
+which by the multiplicativity of $f$ in turn equals $\sum_{r \mid m, s \mid n}{f(r) f(s)}$. Now, note the range
+of the sum -- $r$ and $s$ independently range over the divisors of $m$ and $n$ respectively, with one term in the
+sum for each possible product of $r$ and $s$, and so we notice the sum may be written as a rectangular "cross
+table" of terms: the divisors $r$ of $m$ label the columns, the divisors $s$ of $n$ label the rows, and the
+term at column $r$ and row $s$ is $f(r) \cdot f(s)$. But consider $F(m) F(n) = \left(\sum_{r \mid m}{f(r)}\right)
+\left(\sum_{s \mid n}{f(s)}\right)$. The product is the sum of all possible products of terms -- all possible
+products of $f(r)$ and $f(s)$. But these are exactly the terms that comprise our cross term table from before!
+And so $F(m) F(n) = \sum_{r \mid m, s \mid n}{f(r) f(s)} = F(mn)$, and the multiplicativity of $F$
+follows from that of $f$, as desired.</p>
+
+<p>This theorem has a number of immediate corollaries, two of which as follows: the number of divisors of a
+number, label it $\nu(n)$, is multiplicative, for $\nu(n) = \sum_{d \mid n}{1}$, and $f(x) = 1$ is trivially
+multiplicative, so $\nu$ is as well. Our close friend $\sigma(n)$ is also multiplicative, for $\sigma(n) =
+\sum_{d \mid n}{d}$, where the function of the divisors is just the identity function, which we also know is
+multiplicative, and so $\sigma$ is as well.</p>
+
+<p>Now we use multiplicativity to deduce some properties of $\nu$ and $\sigma$. Most importantly, it suffices to
+know a multiplicative function's value over powers of primes, since all integers
+uniquely factor as a product of prime powers (which are by definition pairwise coprime). As an example: let $p$
+be any prime number, and let $a$ be a positive integer. Then $\nu(p) = 2$ and $\nu(p^a) = a + 1$. Now we
+consider any integer $n$, which can be factored as $n = \prod_{p_i \mid n}{{p_i}^{a_i}}$. Then $\nu(n) =
+\nu\left(\prod_{p_i \mid n}{{p_i}^{a_i}}\right) = \prod_{p_i \mid n}{\nu\left({p_i}^{a_i}\right)}
+= \prod_{p_i \mid n}{a_i + 1}$ (i.e. take the powers of the primes dividing $n$, add one to each power,
+and multiply those all together to get $\nu(n)$). And now we apply the same process to $\sigma$:
+$\sigma(p) = p + 1$, and
+$\sigma(p^a) = \sum_{d \mid p^a}{d} = \sum_{i=0}^{a}{p^i}$ which, by the sum of geometric series, is
+$\frac{p^{b+1}-1}{p-1}$, and so $\sigma(n) = \sigma\left(\prod_{p_i \mid n}{{p_i}^{a_i}}\right) =
+\prod_{p_i \mid n}{\sigma\left({p_i}^{a_i}\right)} =
+\prod_{p_i \mid n}{\frac{{p_i}^{{a_i}+1}-1}{{p_i}-1}}$. So in general, to calculate $\sigma(n)$ and in turn
+$a(n)$, it suffices to factor $n$ into its constituent prime powers, after which $\sigma(n)$ is only a few
+multiplications. Of course factoring an integer is in general difficult, but that is currently the best known
+method to calculate $\sigma(n)$ (after all, it's hard to calculate the sum of divisors without knowing the
+divisors).</p>
+
+<p>Finally, we conclude this detour by finishing the discussion of even perfect numbers. Using the
+multiplicatively of $\sigma$, first note that the statement we proved earlier can be proven in a much simpler
+manner. Let $n = 2^{p-1} \cdot (2^p-1)$, where $2^p-1$ is prime. Then $\sigma(n) =
+\sigma(2^{p-1} \cdot (2^p -1)) = \sigma(2^{p-1}) \cdot \sigma(2^p-1) = (2^p-1) \cdot 2^p$ (since $2^p-1$ is
+prime) $= 2 \cdot 2^{p-1} \cdot (2^p-1) = 2n$, and $n$ is perfect. The proof of the converse is due to Euler and
+is as follows: let $n$ be an even perfect number, and write $n = 2^b \cdot m$ for some $b \geq 1$ with $m$ odd.
+Then $2^{b+1} \cdot m = 2n = \sigma(n) = \sigma(2^b \cdot m) = \sigma(2^b) \cdot \sigma(m) = (2^{b+1}-1) \cdot
+\sigma(m)$. Note that since $(2^{b+1}-1)$ is odd and at least 3, it must divide $m$ on the other side of the
+equation. We thus define $l = \frac{m}{(2^{b+1}-1)}$ (noting that $l$ is a proper divisor of $m$), such that
+upon dividing the equation by $(2^{b+1}-1)$, we have $2^{b+1} \cdot l = \sigma(m)$. Now consider the quantity
+$m+l$: we see that $m+l = l \cdot (2^{b+1}-1) + l = l(2^{b+1}-1+1) = 2^{b+1} \cdot l$. So $\sigma(m) = m+l$, and
+this is the fundamental deduction of the proof, for that equality precisely means that $l$ <i>is the only proper
+divisor of</i> $m$. Thus we conclude a number of things, namely that 1) $l = 1$, 2) $m$ is prime, 3)
+$m = 2^{b+1}-1$, and finally that our even perfect number $n$ is of the form $2^b \cdot (2^{b+1}-1)$ with
+$2^{b+1}-1$ a Mersenne prime, which is what we set out to prove.</p>
+
+<h3 id="odd">Abundant and deficient numbers, odd sequences, and basic properties of $a(n)$</h3>
+
+<p>Before we get to the meat of the page, lets first talk about some types of sequences that aren't of great
+importance to the computational search of sequences, and what makes them relatively unimportant.</p>
+
+<p>To begin with, after having already defined perfect numbers, we now classify all other numbers similarly:
+Let $n$ be any integer. If $a(n) \gt n$, then $n$ is said to be <i>abundant</i>. As we already discussed, if
+$a(n) = n$, $n$ is <i>perfect</i>, and if $a(n) \lt n$, $n$ is <i>deficient</i>.</p>
+
+<p>We can get a sense of these properties by examining $a(n)$ for $n$ in some relatively large range, say,
+$10^5$ to $10^6$. Although we won't detail it here, suffice it to say that some patterns emerge:
+<ul>
+  <li>Odd numbers tend to be deficient</li>
+  <li>Even numbers tend to be abundant, though perhaps less strongly than odds are deficient</li>
+  <li>If $n$ is even, so is $a(n)$</li>
+  <li>If $n$ is odd, so is $a(n)$</li>
+</ul>
+
+Let's try to quantify these statements. We start with parity: first we note that, as $a(n) = \sigma(n)-n$, we
+need to determine the parity of $\sigma(n)$. To do this, write $n$ as $2^b \cdot m$, with $m$ odd, whence
+$\sigma(n) = (2^{b+1}-1) \cdot \sigma(m)$. First consider the latter multiplicand: as $\sigma$ is the sum of
+divisors, we can add their parities to get the parity of $\sigma$. But, we can take a shortcut: since we know
+$m$ is odd, so are all of its divisors $d$; furthermore, every divisor $d$ has a counterpart, $e = m/d$. Since
+$d$ and $e$ are odd, their sum is even. Furthermore, except in one special case, every divisor has such a
+counterpart, and so $\sigma(m)$ is even. The special case is if $m$ is a perfect square (including the case
+$m=1$), in which case we have
+that $\sqrt{m}$ is both odd and an unpaired divisor, so $\sigma$ of an odd perfect square is even. The term
+$2^{b+1}-1$ is always odd, so we have the following classification: $\sigma(n)$ is odd if and only if the odd
+part of $n$ is a perfect square. (Another way to say this is $\sigma(n)$ is odd if and only if $n$ is a square
+or twice a square.) And now we calculate the parity of $a(n)$: since $\sigma(n)$ is almost always even, the
+parity of $a(n)$ is the same as the parity of $n$, unless the odd part of $n$ is a perfect square, as previously.
+This confirms our observations and exactly quantifies the exceptions, and since perfect squares are very rare
+indeed in the computational wild (formally, their density in $\mathbb{N}$ is 0), we shall restrict ourselves to
+odd sequences or even sequences only.
+</p>
+
+<p>
+Regarding deficiency and abundancy, we'll make a simple heuristic argument. Let $p$ be the smallest prime
+divisor of a number $n$, and let $q = n/p$. Then, excluding $n$ itself, we note that $q$ is the largest proper
+divisor of $n$, and thus the largest contributor to the sum of proper divisors $a(n)$. This isn't
+limited to just the smallest divisor, for if there are a lot of small prime divisors, or if the smallest prime
+has a large power in the factorization of $n$ (or even both!), there are a corresponding number of relatively
+large divisors of $n$. We can quantify this as follows: define the <i>abundance</i> of a number as
+$\frac{a(n)}{n}$ (so that deficient numbers have abundance less than 1, perfect numbers have abundance 1, and
+abundant numbers have abundance greater than 1). Then, following the argument, a prime $p$ divides $n$ contributes
+<i>at least</i> $\frac{n/p + p}{n} = \frac{1}{p} + \frac{p}{n}$ to the abundance, and that doesn't count non-prime
+divisors! (Note that we typically ignore the $\frac{p}{n}$ term, for it is both usually significantly smaller and
+dependent on $n$.) For example, if we know that 8 divides some large number $n$, then 2, 4, and 8 all divide $n$
+and the abundance of $n$ is bounded below by $\frac{1}{2}+\frac{1}{4}+\frac{1}{8}$, so $\frac{a(n)}{n} > 
+\frac{7}{8}$, and we can heuristically argue that "very few" numbers are both divisible by 8 and deficient.
+Conversely, if the smallest prime dividing $n$ is (say) 101, then we can only conclude that $\frac{a(n)}{n} > 
+\frac{1}{101}$, and we can heuristically say that "very few" numbers both have 101 as the smallest prime and are
+abundant. These arguments demonstrate why even numbers tend to be abundant, while odd numbers tend strongly to be
+deficient. As a final example on the matter, consider the first five odd numbers that do manage to be abundant:
+<ul>
+  <li>$945 = 3^3 \cdot 5 \cdot 7$</li>
+  <li>$1575 = 3^2 \cdot 5^2 \cdot 7$</li>
+  <li>$2205 = 3^2 \cdot 5 \cdot 7^2$</li>
+  <li>$2835 = 3^4 \cdot 5 \cdot 7$</li>
+  <li>$3465 = 3^2 \cdot 5 \cdot 7 \cdot 11$</li>
+</ul>
+Note how they are all combinations of powers of the very smallest possible odd primes.
+</p>
+
+<p>As an aside, it's easy to see
+how abundance and deficiency are related to the concepts of <i>smooth</i> and <i>rough</i> numbers, which
+are defined as those numbers with their largest prime divisor smaller than a bound B, or the smallest prime
+divisor larger than B, respectively. Of course, the modified definitions of <i>powersmoothness</i> are more
+relevant to our discussion, where all prime powers dividing the number must be less than the bound B. If we
+define $b(n)$ to be the smallest number B such that $n$ is <i>B-powersmooth</i>, then there is a very close
+correlation between $a(n)/n$ and $n/b(n)$ -- though the former arguably accounts better for the cases where
+there are several high powers of multiple primes, instead of just one prime with a large exponent "inflating"
+$b(n)$.
+</p>
+
+<p>At any rate, we've beaten to death how the odd numbers are "almost all" deficient, and why even numbers tend
+to be abundant. We'll finish up this section with a couple of minor but important properties of abundant and
+deficient numbers.
+First, note the following property of the aliquot function: for any two integers $m$ and $n$ greater than 1,
+$\frac{a(mn)}{mn} \gt \frac{a(n)}{n}$, i.e. the abundance of a number is greater than the max of the abundance of
+any of its divisors. The proof is simple. List the proper divisors of $n$ as $\{1, d_2, d_3, ...,
+d_k\}$ (where $k = \nu(n)-1$ is the number of proper divisors). Then $a(n) = \sum_{i=1}^{k}{d_i}$, as usual.
+Now we can't list all the divisors of $mn$, nor determine which are shared between $m$ and $n$, but we can see
+that $mn$ has <i>at least</i> the divisors $\{m, m d_2, m d_3, ..., m d_k\}$, whose sum is $\sum_{i=1}^{k}{m d_i}
+= m \sum_{i=1}^{k}{d_i} = m \cdot a(n)$, and including 1 in the sum, we have $a(mn) \geq 1 + m \cdot a(n)$. The
+final form is obtained by ignoring the 1 in exchange for inequality, and dividing through by $(mn)$. This propery
+of the aliquot function has two immediate corrolaries: first, if $mn$ is perfect or deficient, then $ 1 \geq
+a(mn)/(mn) \gt a(n)/n$, so any divisor of $mn$ is itself deficient. Second and more importantly, if $n$ is perfect
+or abundant, then $1 \leq a(n)/n \lt a(mn)/(mn)$ for any $m$, so any multiple of $n$ is also abundant. This latter
+property is the bane of sequence extenders everywhere, for as we'll see later, an even sequence is almost always
+guaranteed to be "driven" by a specific, small perfect or abundant number, and so even sequences nearly always
+increase. This is the main reason that many people suspect Catalan's aliquot conjecture to be false. 
+</p>
+
+<h3 id="analysis">Sequence analysis</h3>
+
+<p>Finally we can start talking about the details of aliquot sequences as it pertains to the ongoing brute force
+sequence calculations. As above, odd sequences stay odd and strongly tend to decrease; there is not currently
+known an unterminated odd sequence with a substantial number of its terms abundant. And so from now on we only
+deal with even numbers.</p>
+
+<h4 id="guides">Guides</h4>
+
+<p>As a first step, if we were to pick a random even number and let it run for several terms, we notice that in
+most cases, there are some primes (other than 2) that are consistently a factor in every term of the sequence.
+One such prototypical example is $n = 759679647438 = 2 \cdot 3 \cdot 47 \cdot 1039 \cdot 2592781$. The next five
+terms in its aliquot sequence are:
+<ul>
+     <li>$2 \cdot 3 \cdot 863 \cdot 153244589$</li>
+     <li>$2 \cdot 3 \cdot 11^2 \cdot 47 \cdot 131 \cdot 177929$</li>
+     <li>$2 \cdot 3 \cdot 11 \cdot 509 \cdot 29884333$</li>
+     <li>$2 \cdot 3 \cdot 211067 \cdot 940279$</li>
+     <li>$2 \cdot 3 \cdot 7 \cdot 28352024341$</li>
+</ul>
+(After 153 more terms, this sequence terminates as 350 -> 394 -> 200 -> 265 -> 1.) Notice how 6 divides every
+term. Here's another example: let $n = 212046767651040 = 2^5 \cdot 3 \cdot 7 \cdot 5 \cdot 19 \cdot 23 \cdot 101
+\cdot 1429847$. Then the next five terms are:
+
+<ul>
+     <li>$2^5 \cdot 3 \cdot 5 \cdot 7 \cdot 43 \cdot 2861 \cdot 1566239$</li>
+     <li>$2^5 \cdot 3 \cdot 5^2 \cdot 7 \cdot 56813 \cdot 1821263$</li>
+     <li>$2^5 \cdot 3 \cdot 7 \cdot 257 \cdot 6211 \cdot 4408039$</li>
+     <li>$2^5 \cdot 3 \cdot 7 \cdot 59 \cdot 239966328113$</li>
+     <li>$2^5 \cdot 3 \cdot 7^2 \cdot 19 \cdot 218315230841$</li>
+</ul>
+Notice how $2^5 \cdot 3 \cdot 7$ divides every term (while the smaller prime 5 stays for a couple terms but then
+disappears). Why does this happen? The answer, as it turns out, lies in the sum of the divisors of the power of
+two. Indeed, $\sigma(2^b) = 2^{b+1}-1$ is odd. Let $v$ be any (odd!) non-trivial divisor of $\sigma(2^b)$, and
+then consider $n = 2^b \cdot v \cdot m$, where $m$ is any odd number coprime to $\sigma(2^b)$). Then $\sigma(n) =
+\sigma(2^b) \cdot \sigma(v) \cdot \sigma(m) = (2^{b+1}-1) \cdot \sigma(v) \cdot \sigma(m)$, and further $a(n) =
+(2^{b+1}-1) \cdot \sigma(v) \cdot \sigma(m) - 2^b \cdot v \cdot m$ (where again, $v \mid (2^{b+1}-1$)). We don't
+know a priori what the power of 2 of $a(n)$ is, but for now we'll note that, as according to the examples of 
+above, it's very likely to stay the same. Now since $v \mid (2^{b+1}-1)$ (by definition) and $v \mid v$
+(vacuously), we have that $v$ divides a difference of their multiples, i.e. $v$ divides $a(n)$. Therefore, if we
+start with $2^b \cdot v \cdot t$ where $v \mid \sigma(2^b)$, then $v \mid a(n)$, and since the power of 2 almost
+never changes, we have more conclusively that $(2^b \cdot v) \mid a(2^b \cdot v \cdot t)$ when $v \mid
+\sigma(2^b)$, and so whatever primes $v$ is composed of are there to stay. This motivates the following
+definition: a number $2^b \cdot v$, where $v$ divides $\sigma(2^b)=2^{b+1}-1$, is called a <i>guide</i>. Guides
+are the bread and butter of the study of even aliquot sequences. (Note that when $v=1$, the guide is just the
+power of 2.) Here are the first six powers of 2 and their possible guides:
+</p>
+<p>
+<table>
+  <tr><th>Even power</th><th>$\sigma(2^b)$</th><th>Guide</th><th>Abundance</th></tr>
+  <tr><td>$2^1$</td><td>$3$</td><td class="yel">$2\cdot 3$</td><td class="yel">$1$ (perfect)</td></tr>
+  <tr><td></td><td></td><td class="gre">$2$</td><td class="gre">$\frac{1}{2}$ (deficient)</td></tr>
+  <tr><td>$2^2$</td><td>$7$</td><td class="yel">$2^2 \cdot 7$</td><td class="yel">$1$ (perfect)</td></tr>
+  <tr><td></td><td></td><td class="gre">$2^2$</td><td class="gre">$\frac{3}{4}$ (deficient)</td></tr>
+  <tr><td>$2^3$</td><td>$3 \cdot 5$</td><td class="red">$2^3 \cdot 3 \cdot 5$</td><td class="red">$2$ (abundant)</td></tr>
+  <tr><td></td><td></td><td class="red">$2^3 \cdot 3$</td><td class="red">$\frac{3}{2}$ (abundant)</td></tr>
+  <tr><td></td><td></td><td class="red">$2^3 \cdot 5$</td><td class="red">$\frac{5}{4}$ (abundant)</td></tr>
+  <tr><td></td><td></td><td class="gre">$2^3$</td><td class="gre">$\frac{7}{8}$ (deficient)</td></tr>
+  <tr><td>$2^4$</td><td>$31$</td><td class="yel">$2^4 \cdot 31$</td><td class="yel">$1$ (perfect)</td></tr>
+  <tr><td></td><td></td><td class="gre">$2^4$</td><td class="gre">$\frac{15}{16}$ (deficient)</td></tr>
+  <tr><td>$2^5$</td><td>$3^2 \cdot 7$</td><td class="red">$2^5 \cdot 3 \cdot 7$</td><td class="red">$2$ (abundant)</td></tr>
+  <tr><td></td><td></td><td class="red">$2^5 \cdot 3$</td><td class="red">$\frac{13}{8}$ (abundant)</td></tr>
+  <tr><td></td><td></td><td class="red">$2^5 \cdot 7$</td><td class="red">$\frac{5}{4}$ (abundant)</td></tr>
+  <tr><td></td><td></td><td class="gre">$2^5$</td><td class="gre">$\frac{15}{16}$ (deficient)</td></tr>
+  <tr><td>$2^6$</td><td>$127$</td><td class="yel">$2^6 \cdot 127$</td><td class="yel">$1$ (perfect)</td></tr>
+  <tr><td></td><td></td><td class="gre">$2^6$</td><td class="gre">$\frac{31}{32}$ (deficient)</td></tr>
+</table>
+</p>
+<p>
+Hopefully this makes sense -- with any small primes to go with the powers of 2, the guide immediately becomes
+abundant and thus the sequence will increase. And note further that the higher powers of 2, even without any small
+primes, are very nearly abundant anyways -- not much help. About the only way to send a sequence consistently down
+is to catch and keep the sole $2$ guide. ($2^2$ tends to decrease on average, but not by much -- $2^3$ roughly
+averages no decrease or increase, while higher powers of 2 increase very slowly on average.)
+</p>
+
+<p>
+As a final note on guides, let $v' \gt 1$ be a prime divisor of $\sigma(2^b)$ that doesn't divide $n = 2^b \cdot
+v \cdot m$. By recalling that when a number divides one part of a sum but not the other part, then the number can't
+divide the sum itself, we conclude that since $v' \mid \sigma(n)$ but $v' \nmid n$, $v'$ therefore doesn't divide
+$a(n)$. What this means is that just as $2^2 \cdot 7$ can't lose the 7 (without the power of 2 changing), nor can
+$2^2$ gain a factor of 7 to become $2^2 \cdot 7$ (again, assuming the power of 2 doesn't change). As another
+example, just as $2^3 \cdot 3$ can't lose the 3 to become just $2^3$, nor can $2^3 \cdot 3$ gain the 5 to become
+$2^3 \cdot 3 \cdot 5$. And so the only possible way for a guide to change is if the power of 2 changes, which
+brings us directly to the next section.
+</p>
+
+<h4 id="mutations">Mutations</h4>
+
+<p>
+The next question of course, is when and how the power of 2 changes. Recall earlier when we were talking about
+guides that, when noting that $2^b \cdot v \mid a(2^b \cdot v \cdot m)$, we only assumed that $2^b \mid a(2^b
+\cdot v \cdot m)$ (as is nearly always the case) in order to perpetuate the guide. If the power of 2 changes, then
+$v$ no longer divides $\sigma(2^{b'})$, and we have a new guide based on $2^{b'}$ instead of $2^b$. For example, 
+let $n = 2^5 \cdot 5 \cdot 7 \cdot 13$. Then $b = 5$ and $v = 7$, and $a(n) = 2^7 \cdot 7 \cdot 31$. Although $v$
+does indeed divide $a(n)$, the power of 2 changed and thus the $2^5 \cdot 7$ guide was lost, transforming into
+$2^7$. (In this case, $\sigma(2^7) = 3 \cdot 5 \cdot 17$, so fortunately $v = 1$ in the new guide.) We call these
+changes in the power of 2 <i>mutations</i>.
+</p>
+
+<p>
+Before delving headlong into the whys and hows of mutations, lets take a detour to define a few functions which
+shall make our bookkeeping easier. Let $n$ be a number of the form $2^b \cdot m$, where $m$ is odd (and $b = 0$
+is allowed). Then we define $f(n) = 2^a$, i.e. $f$ is the largest power of 2 that divides $n$. Note that it is
+completely multiplicative ($f(lm) = f(l)f(m)$ for any $l$ and $m$). Next we define $\beta(n) = \log_2(f(n))$, i.e.
+the exponent of the largest power of 2 in $n$. Being the logarithm of a completely multiplicative function, note
+that $\beta(lm) = \beta(l) + \beta(m)$ for any $l$ and $m$. Finally, and this is the point of this diversion, we 
+define $\tau(n) = \beta(\sigma(n))$, i.e. the exponent of 2 in $\sigma(n)$. This is called the <i>twos count</i>
+of $n$, and it plays an important role in aliquot sequence mutations. (Note that the author thinks that "twos
+count" is perhaps more appropriate for $\beta$ than for $\tau$, but this name has already been applied to $\tau$
+by others far more expert than the author. A point in favor of this name is that it then makes sense to talk about
+twos counts of primes, e.g. "the twos count of 7 is 3".) Finally, we note that $\tau$ is "logarithmically
+multiplicative", analogously to $\beta$: whenever $l$ and $m$ are coprime, $\tau(lm) = \beta(\sigma(lm)) =
+\beta(\sigma(l)\sigma(m)) = \beta(\sigma(l))+\beta(\sigma(m)) = \tau(l)+\tau(m)$. (Note that if $f$ were not 
+completely multiplicative, we could not conclude that $\tau$ is logarithmically multiplicative, since we don't 
+know that $\sigma(l)$ and $\sigma(m)$ are coprime.) As an example, $\tau(5) = \beta(\sigma(5)) = \beta(6) =
+\beta(2^1\cdot3) = 1$. Meanwhile, $\tau(11) = \beta(\sigma(11)) = \beta(12) = \beta(2^2\cdot4) = 2$, and finally,
+by the "multiplicativity" of $\tau$, we thus have that $\tau(55) = \tau(5\cdot11) = \tau(5)+\tau(11) = 1+2=3$
+(which we can verify by noting that $\sigma(55) = 2^3\cdot3^2$). The final stop on the detour is the following
+criterion for $\beta$: $\beta(n) = x$ means that $2^x \mid n$, but $2^{x+1} \nmid n$ -- a simple way to quantify
+this is that $n \equiv 2^x \pmod{2^{x+1}}$, which is equivalent to $\beta(n) = x$.
+</p>
+
+<p>
+And now we dive head first to the bottom of the pool. In this paragraph we write $n$ in the
+form $2^b \cdot v \cdot m$, $m$ odd, where by definition of $v$, it and $m$ are coprime. Now we want to know when
+$\beta(a(n))$ differs from $\beta(n) = b$. Proceeding directly, $\beta(a(n)) = \beta(\sigma(n)-n)$. We need some
+way to relate $\beta$ of a sum to $\beta$ applied to the summands. Fortunately, this is quite easy: let $x$ and
+$y$ be two numbers of the form $2^i \cdot l$ and $2^j \cdot m$, where $l$ and $m$ are odd. Without loss of
+generality, lets assume that $i \leq j$. Then $x+y = 2^i(2^{j-i}m+l)$. If $i \neq j$, then $(2^{j-i}m+l)$ is odd
+and so $\beta(x+y) = i = \min(\beta(x), \beta(y))$. Otherwise if $i=j$, then $x+y = 2^i(m+l)$, where $m+l$ is thus
+even and $\beta(x+y) \gt i=j$. Unfortunately we can't say more about that case without knowing more about $m$ and
+$l$ (though fortunately it doesn't matter much). Note that the same conclusions apply to $x-y$. Applying these
+results to $\beta(a(n)) = \beta(\sigma(n) - n)$, we see that if $\beta(\sigma(n)) = \tau(n) \gt b$, then
+$\beta(a(n)) = \min(\tau(n) \gt b, b) = b$, and no mutation occurs. If $\tau(n) = b$, then $\beta(a(n)) > b$, and
+a mutation occurs like in the example at the beginning of the section, where the power of 2 increases (how much it
+increases again depends on the odd parts of $n$ and $\sigma(n)$). Finally, if $\tau(n) \lt b$, then $\beta(a(n)) =
+\min(\tau(n) \lt b, b) = \tau(n)$, and again we have a mutation, this time where the exponent decreases to
+$\tau(n)$. The criterion for a mutation occuring, then, is that $\tau(n) \leq b$.
+</p>
+
+<p>
+In order to proceed further, we have to have an idea what $\tau(n)$ looks like for an arbitrary number $n$. In
+particular, in the fashion of $\sigma$ and $\nu$ oh so long ago, we calculate $\tau(p^a)$ for an arbitrary
+prime number $p$. But $\tau$ turns out to not be quite so straightforward as $\sigma$ or $\nu$, so we'll start
+with primes themselves, not prime powers. In particular, let $p$ be an odd prime. ($\sigma(2^a)=2^{a+1}-1$ is odd,
+so $\tau(2^a)=0$ and so we restrict our study to odd primes.) Then $\sigma(p)=p+1$, and we need to calculate
+$\beta(p+1)$. By the criterion for $\beta$ described previously, we have that $\beta(p+1)=x \iff p+1 \equiv 2^x
+\pmod{2^{x+1}}$, whence we know that $\tau(p) = x \iff p \equiv 2^x-1 \pmod {2^{x+1}}$. (This can be calculated in
+an algorithmic manner by testing succesive $x$ starting with $x=1$. Of course, practically speaking, it's simpler
+to merely count the trailing zero bits in the binary representation of $p+1$ than to search for $x$ in this
+manner.) Now we are can move on to prime powers. First, recall from the beginning of the page that $\sigma$ of a
+perfect square is odd. That is, whenever $a$ is even, $\sigma(p^a)$ is odd, and thus $\tau(p) = 
+\beta(\sigma(p^a)) = 0$. This turns out to be a boon when it comes to breaking certain guides, as we'll later
+deduce. Otherwise, if $a$ is odd and $a\gt1$, then we define $a=2k+1$ and write $\sigma(p^a) = \sum_{j=0}^a{p^j} =
+\sum_{i=0}^{k}({p^{2i}+p^{2i+1})}$. Consider the powers of $p$ $\pmod {2^{x+1}}$. By the previous criterion, we
+have that $p \equiv 2^x - 1 \pmod {2^{x+1}}$. By simple computation, $p^2 \equiv 2^{2x} - 2^{x+1} + 1
+\pmod{2^{x+1}}$, where the former two terms are congruent to 0. So $p^2 \equiv 1 \pmod{2^{x+1}}$, and so $p^3
+\equiv p$ and inductively we have $p^{2i} + p^{2i+1} \equiv 1 + p \equiv 2^x \pmod {2^{x+1}}$. Therefore we write
+$p^{2i} + p^{2i+1} = 2^x\cdot y_i$, where $y_i$ is odd, and so $\sigma(p^a) = \sum_{i=0}^{k}({p^{2i}+p^{2i+1})} =
+\sum_{i=0}^{k}{2^x \cdot y_i} = 2^x \cdot \sum_{i=0}^{k}{y_i}$, and thus $\beta(\sigma(p^a)) = \tau(p^a) \geq
+\tau(p)$. (In fact we can say more, but the author's <a href="tauprimepowers.html">thoughts on the matter</a> are
+as yet inconclusive, and this result here is sufficient for our purpose.)
+</p>
+
+<p>
+Now that we know how to calculate $\tau(p^a)$, we come back to our criterion for mutation: $\tau(n) \leq b$.
+We now recall that $\tau(lm) = \tau(l)+\tau(m)$ when $l$ and $m$ are coprime, and expand $\tau(n) = \tau(2^b
+\cdot v \cdot m) = \tau(2^b) + \tau(v) +\tau(m)$. But we know the prime powers composing $v$ and $m$, and in 
+particular we know that even-powered primes contribute nothing to the sum in $\tau(n)$. Thus we define the
+<i>canonical form</i> of an aliquot sequence as follows: $n = 2^b \cdot v \cdot s \cdot t$, where $v$ consists of
+the (powers of) primes that divide $\sigma(2^b)$; $s$ consists of the powers of all other primes whose exponent is
+even, and $t$ is everything else, the odd-powered primes that don't divide $\sigma(2^b)$. (For example, let $n =
+697099605116255176680532531614820 = 2^2 \cdot 5 \cdot 7^3 \cdot 347^2 \cdot 683 \cdot 919^4 \cdot 1201^3$. Then
+$b=2$, $v=7^3$, $s=347^2 \cdot 919^4$, and $t=5\cdot 683 \cdot 1201^3$.) Then $\tau(n) = \tau(2^b \cdot v \cdot s
+\cdot t) = \tau(2^b) + \tau(v) + \tau(s) + \tau(t)$. But as before, we know that $\tau(2^b) = 0$, and furthermore,
+since $s$ consists only of even-powered primes, $\tau(s)$ is also zero. So our mutation criterion is then $\tau(n)
+= \tau(v) + \tau(t) \leq b$. But $v$ are the primes which compose the guide, which is guaranteed to perpetuate, so
+the only part of the inequality that changes from term to term of the sequence is $t$, and so we semantically write
+$\tau(t) \leq b - \tau(v)$, where the right side is determined only by the guide at hand. Now we factor $t$ into
+its constituent primes: $t = p_1^{2 a_1+1} \cdot p_2^{2 a_2+1} \cdot ... \cdot p_k^{2 a_k+1}$, and $\tau(t) =
+\sum_{i=1}^k{\tau(p_i^{2 a_i+1})}$. But $\tau$ of any (odd) prime is at least 1, and so by applying the result that
+$\tau(p^a) \geq \tau(p) \geq 1$, we see that $\tau(t) \geq \sum_{i=1}^k{\tau(p_i)} \geq k$. And so if any
+ individual
+prime in $t$ has a large twos count, or if $t$ simply consists of a lot of primes, then $\tau(t) \gt b - \tau(v)$
+and no mutation occurs. In general, making $\tau(t)$ less than a given threshold is difficult, and the lower the
+threshold the more difficult it is for $\tau(t)$ to stay below the threshold, and so we define this threshold
+$b - \tau(v)$ to be the <i>class</i> of the guide, where a lower class means the guide is more difficult to break
+(that is, more stable). In particular, if a guide is of class 1, then <i>$t$ must consist of only one 1 prime</i>,
+and what's worse, if a guide has class 0 or less, then there is no $t$ whatsoever that will cause the guide to
+mutate. Fortunately, there's another way to break these guides, as we'll get into shortly. In the meantime, here's
+the same table of guides as above, except this time including their class:
+</p>
+
+<p>
+<table>
+  <tr><th>Even power</th><th>$\sigma(2^b)$</th><th>Guide</th><th>Abundance</th><th>Class</th></tr>
+  <tr><td>$2^1$</td><td>$3$</td><td >$2\cdot 3$</td><td class="yel">$1$ (perfect)</td><td class="red">$-1$</td></tr>
+  <tr><td></td><td></td><td >$2$</td><td class="gre">$\frac{1}{2}$ (deficient)</td><td class="yel">$1$</td></tr>
+  <tr><td>$2^2$</td><td>$7$</td><td >$2^2 \cdot 7$</td><td class="yel">$1$ (perfect)</td><td class="red">$-1$</td></tr>
+  <tr><td></td><td></td><td >$2^2$</td><td class="gre">$\frac{3}{4}$ (deficient)</td><td class="gre">$2$</td></tr>
+  <tr><td>$2^3$</td><td>$3 \cdot 5$</td><td >$2^3 \cdot 3 \cdot 5$</td><td class="red">$2$ (abundant)</td><td class="red">$0$</td></tr>
+  <tr><td></td><td></td><td >$2^3 \cdot 3$</td><td class="red">$\frac{3}{2}$ (abundant)</td><td class="yel">$1$</td></tr>
+  <tr><td></td><td></td><td >$2^3 \cdot 5$</td><td class="red">$\frac{5}{4}$ (abundant)</td><td class="gre">$2$</td></tr>
+  <tr><td></td><td></td><td >$2^3$</td><td class="gre">$\frac{7}{8}$ (deficient)</td><td class="gre">$3$</td></tr>
+  <tr><td>$2^4$</td><td>$31$</td><td >$2^4 \cdot 31$</td><td class="yel">$1$ (perfect)</td><td class="red">$-1$</td></tr>
+  <tr><td></td><td></td><td >$2^4$</td><td class="gre">$\frac{15}{16}$ (deficient)</td><td class="gre">$4$</td></tr>
+  <tr><td>$2^5$</td><td>$3^2 \cdot 7$</td><td >$2^5 \cdot 3 \cdot 7$</td><td class="red">$2$ (abundant)</td><td class="red">$0$</td></tr>
+  <tr><td></td><td></td><td >$2^5 \cdot 3$</td><td class="red">$\frac{13}{8}$ (abundant)</td><td class="gre">$3$</td></tr>
+  <tr><td></td><td></td><td >$2^5 \cdot 7$</td><td class="red">$\frac{5}{4}$ (abundant)</td><td class="gre">$2$</td></tr>
+  <tr><td></td><td></td><td >$2^5$</td><td class="gre">$\frac{15}{16}$ (deficient)</td><td class="gre">$5$</td></tr>
+  <tr><td>$2^6$</td><td>$127$</td><td >$2^6 \cdot 127$</td><td class="yel">$1$ (perfect)</td><td class="red">$-1$</td></tr>
+  <tr><td></td><td></td><td >$2^6$</td><td class="gre">$\frac{31}{32}$ (deficient)</td><td class="gre">$6$</td></tr>
+</table>
+</p>
+
+<p>
+By convention, we call those guides with class less than or equal to 1 <i>drivers</i>. (Clifford Stern's criterion
+is $2^{b-1} \mid \sigma(v)$, which is precisely $\tau(v) \geq b-1$.) This chart illustrates the
+bad situation for Catalan's aliquot conjecture: all the most stable guides are precisely the ones that send a
+a sequence up. The only guide that consistently sends a sequence down is $2$ ($2^2$ also does, but in a much
+lesser way); it is called the <i>downdriver</i>. Note that all perfect numbers are guides of class -1: if $2^p-1$
+is a Mersenne prime, then we already know that $2^{p-1} \cdot (2^p-1)$ is a perfect number; further, the Mersenne
+prime is precisely equal to $\sigma(2^{p-1})$, so that the perfect number is in fact a guide, and finally
+$\tau(2^p-1) = p$, such that the class is $(p-1) - p = -1$. We can also reverse this argument: any prime $v$ that
+divides $\sigma(2^b) = 2^{b+1}-1$ automatically has $\tau(v) \leq b+1$, so that there are no guides with class 
+$\lt -1$; the only case with $\tau(v) = b+1$ is where $v = 2^{b+1}-1$ is prime, in which case $2^b \cdot v$ is a
+perfect number, so that all guides with class $-1$ are the even perfect numbers.
+</p>
+
+<p>
+The way in which drivers of class $\leq 0$ can be broken (thus leaving open the possibility that Catalan's aliquot
+conjecture is true) is if one of the primes in $v$ is raised to an even power. In this case, write $v = v' \cdot
+w$, where $w$ are the primes with an even power, and $v'$ the remainder (in the case of even perfect numbers, $v'$
+is necessarily $1$). Then we have $\tau(n) = \tau(v') + \tau(w) + \tau(t) = \tau(v') + \tau(t)$, such that the
+effective class is now $b - \tau(v')$ instead of $b - \tau(v)$; another way to think of it is that the class is
+raised by the twos count of the primes in $v$ whose power is even. Therefore the guide $2^2 \cdot 7^2$ has class
+$-1 + \tau(7) = 2$ (even though the 7 is still guaranteed to be perpetuated to each term), and in fact any such
+perfect number guide $2^b \cdot (2^{b+1}-1)^2$ has class $b$. Another example is that $2^3 \cdot 3^2 \cdot 5$
+has class $0 + \tau(3) = 2$, and $2^5 \cdot 3 \cdot 7^2$ has class $3$. Here's some food for thought: the largest
+known Mersenne prime is currently $M = 2^{57,885,161}-1$, and if we define the corresponding perfect number as
+$P_M=2^{57,885,160}(2^{57,885,161}-1)$, what are the odds that the sequence starting with $n = 3*P_M$ will ever
+be divisble by $M^2$, as would be required to make the sequence bounded?
+</p>
+
+<p>
+As a final thought, we can use the criterion $\tau(t) \leq$ the class, together with our knowledge of what $\tau$
+means, to locate sequences whose last term is currently unfactored, yet which might mutate upon factorization of
+the line. Such an example would be something like $2^2 \cdot 7^2 \cdot C130$, where C130 means a composite number
+of 130 digits, and the guide has an effective class of $2$. If we assume that this composite splits into two
+component primes, each with exponent 1 (as is overwhelming likely), then we know that each of those primes must
+have $\tau(p_1) = \tau(p_2) = 1$ (for if either had $\tau \gt 1$, then $\tau(t) = \tau(p_1)+\tau(p_2) > 2$, and
+a mutation is guaranteed not to occur). And by the criterion that $\tau(p) = x \iff p \equiv 2^x-1
+\pmod{2^{x+1}}$, then we can say that each of the component primes must be $1 \pmod{4}$, and therefore the
+composite must also be $1 \pmod{4}$. And so if we have several sequences with $2^2 \cdot 7^2 \cdot C$ and we want
+to find mutations among those sequences, we can eliminate those whose composite is $3 \pmod{4}$. A similar analysis
+can be made for guides of higher class.
+</p>
+
+     <footer>
+       <p>This page renders mathematics with <a href="https://www.mathjax.org/">MathJax</a>.</p>
+     </footer>
+</body>
+</html>
