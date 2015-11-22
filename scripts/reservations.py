@@ -312,9 +312,7 @@ def spider(last_pid):
                          Print("Duplicate sequence? {} {}".format(seq, url))
                     else:
                          current.add(seq)
-               elif re.match(r'^[0-9]+$', line):
-                    # ignore pure numbers > 1e6 because yoyo has reserved higher starting numbers
-               else:
+               elif  not re.match(r'^[0-9]+$', line):
                     Print("Unknown line from {}: {}".format(url, line))
           # easy peasy lemon squeezy
           done = old - current
