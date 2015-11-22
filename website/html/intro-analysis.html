@@ -20,9 +20,9 @@ MathJax.Hub.Config({
      table, tr, th, td{ text-align: center;
                       border: thin solid black;
                       border-collapse: collapse; }
-     .abu           { background-color: lightcoral; }
-     .per           { background-color: khaki; }
-     .def           { background-color: limegreen; }
+     .red           { background-color: lightcoral; }
+     .yel           { background-color: khaki; }
+     .gre           { background-color: limegreen; }
 
      /* http://www.2ality.com/2012/01/numbering-headingshtml.html (see comments too) */
      body           { counter-reset: h3counter; }
@@ -306,38 +306,38 @@ term. Here's another example: let $n = 212046767651040 = 2^5 \cdot 3 \cdot 7 \cd
 Notice how $2^5 \cdot 3 \cdot 7$ divides every term (while the smaller prime 5 stays for a couple terms but then
 disappears). Why does this happen? The answer, as it turns out, lies in the sum of the divisors of the power of
 two. Indeed, $\sigma(2^b) = 2^{b+1}-1$ is odd. Let $v$ be any (odd!) non-trivial divisor of $\sigma(2^b)$, and
-then consider $n = 2^b \cdot v \cdot t$, where $t$ is any odd number coprime to $v$ (i.e. coprime to
-$\sigma(2^b)$). Then $\sigma(n) = \sigma(2^b) \cdot \sigma(v) \cdot \sigma(t) = (2^{b+1}-1) \cdot \sigma(v) \cdot
-\sigma(t)$, and further $a(n) = (2^{b+1}-1) \cdot \sigma(v) \cdot \sigma(t) - 2^b \cdot v \cdot t$ (where again,
-$v \mid (2^{b+1}-1$)). We don't know a priori what the power of 2 of $a(n)$ is, but for now we'll note that, as
-according to the examples of above, it's very likely to stay the same. Now since $v \mid (2^{b+1}-1)$ (by
-definition) and $v \mid v$ (vacuously), we have that $v$ divides a difference of their multiples, i.e. $v$
-divides $a(n)$. Therefore, if we start with $2^b \cdot v \cdot t$ where $v \mid \sigma(2^b)$, then $v \mid a(n)
-$, and since the power of 2 almost never changes, we have more conclusively that $(2^b \cdot v) \mid a(2^b \cdot v
-\cdot t)$ when $v \mid \sigma(2^b)$, and so whatever primes $v$ is composed of are there to stay. This motivates
-the following definition: a number $2^b \cdot v$, where $v$ divides $\sigma(2^b)=2^{b+1}-1$, is called a
-<i>guide</i>. Guides are the bread and butter of the study of even aliquot sequences. (Note that when $v=1$, the
-guide is just the power of 2.) Here are the first six powers of 2 and their possible guides:
+then consider $n = 2^b \cdot v \cdot m$, where $m$ is any odd number coprime to $\sigma(2^b)$). Then $\sigma(n) =
+\sigma(2^b) \cdot \sigma(v) \cdot \sigma(m) = (2^{b+1}-1) \cdot \sigma(v) \cdot \sigma(m)$, and further $a(n) =
+(2^{b+1}-1) \cdot \sigma(v) \cdot \sigma(m) - 2^b \cdot v \cdot m$ (where again, $v \mid (2^{b+1}-1$)). We don't
+know a priori what the power of 2 of $a(n)$ is, but for now we'll note that, as according to the examples of 
+above, it's very likely to stay the same. Now since $v \mid (2^{b+1}-1)$ (by definition) and $v \mid v$
+(vacuously), we have that $v$ divides a difference of their multiples, i.e. $v$ divides $a(n)$. Therefore, if we
+start with $2^b \cdot v \cdot t$ where $v \mid \sigma(2^b)$, then $v \mid a(n)$, and since the power of 2 almost
+never changes, we have more conclusively that $(2^b \cdot v) \mid a(2^b \cdot v \cdot t)$ when $v \mid
+\sigma(2^b)$, and so whatever primes $v$ is composed of are there to stay. This motivates the following
+definition: a number $2^b \cdot v$, where $v$ divides $\sigma(2^b)=2^{b+1}-1$, is called a <i>guide</i>. Guides
+are the bread and butter of the study of even aliquot sequences. (Note that when $v=1$, the guide is just the
+power of 2.) Here are the first six powers of 2 and their possible guides:
 </p>
 <p>
 <table>
   <tr><th>Even power</th><th>$\sigma(2^b)$</th><th>Guide</th><th>Abundance</th></tr>
-  <tr><td>$2^1$</td><td>$3$</td><td class="per">$2\cdot 3$</td><td class="per">$1$ (perfect)</td></tr>
-  <tr><td></td><td></td><td class="def">$2$</td><td class="def">$\frac{1}{2}$ (deficient)</td></tr>
-  <tr><td>$2^2$</td><td>$7$</td><td class="per">$2^2 \cdot 7$</td><td class="per">$1$ (perfect)</td></tr>
-  <tr><td></td><td></td><td class="def">$2^2$</td><td class="def">$\frac{3}{4}$ (deficient)</td></tr>
-  <tr><td>$2^3$</td><td>$3 \cdot 5$</td><td class="abu">$2^3 \cdot 3 \cdot 5$</td><td class="abu">$2$ (abundant)</td></tr>
-  <tr><td></td><td></td><td class="abu">$2^3 \cdot 3$</td><td class="abu">$\frac{3}{2}$ (abundant)</td></tr>
-  <tr><td></td><td></td><td class="abu">$2^3 \cdot 5$</td><td class="abu">$\frac{5}{4}$ (abundant)</td></tr>
-  <tr><td></td><td></td><td class="def">$2^3$</td><td class="def">$\frac{7}{8}$ (deficient)</td></tr>
-  <tr><td>$2^4$</td><td>$31$</td><td class="per">$2^4 \cdot 31$</td><td class="per">$1$ (perfect)</td></tr>
-  <tr><td></td><td></td><td class="def">$2^4$</td><td class="def">$\frac{15}{16}$ (deficient)</td></tr>
-  <tr><td>$2^5$</td><td>$3^2 \cdot 7$</td><td class="abu">$2^5 \cdot 3 \cdot 7$</td><td class="abu">$2$ (abundant)</td></tr>
-  <tr><td></td><td></td><td class="abu">$2^5 \cdot 3$</td><td class="abu">$\frac{13}{8}$ (abundant)</td></tr>
-  <tr><td></td><td></td><td class="abu">$2^5 \cdot 7$</td><td class="abu">$\frac{5}{4}$ (abundant)</td></tr>
-  <tr><td></td><td></td><td class="def">$2^5$</td><td class="def">$\frac{15}{16}$ (deficient)</td></tr>
-  <tr><td>$2^6$</td><td>$127$</td><td class="per">$2^6 \cdot 127$</td><td class="per">$1$ (perfect)</td></tr>
-  <tr><td></td><td></td><td class="def">$2^6$</td><td class="def">$\frac{31}{32}$ (deficient)</td></tr>
+  <tr><td>$2^1$</td><td>$3$</td><td class="yel">$2\cdot 3$</td><td class="yel">$1$ (perfect)</td></tr>
+  <tr><td></td><td></td><td class="gre">$2$</td><td class="gre">$\frac{1}{2}$ (deficient)</td></tr>
+  <tr><td>$2^2$</td><td>$7$</td><td class="yel">$2^2 \cdot 7$</td><td class="yel">$1$ (perfect)</td></tr>
+  <tr><td></td><td></td><td class="gre">$2^2$</td><td class="gre">$\frac{3}{4}$ (deficient)</td></tr>
+  <tr><td>$2^3$</td><td>$3 \cdot 5$</td><td class="red">$2^3 \cdot 3 \cdot 5$</td><td class="red">$2$ (abundant)</td></tr>
+  <tr><td></td><td></td><td class="red">$2^3 \cdot 3$</td><td class="red">$\frac{3}{2}$ (abundant)</td></tr>
+  <tr><td></td><td></td><td class="red">$2^3 \cdot 5$</td><td class="red">$\frac{5}{4}$ (abundant)</td></tr>
+  <tr><td></td><td></td><td class="gre">$2^3$</td><td class="gre">$\frac{7}{8}$ (deficient)</td></tr>
+  <tr><td>$2^4$</td><td>$31$</td><td class="yel">$2^4 \cdot 31$</td><td class="yel">$1$ (perfect)</td></tr>
+  <tr><td></td><td></td><td class="gre">$2^4$</td><td class="gre">$\frac{15}{16}$ (deficient)</td></tr>
+  <tr><td>$2^5$</td><td>$3^2 \cdot 7$</td><td class="red">$2^5 \cdot 3 \cdot 7$</td><td class="red">$2$ (abundant)</td></tr>
+  <tr><td></td><td></td><td class="red">$2^5 \cdot 3$</td><td class="red">$\frac{13}{8}$ (abundant)</td></tr>
+  <tr><td></td><td></td><td class="red">$2^5 \cdot 7$</td><td class="red">$\frac{5}{4}$ (abundant)</td></tr>
+  <tr><td></td><td></td><td class="gre">$2^5$</td><td class="gre">$\frac{15}{16}$ (deficient)</td></tr>
+  <tr><td>$2^6$</td><td>$127$</td><td class="yel">$2^6 \cdot 127$</td><td class="yel">$1$ (perfect)</td></tr>
+  <tr><td></td><td></td><td class="gre">$2^6$</td><td class="gre">$\frac{31}{32}$ (deficient)</td></tr>
 </table>
 </p>
 <p>
@@ -348,17 +348,28 @@ is to catch and keep the sole $2$ guide. ($2^2$ tends to decrease on average, bu
 averages no decrease or increase, while higher powers of 2 increase very slowly on average.)
 </p>
 
+<p>
+As a final note on guides, let $v' \gt 1$ be a prime divisor of $\sigma(2^b)$ that doesn't divide $n = 2^b \cdot
+v \cdot m$. By recalling that when a number divides one part of a sum but not the other part, then the number can't
+divide the sum itself, we conclude that since $v' \mid \sigma(n)$ but $v' \nmid n$, $v'$ therefore doesn't divide
+$a(n)$. What this means is that just as $2^2 \cdot 7$ can't lose the 7 (without the power of 2 changing), nor can
+$2^2$ gain a factor of 7 to become $2^2 \cdot 7$ (again, assuming the power of 2 doesn't change). As another
+example, just as $2^3 \cdot 3$ can't lose the 3 to become just $2^3$, nor can $2^3 \cdot 3$ gain the 5 to become
+$2^3 \cdot 3 \cdot 5$. And so the only possible way for a guide to change is if the power of 2 changes, which
+brings us directly to the next section.
+</p>
+
 <h4 id="mutations">Mutations</h4>
 
 <p>
-The next question of course, is how these guides change. Recall earlier when we were talking about guides that,
-when noting that $2^b \cdot v \mid a(2^b \cdot v \cdot m)$, we only assumed that $2^b \mid a(2^b \cdot v
-\cdot m)$ (as is nearly always the case) in order to perpetuate the guide. If the power of 2 changes, then $v$
-no longer divides $\sigma(2^{b'})$, and we have a new guide based on $2^{b'}$ instead of $2^b$. For example, let
-$n = 2^5 \cdot 5 \cdot 7 \cdot 13$. Then $b = 5$ and $v = 7$, and $a(n) = 2^7 \cdot 7 \cdot 31$. Although $v$ does
-indeed divide $a(n)$, the power of 2 changed and thus the $2^5 \cdot 7$ guide was lost, transforming into $2^7$.
-(In this case, $\sigma(2^7) = 3 \cdot 5 \cdot 17$, so fortunately $v = 1$ in the new guide.) We call these changes
-in the power of 2 <i>mutations</i>.
+The next question of course, is when and how the power of 2 changes. Recall earlier when we were talking about
+guides that, when noting that $2^b \cdot v \mid a(2^b \cdot v \cdot m)$, we only assumed that $2^b \mid a(2^b
+\cdot v \cdot m)$ (as is nearly always the case) in order to perpetuate the guide. If the power of 2 changes, then
+$v$ no longer divides $\sigma(2^{b'})$, and we have a new guide based on $2^{b'}$ instead of $2^b$. For example, 
+let $n = 2^5 \cdot 5 \cdot 7 \cdot 13$. Then $b = 5$ and $v = 7$, and $a(n) = 2^7 \cdot 7 \cdot 31$. Although $v$
+does indeed divide $a(n)$, the power of 2 changed and thus the $2^5 \cdot 7$ guide was lost, transforming into
+$2^7$. (In this case, $\sigma(2^7) = 3 \cdot 5 \cdot 17$, so fortunately $v = 1$ in the new guide.) We call these
+changes in the power of 2 <i>mutations</i>.
 </p>
 
 <p>
@@ -367,24 +378,25 @@ shall make our bookkeeping easier. Let $n$ be a number of the form $2^b \cdot m$
 is allowed). Then we define $f(n) = 2^a$, i.e. $f$ is the largest power of 2 that divides $n$. Note that it is
 completely multiplicative ($f(lm) = f(l)f(m)$ for any $l$ and $m$). Next we define $\beta(n) = \log_2(f(n))$, i.e.
 the exponent of the largest power of 2 in $n$. Being the logarithm of a completely multiplicative function, note
-that $\beta(lm) = \beta(l) + \beta(m)$ for any $l$ and $m$. Next we define a companion to $f$: define $g(n) =
-f(\sigma(n))$. Since $\sigma$ is multiplicative and $f$ is completely multiplicative, we have that, when $l$ and
-$m$ are coprime, $g(ml) = f(\sigma(ml)) = f(\sigma(m) \sigma(l)) = f(\sigma(m)) f(\sigma(l)) = g(m) g(l)$.
-(Note that if $f$ were not completely multiplicative, $g$ would not be multiplicative since we don't know if
-$\sigma(m)$ and $\sigma(l)$ are coprime or not.) Finally, and this is the point of this diversion, we define
-$\tau(n) = \log_2(g(n)) = \beta(\sigma(n))$, i.e. the exponent of 2 in $\sigma(n)$. This is called the <i>twos
-count</i> of $n$, and it plays an important role in aliquot sequence mutations. (Note that the author thinks that
-"twos count" is perhaps more appropriate for $\beta$ than for $\tau$, but this name has already been applied to
-$\tau$ by others far more expert than the author.) Finally, we note that since we showed $g$ is multiplicative,
-$\tau$ is "logarithmically multiplicative", analogously to $\beta$: whenever $l$ and $m$ are coprime, $\tau(lm)
-= \tau(l) + \tau(m)$. As an example, $\tau(5) = \beta(\sigma(5)) = \beta(6) = \beta(2^1\cdot3) = 1$. Meanwhile,
-$\tau(11) = \beta(\sigma(11)) = \beta(12) = \beta(2^2\cdot4) = 2$, and finally, by the "multiplicativity" of
-$\tau$, we thus have that $\tau(55) = \tau(5\cdot11) = \tau(5)+\tau(11) = 1+2=3$ (which we can verify by noting
-that $\sigma(55) = 2^3\cdot3^2$).
+that $\beta(lm) = \beta(l) + \beta(m)$ for any $l$ and $m$. Finally, and this is the point of this diversion, we 
+define $\tau(n) = \beta(\sigma(n))$, i.e. the exponent of 2 in $\sigma(n)$. This is called the <i>twos count</i>
+of $n$, and it plays an important role in aliquot sequence mutations. (Note that the author thinks that "twos
+count" is perhaps more appropriate for $\beta$ than for $\tau$, but this name has already been applied to $\tau$
+by others far more expert than the author. A point in favor of this name is that it then makes sense to talk about
+twos counts of primes, e.g. "the twos count of 7 is 3".) Finally, we note that $\tau$ is "logarithmically
+multiplicative", analogously to $\beta$: whenever $l$ and $m$ are coprime, $\tau(lm) = \beta(\sigma(lm)) =
+\beta(\sigma(l)\sigma(m)) = \beta(\sigma(l))+\beta(\sigma(m)) = \tau(l)+\tau(m)$. (Note that if $f$ were not 
+completely multiplicative, we could not conclude that $\tau$ is logarithmically multiplicative, since we don't 
+know that $\sigma(l)$ and $\sigma(m)$ are coprime.) As an example, $\tau(5) = \beta(\sigma(5)) = \beta(6) =
+\beta(2^1\cdot3) = 1$. Meanwhile, $\tau(11) = \beta(\sigma(11)) = \beta(12) = \beta(2^2\cdot4) = 2$, and finally,
+by the "multiplicativity" of $\tau$, we thus have that $\tau(55) = \tau(5\cdot11) = \tau(5)+\tau(11) = 1+2=3$
+(which we can verify by noting that $\sigma(55) = 2^3\cdot3^2$). The final stop on the detour is the following
+criterion for $\beta$: $\beta(n) = x$ means that $2^x \mid n$, but $2^{x+1} \nmid n$ -- a simple way to quantify
+this is that $n \equiv 2^x \pmod{2^{x+1}}$, which is equivalent to $\beta(n) = x$.
 </p>
 
 <p>
-And now we dive head first to the bottom of the pool. For the rest of the page we will always write $n$ in the
+And now we dive head first to the bottom of the pool. In this paragraph we write $n$ in the
 form $2^b \cdot v \cdot m$, $m$ odd, where by definition of $v$, it and $m$ are coprime. Now we want to know when
 $\beta(a(n))$ differs from $\beta(n) = b$. Proceeding directly, $\beta(a(n)) = \beta(\sigma(n)-n)$. We need some
 way to relate $\beta$ of a sum to $\beta$ applied to the summands. Fortunately, this is quite easy: let $x$ and
@@ -407,25 +419,116 @@ particular, in the fashion of $\sigma$ and $\nu$ oh so long ago, we calculate $\
 prime number $p$. But $\tau$ turns out to not be quite so straightforward as $\sigma$ or $\nu$, so we'll start
 with primes themselves, not prime powers. In particular, let $p$ be an odd prime. ($\sigma(2^a)=2^{a+1}-1$ is odd,
 so $\tau(2^a)=0$ and so we restrict our study to odd primes.) Then $\sigma(p)=p+1$, and we need to calculate
-$\beta(p+1)$. For example, let $p$ be of the form $4n+1$ for some $n$. Then $p+1=4n+2$, and so $\beta(p+1)=2=
-\tau(p)$. On the other hand, if $p \equiv 3 \pmod 4$, then $4 \mid \sigma(p)$, but we can't say for sure if $8 \mid
-\sigma(p)$ or not. Then we must consider $p \pmod 8$. The cases $p \equiv 1$ and $p \equiv 5$ are covered under the
-prior case. If $p \equiv 3 \pmod 8$, then $p+1=8n+4$, and so $\beta(p+1)=4$. On the other hand, if $p \equiv 7
-\pmod 8$, then as before $\beta(p+1) \geq 3$, but we can't say for sure if it's more or not, and we must consider
-$p \pmod 16$. This inductive process would continue until we identify the smallest power of two that $p+1$ doesn't
-divide. This suggests the general criterion, whose veracity is easy to verify: $\tau(p) = x \iff p \equiv
-2^x-1 \pmod {2^{x+1}}$. Now we are ready to move on to prime powers. $\tau(p^a) = \beta(\sigma(p^a))$. First,
-recall from the beginning of the page that $\sigma$ of a perfect square is odd. That is, whenever $a$ is even,
-$\sigma(p^a)$ is odd, and thus $\beta(\sigma(p^a))$ is 0. This turns out to be a boon when it comes to breaking
-certain guides, as we'll later deduce. Otherwise, if $a$ is odd and $a\gt1$, then we define $a=2k+1$ and write
-$\sigma(p^a) = \sum_{j=0}^a{p^j} = \sum_{i=0}^{k}({p^{2i}+p^{2i+1})}$. Consider the powers of $p \pmod {2^{x+1}}$.
-By the previous criterion, we have that $p \equiv 2^x - 1 \pmod {2^{x+1}}$. By simple computation, $p^2 \equiv
-2^{2x} - 2^{x+1} + 1 \pmod {2^{x+1}}$, where the former two terms are congruent to 0. So $p^2 \equiv 1 \pmod 
-{2^{x+1}}$, and so $p^3 \equiv p$ and inductively we have $p^{2i} + p^{2i+1} \equiv 1 + p \equiv 2^x \pmod 
-{2^{x+1}}$. Therefore we write $p^{2i} + p^{2i+1} = 2^x\cdot y_i$, where $y_i$ is odd, and so $\sigma(p^a) =
-\sum_{i=0}^{k}({p^{2i}+p^{2i+1})} = \sum_{i=0}^{k}{2^x \cdot y_i} = 2^x \cdot \sum_{i=0}^{k}{y_i}$, and thus
-$\sigma(p^a) \geq \tau(p)$. (In fact we can say more, but the author's <a href="tauprimepowers.html">thoughts on
-the matter</a> are as yet inconclusive.)
+$\beta(p+1)$. By the criterion for $\beta$ described previously, we have that $\beta(p+1)=x \iff p+1 \equiv 2^x
+\pmod{2^{x+1}}$, whence we know that $\tau(p) = x \iff p \equiv 2^x-1 \pmod {2^{x+1}}$. (This can be calculated in
+an algorithmic manner by testing succesive $x$ starting with $x=1$. Of course, practically speaking, it's simpler
+to merely count the trailing zero bits in the binary representation of $p+1$ than to search for $x$ in this
+manner.) Now we are can move on to prime powers. First, recall from the beginning of the page that $\sigma$ of a
+perfect square is odd. That is, whenever $a$ is even, $\sigma(p^a)$ is odd, and thus $\tau(p) = 
+\beta(\sigma(p^a)) = 0$. This turns out to be a boon when it comes to breaking certain guides, as we'll later
+deduce. Otherwise, if $a$ is odd and $a\gt1$, then we define $a=2k+1$ and write $\sigma(p^a) = \sum_{j=0}^a{p^j} =
+\sum_{i=0}^{k}({p^{2i}+p^{2i+1})}$. Consider the powers of $p$ $\pmod {2^{x+1}}$. By the previous criterion, we
+have that $p \equiv 2^x - 1 \pmod {2^{x+1}}$. By simple computation, $p^2 \equiv 2^{2x} - 2^{x+1} + 1
+\pmod{2^{x+1}}$, where the former two terms are congruent to 0. So $p^2 \equiv 1 \pmod{2^{x+1}}$, and so $p^3
+\equiv p$ and inductively we have $p^{2i} + p^{2i+1} \equiv 1 + p \equiv 2^x \pmod {2^{x+1}}$. Therefore we write
+$p^{2i} + p^{2i+1} = 2^x\cdot y_i$, where $y_i$ is odd, and so $\sigma(p^a) = \sum_{i=0}^{k}({p^{2i}+p^{2i+1})} =
+\sum_{i=0}^{k}{2^x \cdot y_i} = 2^x \cdot \sum_{i=0}^{k}{y_i}$, and thus $\beta(\sigma(p^a)) = \tau(p^a) \geq
+\tau(p)$. (In fact we can say more, but the author's <a href="tauprimepowers.html">thoughts on the matter</a> are
+as yet inconclusive, and this result here is sufficient for our purpose.)
+</p>
+
+<p>
+Now that we know how to calculate $\tau(p^a)$, we come back to our criterion for mutation: $\tau(n) \leq b$.
+We now recall that $\tau(lm) = \tau(l)+\tau(m)$ when $l$ and $m$ are coprime, and expand $\tau(n) = \tau(2^b
+\cdot v \cdot m) = \tau(2^b) + \tau(v) +\tau(m)$. But we know the prime powers composing $v$ and $m$, and in 
+particular we know that even-powered primes contribute nothing to the sum in $\tau(n)$. Thus we define the
+<i>canonical form</i> of an aliquot sequence as follows: $n = 2^b \cdot v \cdot s \cdot t$, where $v$ consists of
+the (powers of) primes that divide $\sigma(2^b)$; $s$ consists of the powers of all other primes whose exponent is
+even, and $t$ is everything else, the odd-powered primes that don't divide $\sigma(2^b)$. (For example, let $n =
+697099605116255176680532531614820 = 2^2 \cdot 5 \cdot 7^3 \cdot 347^2 \cdot 683 \cdot 919^4 \cdot 1201^3$. Then
+$b=2$, $v=7^3$, $s=347^2 \cdot 919^4$, and $t=5\cdot 683 \cdot 1201^3$.) Then $\tau(n) = \tau(2^b \cdot v \cdot s
+\cdot t) = \tau(2^b) + \tau(v) + \tau(s) + \tau(t)$. But as before, we know that $\tau(2^b) = 0$, and furthermore,
+since $s$ consists only of even-powered primes, $\tau(s)$ is also zero. So our mutation criterion is then $\tau(n)
+= \tau(v) + \tau(t) \leq b$. But $v$ are the primes which compose the guide, which is guaranteed to perpetuate, so
+the only part of the inequality that changes from term to term of the sequence is $t$, and so we semantically write
+$\tau(t) \leq b - \tau(v)$, where the right side is determined only by the guide at hand. Now we factor $t$ into
+its constituent primes: $t = p_1^{2 a_1+1} \cdot p_2^{2 a_2+1} \cdot ... \cdot p_k^{2 a_k+1}$, and $\tau(t) =
+\sum_{i=1}^k{\tau(p_i^{2 a_i+1})}$. But $\tau$ of any (odd) prime is at least 1, and so by applying the result that
+$\tau(p^a) \geq \tau(p) \geq 1$, we see that $\tau(t) \geq \sum_{i=1}^k{\tau(p_i)} \geq k$. And so if any
+ individual
+prime in $t$ has a large twos count, or if $t$ simply consists of a lot of primes, then $\tau(t) \gt b - \tau(v)$
+and no mutation occurs. In general, making $\tau(t)$ less than a given threshold is difficult, and the lower the
+threshold the more difficult it is for $\tau(t)$ to stay below the threshold, and so we define this threshold
+$b - \tau(v)$ to be the <i>class</i> of the guide, where a lower class means the guide is more difficult to break
+(that is, more stable). In particular, if a guide is of class 1, then <i>$t$ must consist of only one 1 prime</i>,
+and what's worse, if a guide has class 0 or less, then there is no $t$ whatsoever that will cause the guide to
+mutate. Fortunately, there's another way to break these guides, as we'll get into shortly. In the meantime, here's
+the same table of guides as above, except this time including their class:
+</p>
+
+<p>
+<table>
+  <tr><th>Even power</th><th>$\sigma(2^b)$</th><th>Guide</th><th>Abundance</th><th>Class</th></tr>
+  <tr><td>$2^1$</td><td>$3$</td><td >$2\cdot 3$</td><td class="yel">$1$ (perfect)</td><td class="red">$-1$</td></tr>
+  <tr><td></td><td></td><td >$2$</td><td class="gre">$\frac{1}{2}$ (deficient)</td><td class="yel">$1$</td></tr>
+  <tr><td>$2^2$</td><td>$7$</td><td >$2^2 \cdot 7$</td><td class="yel">$1$ (perfect)</td><td class="red">$-1$</td></tr>
+  <tr><td></td><td></td><td >$2^2$</td><td class="gre">$\frac{3}{4}$ (deficient)</td><td class="gre">$2$</td></tr>
+  <tr><td>$2^3$</td><td>$3 \cdot 5$</td><td >$2^3 \cdot 3 \cdot 5$</td><td class="red">$2$ (abundant)</td><td class="red">$0$</td></tr>
+  <tr><td></td><td></td><td >$2^3 \cdot 3$</td><td class="red">$\frac{3}{2}$ (abundant)</td><td class="yel">$1$</td></tr>
+  <tr><td></td><td></td><td >$2^3 \cdot 5$</td><td class="red">$\frac{5}{4}$ (abundant)</td><td class="gre">$2$</td></tr>
+  <tr><td></td><td></td><td >$2^3$</td><td class="gre">$\frac{7}{8}$ (deficient)</td><td class="gre">$3$</td></tr>
+  <tr><td>$2^4$</td><td>$31$</td><td >$2^4 \cdot 31$</td><td class="yel">$1$ (perfect)</td><td class="red">$-1$</td></tr>
+  <tr><td></td><td></td><td >$2^4$</td><td class="gre">$\frac{15}{16}$ (deficient)</td><td class="gre">$4$</td></tr>
+  <tr><td>$2^5$</td><td>$3^2 \cdot 7$</td><td >$2^5 \cdot 3 \cdot 7$</td><td class="red">$2$ (abundant)</td><td class="red">$0$</td></tr>
+  <tr><td></td><td></td><td >$2^5 \cdot 3$</td><td class="red">$\frac{13}{8}$ (abundant)</td><td class="gre">$3$</td></tr>
+  <tr><td></td><td></td><td >$2^5 \cdot 7$</td><td class="red">$\frac{5}{4}$ (abundant)</td><td class="gre">$2$</td></tr>
+  <tr><td></td><td></td><td >$2^5$</td><td class="gre">$\frac{15}{16}$ (deficient)</td><td class="gre">$5$</td></tr>
+  <tr><td>$2^6$</td><td>$127$</td><td >$2^6 \cdot 127$</td><td class="yel">$1$ (perfect)</td><td class="red">$-1$</td></tr>
+  <tr><td></td><td></td><td >$2^6$</td><td class="gre">$\frac{31}{32}$ (deficient)</td><td class="gre">$6$</td></tr>
+</table>
+</p>
+
+<p>
+By convention, we call those guides with class less than or equal to 1 <i>drivers</i>. (Clifford Stern's criterion
+is $2^{b-1} \mid \sigma(v)$, which is precisely $\tau(v) \geq b-1$.) This chart illustrates the
+bad situation for Catalan's aliquot conjecture: all the most stable guides are precisely the ones that send a
+a sequence up. The only guide that consistently sends a sequence down is $2$ ($2^2$ also does, but in a much
+lesser way); it is called the <i>downdriver</i>. Note that all perfect numbers are guides of class -1: if $2^p-1$
+is a Mersenne prime, then we already know that $2^{p-1} \cdot (2^p-1)$ is a perfect number; further, the Mersenne
+prime is precisely equal to $\sigma(2^{p-1})$, so that the perfect number is in fact a guide, and finally
+$\tau(2^p-1) = p$, such that the class is $(p-1) - p = -1$. We can also reverse this argument: any prime $v$ that
+divides $\sigma(2^b) = 2^{b+1}-1$ automatically has $\tau(v) \leq b+1$, so that there are no guides with class 
+$\lt -1$; the only case with $\tau(v) = b+1$ is where $v = 2^{b+1}-1$ is prime, in which case $2^b \cdot v$ is a
+perfect number, so that all guides with class $-1$ are the even perfect numbers.
+</p>
+
+<p>
+The way in which drivers of class $\leq 0$ can be broken (thus leaving open the possibility that Catalan's aliquot
+conjecture is true) is if one of the primes in $v$ is raised to an even power. In this case, write $v = v' \cdot
+w$, where $w$ are the primes with an even power, and $v'$ the remainder (in the case of even perfect numbers, $v'$
+is necessarily $1$). Then we have $\tau(n) = \tau(v') + \tau(w) + \tau(t) = \tau(v') + \tau(t)$, such that the
+effective class is now $b - \tau(v')$ instead of $b - \tau(v)$; another way to think of it is that the class is
+raised by the twos count of the primes in $v$ whose power is even. Therefore the guide $2^2 \cdot 7^2$ has class
+$-1 + \tau(7) = 2$ (even though the 7 is still guaranteed to be perpetuated to each term), and in fact any such
+perfect number guide $2^b \cdot (2^{b+1}-1)^2$ has class $b$. Another example is that $2^3 \cdot 3^2 \cdot 5$
+has class $0 + \tau(3) = 2$, and $2^5 \cdot 3 \cdot 7^2$ has class $3$. Here's some food for thought: the largest
+known Mersenne prime is currently $M = 2^{57,885,161}-1$, and if we define the corresponding perfect number as
+$P_M=2^{57,885,160}(2^{57,885,161}-1)$, what are the odds that the sequence starting with $n = 3*P_M$ will ever
+be divisble by $M^2$, as would be required to make the sequence bounded?
+</p>
+
+<p>
+As a final thought, we can use the criterion $\tau(t) \leq$ the class, together with our knowledge of what $\tau$
+means, to locate sequences whose last term is currently unfactored, yet which might mutate upon factorization of
+the line. Such an example would be something like $2^2 \cdot 7^2 \cdot C130$, where C130 means a composite number
+of 130 digits, and the guide has an effective class of $2$. If we assume that this composite splits into two
+component primes, each with exponent 1 (as is overwhelming likely), then we know that each of those primes must
+have $\tau(p_1) = \tau(p_2) = 1$ (for if either had $\tau \gt 1$, then $\tau(t) = \tau(p_1)+\tau(p_2) > 2$, and
+a mutation is guaranteed not to occur). And by the criterion that $\tau(p) = x \iff p \equiv 2^x-1
+\pmod{2^{x+1}}$, then we can say that each of the component primes must be $1 \pmod{4}$, and therefore the
+composite must also be $1 \pmod{4}$. And so if we have several sequences with $2^2 \cdot 7^2 \cdot C$ and we want
+to find mutations among those sequences, we can eliminate those whose composite is $3 \pmod{4}$. A similar analysis
+can be made for guides of higher class.
 </p>
 
      <footer>
