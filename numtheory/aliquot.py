@@ -196,7 +196,7 @@ def conditions_on_prime_if_tau_is_lte_x(x):
 
 def probable_semiprime_tau(n, x):
      '''Tests if the semi prime of unknown composition n=pq could possibly
-        have tau(n) = x. False guarantees tau != x, but True does not 
+        have tau(n) = x. False guarantees tau != x, but True does not
         guarantee tau = x.'''
      # tau(n) = tau(p) + tau(q) => tau(n) >= 2 right off the bat
      if x < 2: raise ValueError('x must be at least 2 (got {})'.format(x))
