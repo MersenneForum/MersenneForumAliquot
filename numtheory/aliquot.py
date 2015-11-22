@@ -163,7 +163,7 @@ def get_class(n=0, guide=None, powers=True):
 def is_driver(n=0, guide=None):
      if guide is None:
           guide = get_guide(n, powers=False)
-     return get_class(guide=guide, False) <= 1
+     return get_class(guide=guide, powers=False) <= 1
 
 def twos_count(t): # The power of two of sigma(t)
      return quick_pow_of_two(sigma(t))
