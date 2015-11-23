@@ -16,6 +16,7 @@ with open(JSON, 'r') as f: # Read current table data
           olddat = json.load(f)['aaData']
 
 ids = {}
+merged = []
 for ali in olddat:
      this = ali[3] # this = ali.id
      current = ids.get(this) # I'm assuming/hoping this is O(1), i.e. independent of the size of the dict
@@ -28,9 +29,11 @@ for ali in olddat:
           else:
                big = current, seq
           Print(big[0], 'seems to have merged with', big[1])
-          try:
-               email('Aliquot merge!', '{} seems to have merged with {}'.format(big[0], big[1]))
-          except Exception as e:
-               Print("alimerge email failed")
+          merged.append(big)
+
+try:
+     email('Aliquot merge!', '\n'.join('{} seems to have merged with {}'.format(*merge) for merge in merged))
+except Exception as e:
+     Print("alimerge email failed")
 
 Print('Merge finder finished')
