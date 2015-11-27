@@ -55,28 +55,24 @@ Next we consider powers of $p$: $\tau(p^a) = \beta(\sigma(p^a))$. If $a$ is even
 so $\tau(p^a)$ is 0 (to the benefit of aliquot sequence workers trying to break the worst drivers).
 </p>
 <p>
-Otherwise $a$ is even, and we then define $a=2k+1$ and write $\sigma(p^a) = \sum_{j=0}^a{p^j} =
-\sum_{i=0}^{k}({p^{2i}+p^{2i+1})}$. Consider the powers of $p \pmod {2^{x+1}}$. By the previous criterion, we have
-that $p \equiv 2^x - 1 \pmod {2^{x+1}}$. By simple computation, $p^2 \equiv 2^{2x} - 2^{x+1} + 1 \equiv 1 \pmod
-{2^{x+1}}$, and so $p^3 \equiv p$ and inductively we have $p^{2i} + p^{2i+1} \equiv 1 + p \equiv 2^x
-\pmod{2^{x+1}}$. Thus each individual term of this "reduced" sum has $\beta = x$, and so naively we might assume
-that 2 such terms divide $2^{x+1}$, three terms divide only $2^x$, four terms divide $2^{x+2}$ and so on, such that
-with $l=k+1$ terms in the sum, we would have as many extra powers of two as divide $l$, i.e. that $\tau(p^a) =
-\beta(\sum_{i=0}^{k}({p^{2i}+p^{2i+1})}) = \tau(p) + \beta(l)$. Of course this isn't a stringent argument, for in
-the two term case, we don't know that in fact the sum does not divide $2^{x+2}$, so that this
-argument may only conclude that $\tau(p^a) \geq \tau(p) + \beta(l)$. But in fact, in my numerical tests, I have been
-unable to find a counter example where $\tau(p^a) \gt \tau(p) + \beta(l)$, where the search extended to $p \lt
-10^9$, and each prime was tested up to $a = 99$. I believe this should certainly cover any pathological case where
-the odd parts of the $p^{2i} + p^{2i+1}$ terms add up to more than the specified power of two (which is certainly
-easy to do with two arbitrary odd numbers); alas, I have been unable to prove the proposition. Defining $w_i$ by
-the equation $p^{2i} + p^{2i+1} = 2^x \cdot w_i$, it would be sufficient to show that among the $l$ different
-$w_i$, an even number of them are 1 mod 4 and thus with the other amount of them, also even in quantity, 3 mod 4
-(if $l$ is odd then $\sum{w_i}$ is odd anyways) whence we would conclude that $\sum{w_i} \equiv 2 \pmod{4} \implies
-\beta(\sum{w_i})) = 1 \lt 2$, and thus no extra powers of two to make $tau(p^a) \gt x + \beta(l)$.
+Otherwise $a$ is odd, and we then define $a=2k+1$ and write $\sigma(p^a) = \sum_{j=0}^a{p^j} =
+\sum_{i=0}^{k}({p^{2i}+p^{2i+1})}$. Next we can factor out the $(p+1)$, whence $\sigma(p^a) = (p+1)\cdot
+\sum_{i=0}^k{p^{2i}}$. But note that since we have $p \equiv 2^x - 1 \pmod {2^{x+1}}$, we can compute that
+$p^2 \equiv 2^{2x} - 2^{x+1} + 1 \equiv 1 \pmod {2^{x+1}}$, and inductively we have $p^3 \equiv p$ and thus
+$p^{2i} \equiv 1 \pmod{2^{x+1}}$. We thus have a sum of $l = k+1$ terms which are $1 \pmod{2^{x+1}}$, such that
+$\sum_{i=0}^k{p^{2i}} \equiv l \pmod{2^{x+1}}$, and so at least when $l \lt 2^{x+1}$, we have that $\tau(p^a) =
+\beta((p+1)\cdot \sum_{i=0}^k{p^{2i}}) = \tau(p) + \beta(l)$. The issue when $l \geq 2^{x+1}$ is of course that
+while we know the $2^{x+1}$ divides the sum, we can't say for sure with this argument that $2^{x+2}$ doesn't
+divide the sum, so if $l \geq 2^{x+1}$ (and $l$ is even) we can only say then that $\tau(p^a) \geq \tau(p) +
+\beta(l)$.
 </p>
-
-<p>Like I said though, despite the numerical evidence to the contrary, I as yet have no such proof. Any thoughts on
-the matter would be appreciated.</p>
+<p>
+But in fact, in my numerical tests, I have been unable to find a counter example where $\tau(p^a) \gt \tau(p) +
+\beta(l)$, where the search extended to $p \lt 10^9$, and each prime was tested up to $a = 99$. I believe this
+should certainly cover any pathological case where the odd parts of the $p^{2i}$ terms add up to more than the
+specified power of two (which is certainly easy to do with two arbitrary odd numbers); alas, I have been unable
+to prove the proposition. Any thoughts on the matter would be appreciated.
+</p>
 
      <footer>
        <p>This page renders mathematics with <a href="https://www.mathjax.org/">MathJax</a>.</p>
