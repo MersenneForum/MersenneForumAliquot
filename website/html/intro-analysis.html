@@ -95,7 +95,7 @@ $a(220)$, we must first factor 220. This is fairly straight forward: $220 = 22 \
 surprise in store here, for in fact $284 = 2^2 \cdot 71$, and $1 + 2 + 4 + 71 + 142$ is actually <i>220</i> once
 again! So $a(220) = 284$, and simultaneously $a(284) = 220$. These are called <i>amicable numbers</i>, and they
 demonstrate that it's possible for aliquot sequences to "terminate" without "reaching" a prime (and thus 1).
-Amicable numbers are an example of <i>aliquot cycles</i> of order 2; higher order sequences exist, such
+Amicable numbers are an example of <i>aliquot cycles</i> of order 2; higher order cylces exist, such
 as that starting with $n=12496$: $a(12496) = 14288$, $a(14288) = 15472$, $a(15472) = 14536$, $a(14536) = 14264$,
 and finally $a(14264) = 12496$, for a cycle of order 5. There are several million amicable pairs known, 225
 cycles of order 4 known, the sole cycle above known of order 5, five cycles of order 6, three cycles of order 8,
@@ -204,7 +204,7 @@ $m$ is odd, so are all of its divisors $d$; furthermore, every divisor $d$ has a
 $d$ and $e$ are odd, their sum is even. Furthermore, except in one special case, every divisor has such a
 counterpart, and so $\sigma(m)$ is even. The special case is if $m$ is a perfect square (including the case
 $m=1$), in which case we have
-that $\sqrt{m}$ is both odd and an unpaired divisor, so $\sigma$ of an odd perfect square is even. The term
+that $\sqrt{m}$ is both odd and an unpaired divisor, so $\sigma$ of an odd perfect square is odd. The term
 $2^{b+1}-1$ is always odd, so we have the following classification: $\sigma(n)$ is odd if and only if the odd
 part of $n$ is a perfect square. (Another way to say this is $\sigma(n)$ is odd if and only if $n$ is a square
 or twice a square.) And now we calculate the parity of $a(n)$: since $\sigma(n)$ is almost always even, the
@@ -222,8 +222,9 @@ limited to just the smallest divisor, for if there are a lot of small prime divi
 has a large power in the factorization of $n$ (or even both!), there are a corresponding number of relatively
 large divisors of $n$. We can quantify this as follows: define the <i>abundance</i> of a number as
 $\frac{a(n)}{n}$ (so that deficient numbers have abundance less than 1, perfect numbers have abundance 1, and
-abundant numbers have abundance greater than 1). Then, following the argument, a prime $p$ divides $n$ contributes
-<i>at least</i> $\frac{n/p + p}{n} = \frac{1}{p} + \frac{p}{n}$ to the abundance, and that doesn't count non-prime
+abundant numbers have abundance greater than 1). Then, following the argument, a prime $p$ dividing $n$
+contributes <i>at least</i> $\frac{n/p + p}{n} = \frac{1}{p} + \frac{p}{n}$ to the abundance, and that doesn't
+count non-prime
 divisors! (Note that we typically ignore the $\frac{p}{n}$ term, for it is both usually significantly smaller and
 dependent on $n$.) For example, if we know that 8 divides some large number $n$, then 2, 4, and 8 all divide $n$
 and the abundance of $n$ is bounded below by $\frac{1}{2}+\frac{1}{4}+\frac{1}{8}$, so $\frac{a(n)}{n} > 
@@ -312,8 +313,8 @@ then consider $n = 2^b \cdot v \cdot m$, where $m$ is any odd number coprime to 
 know a priori what the power of 2 of $a(n)$ is, but for now we'll note that, as according to the examples of 
 above, it's very likely to stay the same. Now since $v \mid (2^{b+1}-1)$ (by definition) and $v \mid v$
 (vacuously), we have that $v$ divides a difference of their multiples, i.e. $v$ divides $a(n)$. Therefore, if we
-start with $2^b \cdot v \cdot t$ where $v \mid \sigma(2^b)$, then $v \mid a(n)$, and since the power of 2 almost
-never changes, we have more conclusively that $(2^b \cdot v) \mid a(2^b \cdot v \cdot t)$ when $v \mid
+start with $2^b \cdot v \cdot m$ where $v \mid \sigma(2^b)$, then $v \mid a(n)$, and since the power of 2 almost
+never changes, we have more conclusively that $(2^b \cdot v) \mid a(2^b \cdot v \cdot m)$ when $v \mid
 \sigma(2^b)$, and so whatever primes $v$ is composed of are there to stay. This motivates the following
 definition: a number $2^b \cdot v$, where $v$ divides $\sigma(2^b)=2^{b+1}-1$, is called a <i>guide</i>. Guides
 are the bread and butter of the study of even aliquot sequences. (Note that when $v=1$, the guide is just the
