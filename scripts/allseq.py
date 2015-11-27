@@ -419,7 +419,7 @@ def main(special=None):
                email('Aliquot failure!', error_msg)
           except Exception as e:
                Print('Email failed:', e)
-               Print('Message:', error_msg)
+               Print('Message:\n', error_msg)
 
      Print('Written HTML and saved state.')
 
