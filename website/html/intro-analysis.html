@@ -418,24 +418,41 @@ $\tau(n)$. The criterion for a mutation occuring, then, is that $\tau(n) \leq b$
 In order to proceed further, we have to have an idea what $\tau(n)$ looks like for an arbitrary number $n$. In
 particular, in the fashion of $\sigma$ and $\nu$ oh so long ago, we calculate $\tau(p^a)$ for an arbitrary
 prime number $p$. But $\tau$ turns out to not be quite so straightforward as $\sigma$ or $\nu$, so we'll start
-with primes themselves, not prime powers. In particular, let $p$ be an odd prime. ($\sigma(2^a)=2^{a+1}-1$ is odd,
-so $\tau(2^a)=0$ and so we restrict our study to odd primes.) Then $\sigma(p)=p+1$, and we need to calculate
+with primes themselves, not prime powers. In particular, let $p$ be an odd prime. ($\sigma(2^a)=2^{a+1}-1$ is
+odd, so $\tau(2^a)=0$ and so we restrict our study to odd primes.) Then $\sigma(p)=p+1$, and we need to calculate
 $\beta(p+1)$. By the criterion for $\beta$ described previously, we have that $\beta(p+1)=x \iff p+1 \equiv 2^x
-\pmod{2^{x+1}}$, whence we know that $\tau(p) = x \iff p \equiv 2^x-1 \pmod {2^{x+1}}$. (This can be calculated in
-an algorithmic manner by testing succesive $x$ starting with $x=1$. Of course, practically speaking, it's simpler
-to merely count the trailing zero bits in the binary representation of $p+1$ than to search for $x$ in this
-manner.) Now we are can move on to prime powers. First, recall from the beginning of the page that $\sigma$ of a
-perfect square is odd. That is, whenever $a$ is even, $\sigma(p^a)$ is odd, and thus $\tau(p) = 
+\pmod{2^{x+1}}$, whence we know that $\tau(p) = x \iff p \equiv 2^x-1 \pmod {2^{x+1}}$. (This can be calculated
+in an algorithmic manner by testing succesive $x$ starting with $x=1$. Of course, practically speaking, it's
+simpler to merely count the trailing zero bits in the binary representation of $p+1$ than to search for $x$ in
+this manner.) Now we are can move on to prime powers. First, recall from the beginning of the page that $\sigma$
+of a perfect square is odd. That is, whenever $a$ is even, $\sigma(p^a)$ is odd, and thus $\tau(p) =
 \beta(\sigma(p^a)) = 0$. This turns out to be a boon when it comes to breaking certain guides, as we'll later
-deduce. Otherwise, if $a$ is odd and $a\gt1$, then we define $a=2k+1$ and write $\sigma(p^a) = \sum_{j=0}^a{p^j} =
-\sum_{i=0}^{k}({p^{2i}+p^{2i+1})}$. Consider the powers of $p$ $\pmod {2^{x+1}}$. By the previous criterion, we
+deduce.
+</p>
+<p>
+Otherwise, if $a$ is odd and $a\gt1$, then we define $a=2k+1$ and write $\sigma(p^a) = \sum_{j=0}^a{p^j}
+= \sum_{i=0}^{k}({p^{2i}+p^{2i+1})}$. Consider the powers of $p$ $\pmod {2^{x+1}}$. By the previous criterion, we
 have that $p \equiv 2^x - 1 \pmod {2^{x+1}}$. By simple computation, $p^2 \equiv 2^{2x} - 2^{x+1} + 1
 \pmod{2^{x+1}}$, where the former two terms are congruent to 0. So $p^2 \equiv 1 \pmod{2^{x+1}}$, and so $p^3
-\equiv p$ and inductively we have $p^{2i} + p^{2i+1} \equiv 1 + p \equiv 2^x \pmod {2^{x+1}}$. Therefore we write
-$p^{2i} + p^{2i+1} = 2^x\cdot y_i$, where $y_i$ is odd, and so $\sigma(p^a) = \sum_{i=0}^{k}({p^{2i}+p^{2i+1})} =
-\sum_{i=0}^{k}{2^x \cdot y_i} = 2^x \cdot \sum_{i=0}^{k}{y_i}$, and thus $\beta(\sigma(p^a)) = \tau(p^a) \geq
-\tau(p)$. (In fact we can say more, but the author's <a href="tauprimepowers.html">thoughts on the matter</a> are
-as yet inconclusive, and this result here is sufficient for our purpose.)
+\equiv p$ and inductively we have $p^{2i} + p^{2i+1} \equiv 1 + p \equiv 2^x \pmod {2^{x+1}}$. This motivates us
+to factor out the $(1 + p)$, for indeed $(p^{2i} + p^{2i+1}) = (1+p)\cdot p^{2i}$, so that $\sigma(p^a) = (1+p)
+\cdot \sum_{i=0}^{k}{p^{2i}}$, where this sum has $l = k+1$ terms. So we have that $\tau(p^a) = \beta(1+p) +
+\beta(\sum_{i=0}^{k}{p^{2i}})$. Now <a href="http://mersenneforum.org/showthread.php?p=417407#post417407">the
+trick</a> is to perform this pairing and factoring process again -- for $(p^{2i} + p^{2i+2}) = (1+p^2)\cdot
+p^{4i}$, and in turn $\sum_{i=0}^{k}{p^{2i}} = (1+p^2) \cdot \sum_{i=0}^{l'}{p^{4i}}$, where $l' = l/2-1$. But
+the key observation is that we can only repeat this process as long as $l$ and $l'$ in turn are even -- as soon
+as we are left with an odd number of terms, we can no longer pair terms, and further we know that the sum is
+itself odd. In general then, we can perform this pairing and factoring $y = \beta(l)$ times (where again, $a =
+2l-1$). We can then write $\sigma(p^a) = (1+p) \cdot (1+p^2) \cdot (1+p^4) \cdot \ldots \cdot (1+p^{2^y}) \cdot
+\sum_{i=0}^{l_y-1}{p^{2^y}i}$ (with $l = 2^y \cdot l_y$), where the last sum has an odd number of terms since
+$l_y$ is odd. We may then calculate $\beta(\sigma(p^a)) = \beta(p+1) + \beta(1+p^2) + \beta(1+p^4) + \ldots +
+\beta(1+p^{2^y})$, where the previous sum contribues nothing because it is odd. Now we note that since $p^{2i}
+\equiv 1 \pmod{2^{x+1}}$, we have that $1+p^{2i} \equiv 2 \pmod{2^{x+1}}$, whence $\beta(1+p^{2i}) = 1$, and
+since we have $y=\beta(l)$ such terms, then $\tau(p^a) = \beta(\sigma(p^a)) = \beta(p+1) + \beta(l) = \tau(p) +
+\beta(\frac{a+1}{2})$. (Note that this argument applies to any geometric sum with an odd ratio -- the only
+difference is that if the ratio isn't prime, we instead note that any odd perfect square satisfies $r^{2i}
+\equiv 1 \pmod{8}$ [since $3^2 \equiv 5^2 \equiv 7^2 \equiv 1 \pmod{8}$], instead of the stronger criterion
+that $p^{2i} \equiv 1 \pmod{2^{x+1}}$, but that still implies that $\beta(1+r^{2i}) = 1$, as necessary.)
 </p>
 
 <p>
