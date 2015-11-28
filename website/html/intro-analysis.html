@@ -150,7 +150,7 @@ uniquely factor as a product of prime powers (which are by definition pairwise c
 be any prime number, and let $a$ be a positive integer. Then $\nu(p) = 2$ and $\nu(p^a) = a + 1$. Now we
 consider any integer $n$, which can be factored as $n = \prod_{p_i \mid n}{{p_i}^{a_i}}$. Then $\nu(n) =
 \nu\left(\prod_{p_i \mid n}{{p_i}^{a_i}}\right) = \prod_{p_i \mid n}{\nu\left({p_i}^{a_i}\right)}
-= \prod_{p_i \mid n}{a_i + 1}$ (i.e. take the powers of the primes dividing $n$, add one to each power,
+= \prod_{p_i \mid n}{(a_i + 1)}$ (i.e. take the powers of the primes dividing $n$, add one to each power,
 and multiply those all together to get $\nu(n)$). And now we apply the same process to $\sigma$:
 $\sigma(p) = p + 1$, and
 $\sigma(p^a) = \sum_{d \mid p^a}{d} = \sum_{i=0}^{a}{p^i}$ which, by the sum of geometric series, is
@@ -307,7 +307,7 @@ term. Here's another example: let $n = 212046767651040 = 2^5 \cdot 3 \cdot 7 \cd
 Notice how $2^5 \cdot 3 \cdot 7$ divides every term (while the smaller prime 5 stays for a couple terms but then
 disappears). Why does this happen? The answer, as it turns out, lies in the sum of the divisors of the power of
 two. Indeed, $\sigma(2^b) = 2^{b+1}-1$ is odd. Let $v$ be any (odd!) non-trivial divisor of $\sigma(2^b)$, and
-then consider $n = 2^b \cdot v \cdot m$, where $m$ is any odd number coprime to $\sigma(2^b)$). Then $\sigma(n) =
+then consider $n = 2^b \cdot v \cdot m$, where $m$ is any odd number coprime to $\sigma(2^b)$. Then $\sigma(n) =
 \sigma(2^b) \cdot \sigma(v) \cdot \sigma(m) = (2^{b+1}-1) \cdot \sigma(v) \cdot \sigma(m)$, and further $a(n) =
 (2^{b+1}-1) \cdot \sigma(v) \cdot \sigma(m) - 2^b \cdot v \cdot m$ (where again, $v \mid (2^{b+1}-1$)). We don't
 know a priori what the power of 2 of $a(n)$ is, but for now we'll note that, as according to the examples of 
@@ -376,7 +376,7 @@ changes in the power of 2 <i>mutations</i>.
 <p>
 Before delving headlong into the whys and hows of mutations, lets take a detour to define a few functions which
 shall make our bookkeeping easier. Let $n$ be a number of the form $2^b \cdot m$, where $m$ is odd (and $b = 0$
-is allowed). Then we define $f(n) = 2^a$, i.e. $f$ is the largest power of 2 that divides $n$. Note that it is
+is allowed). Then we define $f(n) = 2^b$, i.e. $f$ is the largest power of 2 that divides $n$. Note that it is
 completely multiplicative ($f(lm) = f(l)f(m)$ for any $l$ and $m$). Next we define $\beta(n) = \log_2(f(n))$, i.e.
 the exponent of the largest power of 2 in $n$. Being the logarithm of a completely multiplicative function, note
 that $\beta(lm) = \beta(l) + \beta(m)$ for any $l$ and $m$. Finally, and this is the point of this diversion, we 
@@ -414,7 +414,7 @@ increases again depends on the odd parts of $n$ and $\sigma(n)$). Finally, if $\
 $\tau(n)$. The criterion for a mutation occuring, then, is that $\tau(n) \leq b$.
 </p>
 
-<p>
+<p id="tauprimepowers">
 In order to proceed further, we have to have an idea what $\tau(n)$ looks like for an arbitrary number $n$. In
 particular, in the fashion of $\sigma$ and $\nu$ oh so long ago, we calculate $\tau(p^a)$ for an arbitrary
 prime number $p$. But $\tau$ turns out to not be quite so straightforward as $\sigma$ or $\nu$, so we'll start
@@ -425,8 +425,8 @@ $\beta(p+1)$. By the criterion for $\beta$ described previously, we have that $\
 in an algorithmic manner by testing succesive $x$ starting with $x=1$. Of course, practically speaking, it's
 simpler to merely count the trailing zero bits in the binary representation of $p+1$ than to search for $x$ in
 this manner.) Now we are can move on to prime powers. First, recall from the beginning of the page that $\sigma$
-of a perfect square is odd. That is, whenever $a$ is even, $\sigma(p^a)$ is odd, and thus $\tau(p) =
-\beta(\sigma(p^a)) = 0$. This turns out to be a boon when it comes to breaking certain guides, as we'll later
+of a perfect square is odd. That is, whenever $a$ is even, $\sigma(p^a)$ is odd, and thus $\tau(p^{2k}) =
+\beta(\sigma(p^{2k})) = 0$. This turns out to be a boon when it comes to breaking certain guides, as we'll later
 deduce.
 </p>
 <p>
@@ -439,20 +439,21 @@ to factor out the $(1 + p)$, for indeed $(p^{2i} + p^{2i+1}) = (1+p)\cdot p^{2i}
 \cdot \sum_{i=0}^{k}{p^{2i}}$, where this sum has $l = k+1$ terms. So we have that $\tau(p^a) = \beta(1+p) +
 \beta(\sum_{i=0}^{k}{p^{2i}})$. Now <a href="http://mersenneforum.org/showthread.php?p=417407#post417407">the
 trick</a> is to perform this pairing and factoring process again -- for $(p^{2i} + p^{2i+2}) = (1+p^2)\cdot
-p^{4i}$, and in turn $\sum_{i=0}^{k}{p^{2i}} = (1+p^2) \cdot \sum_{i=0}^{l'}{p^{4i}}$, where $l' = l/2-1$. But
+p^{4i}$, and in turn $\sum_{i=0}^{l-1}{p^{2i}} = (1+p^2) \cdot \sum_{i=0}^{l'-1}{p^{4i}}$, where $l' = l/2$. But
 the key observation is that we can only repeat this process as long as $l$ and $l'$ in turn are even -- as soon
 as we are left with an odd number of terms, we can no longer pair terms, and further we know that the sum is
 itself odd. In general then, we can perform this pairing and factoring $y = \beta(l)$ times (where again, $a =
-2l-1$). We can then write $\sigma(p^a) = (1+p) \cdot (1+p^2) \cdot (1+p^4) \cdot \ldots \cdot (1+p^{2^y}) \cdot
-\sum_{i=0}^{l_y-1}{p^{2^y}i}$ (with $l = 2^y \cdot l_y$), where the last sum has an odd number of terms since
-$l_y$ is odd. We may then calculate $\beta(\sigma(p^a)) = \beta(p+1) + \beta(1+p^2) + \beta(1+p^4) + \ldots +
-\beta(1+p^{2^y})$, where the previous sum contribues nothing because it is odd. Now we note that since $p^{2i}
-\equiv 1 \pmod{2^{x+1}}$, we have that $1+p^{2i} \equiv 2 \pmod{2^{x+1}}$, whence $\beta(1+p^{2i}) = 1$, and
-since we have $y=\beta(l)$ such terms, then $\tau(p^a) = \beta(\sigma(p^a)) = \beta(p+1) + \beta(l) = \tau(p) +
-\beta(\frac{a+1}{2})$. (Note that this argument applies to any geometric sum with an odd ratio -- the only
-difference is that if the ratio isn't prime, we instead note that any odd perfect square satisfies $r^{2i}
-\equiv 1 \pmod{8}$ [since $3^2 \equiv 5^2 \equiv 7^2 \equiv 1 \pmod{8}$], instead of the stronger criterion
-that $p^{2i} \equiv 1 \pmod{2^{x+1}}$, but that still implies that $\beta(1+r^{2i}) = 1$, as necessary.)
+2l-1$). We can then write $\sigma(p^a) = (1+p) \cdot (1+p^2) \cdot (1+p^4) \cdot \ldots \cdot (1+p^{(2^y)}) \cdot
+\sum_{i=0}^{l_y-1}{p^{(2^{y+1}\cdot i)}}$ (with $l = 2^y \cdot l_y$), where the last sum has an odd number of
+terms since $l_y$ is odd. We may then calculate $\beta(\sigma(p^a)) = \beta(p+1) + \beta(1+p^2) + \beta(1+p^4) +
+\ldots + \beta(1+p^{2^y})$, where the previous sum over $p^{(2^{y+1}\cdot i)}$ contribues nothing because it is
+odd. Now we note that since $p^{2i} \equiv 1 \pmod{2^{x+1}}$, we have that $1+p^{2i} \equiv 2 \pmod{2^{x+1}}
+\implies \beta(1+p^{2i}) = 1$, and since we have $y=\beta(l)$ such terms, then finally $\tau(p^a) =
+\beta(\sigma(p^a)) = \beta(p+1) + \beta(l) = \tau(p) + \beta(\frac{a+1}{2})$. (Note that this argument applies
+to any geometric sum with an odd ratio -- the only difference is that if the ratio isn't prime, we instead note
+that any odd perfect square satisfies $r^{2i} \equiv 1 \pmod{8}$ [since $3^2 \equiv 5^2 \equiv 7^2 \equiv 1
+\pmod{8}$], instead of the stronger statement that $p^{2i} \equiv 1 \pmod{2^{x+1}}$, but that still implies that
+$\beta(1+r^{2i}) = 1$, as necessary.)
 </p>
 
 <p>
@@ -518,11 +519,11 @@ $\tau(2^p-1) = p$, such that the class is $(p-1) - p = -1$.
 </p>
 
 <p>
-The way in which drivers of class $\leq 0$ can be broken (thus leaving open the possibility that Catalan's aliquot
-conjecture is true) is if one of the primes in $v$ is raised to an even power. In this case, write $v = v' \cdot
-w$, where $w$ are the primes with an even power, and $v'$ the remainder (in the case of even perfect numbers, $v'$
-is necessarily $1$). Then we have $\tau(n) = \tau(v') + \tau(w) + \tau(t) = \tau(v') + \tau(t)$, such that the
-effective class is now $b - \tau(v')$ instead of $b - \tau(v)$; another way to think of it is that the class is
+The way in which drivers of class $\leq 0$ can be broken (thus leaving open the possibility that Catalan's
+aliquot conjecture is true) is if one of the primes in $v$ is raised to an even power. In this case, write $v =
+v' \cdot w$, where $w$ are the primes with an even power, and $v'$ the remainder (in the case of even perfect
+numbers, $v'$ is necessarily $1$). Then we have $\tau(n) = \tau(v') + \tau(w) + \tau(t) = \tau(v') + \tau(t)$,
+such that the effective class is now $b - \tau(v') = b - \tau(v) + \tau(w)$; the class is effectively
 raised by the twos count of the primes in $v$ whose power is even. Therefore the guide $2^2 \cdot 7^2$ has class
 $-1 + \tau(7) = 2$ (even though the 7 is still guaranteed to be perpetuated to each term), and in fact any such
 perfect number guide $2^b \cdot (2^{b+1}-1)^2$ has class $b$. Another example is that $2^3 \cdot 3^2 \cdot 5$
