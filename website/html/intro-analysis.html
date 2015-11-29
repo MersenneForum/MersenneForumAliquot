@@ -154,7 +154,7 @@ consider any integer $n$, which can be factored as $n = \prod_{p_i \mid n}{{p_i}
 and multiply those all together to get $\nu(n)$). And now we apply the same process to $\sigma$:
 $\sigma(p) = p + 1$, and
 $\sigma(p^a) = \sum_{d \mid p^a}{d} = \sum_{i=0}^{a}{p^i}$ which, by the sum of geometric series, is
-$\frac{p^{b+1}-1}{p-1}$, and so $\sigma(n) = \sigma\left(\prod_{p_i \mid n}{{p_i}^{a_i}}\right) =
+$\frac{p^{a+1}-1}{p-1}$, and so $\sigma(n) = \sigma\left(\prod_{p_i \mid n}{{p_i}^{a_i}}\right) =
 \prod_{p_i \mid n}{\sigma\left({p_i}^{a_i}\right)} =
 \prod_{p_i \mid n}{\frac{{p_i}^{{a_i}+1}-1}{{p_i}-1}}$. So in general, to calculate $\sigma(n)$ and in turn
 $a(n)$, it suffices to factor $n$ into its constituent prime powers, after which $\sigma(n)$ is only a few
