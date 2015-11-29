@@ -42,10 +42,11 @@ secondary_template = """This post has been hijacked for additional reservations.
 {}
 [/code]
 """
+email_msg = ''
 
 ###############################################################################
 
-from myutils import linecount, Print, strftime, blogotubes, add_cookies
+from myutils import linecount, Print, strftime, blogotubes, add_cookies, email
 import re
 from time import time
 
@@ -129,37 +130,51 @@ def write_db(db, file=resfile):
      Print("Wrote {} seqs".format(c))
 
 def add_db(db, name, seqs):
+     global email_msg
      for seq in seqs:
           if seq in db:
                other = db[seq].res
                if name == other:
-                    Print("Warning:", name, "already owns", seq)
+                    string = "Warning: {} already owns {}".format(name, seq)
+                    Print(string)
+                    email_msg += string+'\n'
                else:
-                    Print("Warning: seq", seq, "is owned by", other, "but is trying to be reserved by", name+"!")
+                    string = "Warning: seq {} is owned by {} but is trying to be reserved by {}!".format(seq, other, name)
+                    Print(string)
+                    email_msg += string+'\n'
           else:
                if info:
                     infos = get_info(seq)
                     if not infos:
-                         Print("Warning:", seq, "doesn't appear to be in the list")
+                         string = "Warning: {} doesn't appear to be in the list".format(seq)
+                         Print(string)
+                         email_msg += string+'\n'
                     else:
                          db[seq] = Sequence(seq=seq, res=name, index=infos[0], size=infos[1])
 
 def drop_db(db, name, seqs):
+     global email_msg
      b = c = len(seqs)
      for seq in seqs:
           try:
                exists = db[seq].res == name
           except KeyError:
-               Print("{} is not reserved at the moment".format(seq))
+               string = "{} is not reserved at the moment".format(seq)
+               Print(string)
+               email_msg += string+'\n'
                continue
           if exists:
                del db[seq]
                c -= 1
           else:
-               Print("Warning: Seq {}: reservation {} doesn't match dropee {}".format(seq, db[seq].res, name))
+               string = "Warning: Seq {}: reservation {} doesn't match dropee {}".format(seq, db[seq].res, name)
+               Print(string)
+               email_msg += string+'\n'
 
      if c != 0:
-          Print("Only {} seqs were removed, {} were supposed to be dropped".format(b-c, b))
+          string = "Only {} seqs were removed, {} were supposed to be dropped".format(b-c, b)
+          Print(string)
+          email_msg += string+'\n'
 
 def get_info(seq, file=info):
      if file is None:
@@ -189,6 +204,7 @@ def backup(f1=resfile, f2=bup):
      copy(f1, f2)
 
 def send(msg=''):
+     global email_msg
      with open(resfile, 'r') as f:
           # first res post gets the main template, the rest get the secondary
           size = len(template)
@@ -215,11 +231,16 @@ def send(msg=''):
           size = len(list(f))
 
      if size > 0:
-          Print("Error: {} seqs couldn't fit into the posts".format(size))
+          string = "Error: {} seqs couldn't fit into the posts".format(size)
+          Print(string)
+          email_msg += string+'\n'
      else:
           Print("There's room for ~{} more reservations".format( (10000-len(bodies[-1]))//36 ) )
           editor = PostEditor()
           if not editor.is_logged_in():
+               string = 'Warning: user is not logged in, the res posts were not edited'
+               Print(string)
+               email_msg += string+'\n'
                return
           for postid, body in zip(res_posts, bodies):
                if not editor.edit_post(postid, body, 'Autoedit: '+msg):
@@ -231,10 +252,10 @@ def send(msg=''):
 class PostEditor:
      def __init__(self):
           self._logged_in = False
-          self._time = time()
           #request.install_opener(request.build_opener(request.HTTPCookieProcessor(CookieJar())))
           add_cookies()
           self._logged_in = self.login()
+          self._time = time()
 
      def login(self):
           data = {'vb_login_username': username, 'vb_login_password': passwd}
@@ -245,13 +266,10 @@ class PostEditor:
           data['vb_login_md5password_utf'] = ''
           data['cookieuser'] = '1'
           page = blogotubes('http://www.mersenneforum.org/login.php?do=login', data=data)
-          ret = username in page
-          if not ret:
-               raise ValueError("Failed to log in!")
-          return ret
+          return username in page
 
      def is_logged_in(self):
-          self._logged_in = time() - self._time < 300 and self._logged_in # Somewhat arbitrary 5 min timeout
+          self._logged_in = (time() - self._time < 300) and self._logged_in # Somewhat arbitrary 5 min timeout
           return self._logged_in
 
      def fill_form(self, body, postid, stoken, phash, ptime, reason=''):
@@ -302,6 +320,7 @@ def spider(last_pid):
      ###############################################################################################
      # First the standalone func that processes mass text file reservations
      def parse_text_file(reservee, url):
+          global email_msg
           old = {seq.seq for seq in db.values() if seq.res == reservee}
           txt = blogotubes(url)
           current = set()
@@ -309,11 +328,15 @@ def spider(last_pid):
                if re.match(r'(?<![0-9])[0-9]{5,6}(?![0-9])', line):
                     seq = int(line)
                     if seq in current:
-                         Print("Duplicate sequence? {} {}".format(seq, url))
+                         string = "Duplicate sequence? {} {}".format(seq, url)
+                         Print(string)
+                         email_msg += string+'\n'
                     else:
                          current.add(seq)
-               elif  not re.match(r'^[0-9]+$', line):
-                    Print("Unknown line from {}: {}".format(url, line))
+               elif not re.match(r'^[0-9]+$', line):
+                    string = "Unknown line from {}: {}".format(url, line)
+                    Print(string)
+                    email_msg += string+'\n'
           # easy peasy lemon squeezy
           done = old - current
           new = current - old
@@ -473,3 +496,9 @@ if __name__ == '__main__':
      else:
           print(err)
           exit(-1)
+     if email_msg:
+          try:
+               email('Reservations script warnings', email_msg)
+          except Exception as e:
+               Print('Email failed:', e)
+               Print('Message:\n', email_msg)
