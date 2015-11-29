@@ -12,20 +12,14 @@ from myutils import blogotubes
 # Some of the data handling code is copied from allseq.py
 data_file = 'http://rechenkraft.net/aliquot/AllSeq.json'
 
-composite = re.compile(r' <a href="index.php\?id=([0-9]+?)"><font color="#002099">[0-9.]+?</font></a><sub>&lt;')
-smallfact = re.compile(r' <a href="index.php\?id=[0-9]+?"><font color="#000000">([0-9^]+?)</font></a>')
-largefact = re.compile(r' <a href="index.php\id=([0-9]+?)"><font color="#000000">[0-9]+?[.]{3}[0-9]{2}</font></a><sub>&lt;')
-largenum = re.compile(r'<td align="center">(([0-9\s]|(<br>))+?)</td>')
 
-if __name__ == "__main__" and 'http' in data_file:
-     print("Getting the current data")
-     txt = blogotubes(data_file)
-     if txt is None:
-          raise ValueError("Couldn't get data file")
-     else:
-          data_file = 'AllSeq.json'
-          with open(data_file, 'w') as f:
-               f.write(txt)
+smallfact = re.compile(r' <a href="index.php\?id=[0-9]+?"><font color="#000000">([0-9^]+?)</font></a>')
+largenums = r' <a href="index.php\?id=([0-9]+?)"><font color="{}">[0-9]+?[.]{{3}}[0-9]{{2}}(\^[0-9]*)?</font></a><sub>&lt;'
+largefact = re.compile(largenums.format('#000000'))
+composite = re.compile(largenums.format('#002099'))
+#unknown = re.compile(largenums.format('#BB0000'))
+#prp = re.compile(largenums.format('#550000'))
+largedigits = re.compile(r'<td align="center">(([0-9\s]|(<br>))+?)</td>')
 
 def read_data():
      with open(data_file, 'r') as f:
@@ -34,127 +28,104 @@ def read_data():
 
 def get_num(id):
      page = blogotubes('http://factordb.com/index.php?showid='+id)
-     num = largenum.search(page).group(1)
+     num = largedigits.search(page).group(1)
      num = re.sub(r'[^0-9]', '', num)
-     return int(num)
+     return num
 
 def get_id_info(id):
      base = 'http://factordb.com/index.php?id='
      page = blogotubes(base+str(id))
-     if not page or 'FF' in page:
-          return None
+     if not page:# or 'FF' in page:
+          raise ValueError('http error')
      smalls = smallfact.findall(page)
-     largeids = largefact.findall(page)
-     compid = composite.search(page).group(1)
+     larges = largefact.findall(page)
+     comps = composite.findall(page)
      #print(compid, "\n{}\n##########################################\n\n{}".format(smalls, page))
-     larges = list(map(get_num, largeids))
-     comp = get_num(compid)
-     return nt.Factors(' * '.join(smalls + larges)), comp
+     # apply map(get_num, ...) to the first entry of the tuples, then concatenate the result with the second entry
+     larges = [num+exp for num, exp in zip(map(get_num, (l[0] for l in larges)), (l[1] for l in larges))]
+     comps = {int(num): (int(exp[1:]) if exp else 1) for num, exp in zip(map(get_num, (c[0] for c in comps)), (c[1] for c in comps))}
+     #comp = get_num(compid)
+     return nt.Factors(' * '.join(smalls + larges)), comps
 
+count = 0
 def examine_seq(seq):
-     # We need a way to filter which sequences we query the FDB about.
-     # For now, we can only handle driver*(even powered primes)*composite, so ignore all others.
-     
-     # Also, although this doesn't strictly match the previous criterion, the allseq.py script
-     # truncates all primes greater than ~10 digits and assumes they have no exponent.
-     # This assumption doesn't match the previous criterion but exceptions are very rare,
-     # so we work off it and ignore sequences with a 'P' in them (and reserved sequences).
-     if 'P' in seq.factors or seq.res:
+     '''Examines unreserved sequences to see if they are prone to mutation. This
+     currently ignores solely-power-of-2 guides with b > 3'''
+     if seq.res:
           return None
-
-     guide = nt.Factors(seq.guide)
-     factors = nt.Factors(seq.factors)
-     for prime in factors:
-          if factors[prime] % 2 == 1 and prime not in guide: # The current filtering criterion
-               return None
-     # We only want to bother asking the FDB about actual drivers
-     if not aq.is_driver(seq.guide):
-          return None
-     # Also check for class == 2...
-     clsss = aq.get_class(nt.Factors(seq.factors))
-     if clsss < 2:
-          return None
-     elif clsss > 2:
-          if seq.guide != "2^3 * 3":
-               print("Sequence {:>6} has a driver but also has class {}: {}".format(seq.seq, clsss, seq.factors))
-          return None
-     # Now we have sufficient reason to get details on this line
-     #print("Getting detailed data for {}: {}".format(seq.seq, seq.factors))
-     info = get_id_info(seq.id)
-     if info is None:
-          #print("Sequence {} is out of date (or invalid FDB response)".format(seq.seq))
-          return None
-     g = str(aq.get_guide(info[0], powers=False))
-     if g != seq.guide:
-          print("Sequence {} guide {} doesn't match data ({})".format(seq.seq, g, seq.guide))
-          return None
-
-     out = analyze(*info)
-     if out:
-          return info
-     return None
-
-def analyze(facts, composite):
-     """Takes the known parts of the current step in the sequence, together with the
-     remaining composite and determines if this step may break the driver (assuming
-     the composite is a semi-prime).
-     
-     returns None on error (or raises an exception)
-     returns False if the driver is guaranteed to remain
-     returns True if the driver *may* break (determined by Clifford Stern's analysis)
-     
-     Currently the only focus is class 2 drivers (such as perfect numbers with an
-     even power). Class 1 drivers can only be broken by large primes. Class 3 and
-     greater TBD (help with describing the possible cases is appreciated)"""
-     if not isinstance(facts, nt.Factors):
-          raise TypeError("analyze() expects a numtheory.Factors instance for its first arg")
-
-     guide = aq.get_guide(facts)
+     n, guide, s, t = aq.canonical_form(nt.Factors(seq.factors))
+     seq.guide = guide
+     # The target_tau for the composite is at most the class minus extant prime factor count
      cls = aq.get_class(guide=guide)
-     
-     if cls < 2:
-          print("Class less than 2")
-          return False
-     if cls > 2:
-          print("Class greater than 2")
-          return None #raise ValueError("analyze() can't handle class 3 or greater yet")
-
-     # http://rechenkraft.net/aliquot/analysis.html
-     # The requirement for a driver breaking ("mutation") is that "the 2s count of
-     # t is equal to or less than the class of (2^a)*v", where 2^a*v is the guide,
-     # and t is the set of prime factors with odd powers (and s is the primes with
-     # even powers).
-     s = nt.Factors()
-     t = nt.Factors()
-     for prime in facts:
-          if prime not in guide:
-               if facts[prime] % 2 == 0:
-                    s[prime] = facts[prime]
-               else:
-                    t[prime] = facts[prime]
-
-     # For class 2 guides/drivers, the semi-prime in question must be the only part of t
-     if len(t.keys()) > 0:
-          #print("Have a odd power prime cofactor: {}".format(t))
-          return False
-     # Finally, if t is a semi-prime, its constituents must each be == 1 (mod 4),
-     # which implies that t must also be such (but the latter doesn't imply the
-     # former, for of course t may also be two primes == 3 (mod 4)).
-     return composite % 4 == 1
+     num_larges = seq.factors.count('P')
+     upper_bound_tau = cls - num_larges - len(t)
+     if cls < 2 or upper_bound_tau < 2: # Cheap tests to eliminate almost all sequences
+          return None
+     # Next we ignore sequences whose guide is solely a power of 2 greater than 3
+     v = nt.Factors({p: a for p, a in guide.items() if p != 2 and a > 0})
+     if int(v) == 1 and cls > 3:
+          return None
+     # This condition greatly reduces fdb load, but excludes a lot of sequences
+     if not aq.is_driver(guide=guide):
+          return None
+     # Now we query the fdb for the full numbers comprising the last term
+     global count
+     count += 1
+     #print('getting data for sequence {:>6} = {:<30} take {}'.format(seq.seq, seq.factors, count))
+     primes, comps = get_id_info(seq.id)
+     if len(comps) == 0:
+          return None # json data for this seq is out of date
+     if len(comps) > 1 or list(comps.values()) != [1]:
+          raise ValueError("Wtf?!? two composites or composite to a power? seq {}, id {}".format(seq.seq, seq.id))
+     c = int(list(comps.keys())[0])
+     nprime, guideprime, s, t = aq.canonical_form(primes)
+     # We do a cross check that the fdb and data file agree: to do this,
+     # we cut primes >9 digits from the fdb data
+     tmp = [p for p in nprime if len(str(p)) >= 10]
+     for p in tmp:
+          del nprime[p]
+     if nprime != n or guideprime != guide:
+          #raise ValueError("Disagreement between local file and fdb: {} {}".format(n, nprime))
+          print("Weird! Seq {} apparently is bad data on the website.".format(seq.seq))
+          return None
+     # Now we do one last tau check
+     target_tau = cls - aq.twos_count(t)
+     if target_tau < 2:
+          return None
+     #print("Seq {} checking composite".format(seq.seq))
+     # For now, we only try the composite as a semi prime, though a decent number of the extant
+     # composites haven't been ECMd, making 3 or more primes not implausible
+     res = aq.possible_mutation(c, target_tau, [1,1])
+     if res:
+          #print("Seq {} facts {} may mutate".format(seq.seq, seq.factors))
+          return res
 
 # The main function
 def main():
      # This and other code in this and other modules is sometimes a bit confusing
-     # because I use 'seq' for both just the integer of the sequence leader
-     # *and* the corresponding Sequence object
-     # data is a dictionary mapping the ints to the Sequence objects
-     # `for seq in data` is iterating over the keys, so there seq is just an int
+     # because I use 'seq' for both just the integer of the sequence leader *and*
+     # the corresponding Sequence object.
+     # data is a dictionary mapping the ints to the Sequence objects.
      data = read_data()
-     targets = [data[seq] for seq in data if examine_seq(data[seq])]
-     # OTOH targets is a list of the Sequence objects, so here seq is the object not the int
-     targets.sort(key=lambda seq: seq.cofact)
-     for seq in targets:
-          print("{:>6} may have a driver that's ready to break (composite is 1 mod 4): {}".format(seq.seq, seq.factors))
+     targets = []
+     for i, seq in enumerate(data.values()):
+          #print('looking at seq {}'.format(i))
+          res = examine_seq(seq)
+          if res:
+               targets.append((seq, res))
+     targets.sort(key=lambda tup: (not tup[0].driver, tup[0].clas, tup[0].cofact)) # Drivers first, then sort by class first, secondary sort by comp size
+     for seq, res in targets:
+          print("{:>6} with guide {} (class {}) may mutate: {}".format(seq.seq, seq.guide, seq.clas, aq.possible_mutation_to_str(res, 'C'+str(seq.cofact))))
 
 if __name__ == "__main__":
+     if 'http' in data_file:
+          print("Getting the current data")
+          txt = blogotubes(data_file)
+          if txt is None:
+               raise ValueError("Couldn't get data file")
+          else:
+               data_file = 'AllSeq.json'
+               with open(data_file, 'w') as f:
+                    f.write(txt)
+     print('Starting examinations')
      main()

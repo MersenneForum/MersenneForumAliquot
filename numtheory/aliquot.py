@@ -195,7 +195,7 @@ tau = twos_count
 def get_class(n=0, guide=None, powers=True):
      if guide is None:
           guide = get_guide(n, powers)
-     v = Factors({key: powe for key, powe in guide.items() if key != 2 and powe > 0})
+     v = Factors({key: (powe if powers else 1) for key, powe in guide.items() if key != 2 and powe > 0})
      return guide[2] - twos_count(v)
 
 def is_driver(n=0, guide=None):
@@ -283,8 +283,8 @@ def test_tau(n, x, form):
                possible_residues.append(t)
      return possible_residues
 
-def test_tau_to_str(result, comp_str):
-     return '\n'.join(analyze_tau_to_str(res, comp_str) for res in result)
+def test_tau_to_str(result, comp_str=''):
+     return ' '.join(analyze_tau_to_str(res, comp_str) for res in result)
 
 possible_mutation_to_str = test_tau_to_str
 
@@ -329,17 +329,17 @@ def analyze_tau(n, x, component_taus):
      else:
           return []
 
-def analyze_tau_to_str(result, composite_str):
+def analyze_tau_to_str(result, comp_str=''):
      if not result:
           return
      out, r, m, comp_taus = result
      x = sum(comp_taus)
      xstr = '+'.join(str(x) for x in comp_taus)
-     template = '''Assuming that n={} is made of {} primes, then since it's {} (mod {}), it's possible that tau(n)={}={} via the following conditions:'''
-     string = template.format(composite_str, len(comp_taus), r, m, x, xstr)
+     template = '''Assuming that {} is made of {} primes, then since it's {} (mod {}), it's possible that tau(n)={}={} via the following conditions:'''
+     string = template.format(comp_str if comp_str else 'n', len(comp_taus), r, m, x, xstr)
      for rs in out:
           conds_str = ', '.join('p{}%{}=={}'.format(i, m, ri) for i, ri in enumerate(rs, 1))
-          string += '\n     ' + conds_str
+          string += ' ' + conds_str
      return string
 
 @lru_cache(1<<10)

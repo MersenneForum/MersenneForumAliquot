@@ -143,10 +143,7 @@ def guide(string):
           return "Garbage", -9, False
      else:
           dr = get_guide(string, powers=False) # dr is an instance of "Factors"
-          if get_class(guide=dr) > 3: 
-               drs = '2^{}'.format(dr[2]) # Replace an unstable "guide" with simply 2^n
-          else:
-               drs = str(dr) # str specified by "Factors" class
+          drs = str(dr) # str specified by "Factors" class
           if drs == '2':
                return "Downdriver!", 1, False
           else:
