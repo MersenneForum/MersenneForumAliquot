@@ -219,7 +219,7 @@ def is_driver(n=0, guide=None):
 def possible_mutation(composite, x, form):
      '''This function is literally a one line list comprehension around test_tau.
      
-     Given a number n of unknown factorization, test if it's possible for tau(n)
+     Given an odd number n of unknown factorization, test if it's possible for tau(n)
      to be <= x, assuming in factors in the form given. A false retval guarantees 
      that tau(n) > x, but true does not guarantee that tau(n) <= x.
 
@@ -231,10 +231,10 @@ def possible_mutation(composite, x, form):
      raise a value error.
      
      Returns a series of the congruence conditions which n may satisfy.'''
-     return [pos_res for i in range(2, x+1) for pos_res in test_tau(composite, i, form)]
+     return [pos_res for xprime in range(2, x+1) for pos_res in test_tau(composite, xprime, form)]
 
 def test_tau(n, x, form):
-     '''Given a number n of unknown factorization, test if it's possible for tau(n)
+     '''Given an odd number n of unknown factorization, test if it's possible for tau(n)
      to be x, assuming in factors in the form given. False guarantees that
      tau(n) != x, but true does not guarantee that tau(n) = x.
 
@@ -249,6 +249,9 @@ def test_tau(n, x, form):
 
      n = int(_positive(n, "test_tau"))
      x = int(_positive(x-1, "test_tau"))+1
+     # First, ignore the even part of n
+     b = beta(n)
+     n >>= b
      form = [int(power) for power in form]
      for power in form:
           if power & 1 != 1:
@@ -280,11 +283,19 @@ def test_tau(n, x, form):
                possible_residues.append(t)
      return possible_residues
 
+def test_tau_to_str(result, comp_str):
+     return '\n'.join(analyze_tau_to_str(res, comp_str) for res in result)
+
+possible_mutation_to_str = test_tau_to_str
+
 def analyze_tau(n, x, component_taus):
-     '''Helper to test_tau(). Given a number n and a target tau(n) together with
+     '''Helper to test_tau(). Given an odd number n and a target tau(n) together with
      a list of the specific tau(p) to be assumed for each prime in n, test if
      the implied conditions on p_i mod x_i+1 are compatible with n. If such a
      compatibility is possible, return it, else return an empty value.'''
+     # First, ignore the even part of n
+     b = beta(n)
+     n >>= b
      # First we create the list of conditions on the component primes. We use the
      # criterion tau(p) = x <-> p == 2^x-1 (mod 2^(x+1))
      # We store the conditions as a list of (residue, modulus) conditions
@@ -299,22 +310,44 @@ def analyze_tau(n, x, component_taus):
                raise ValueError("Moduli don't divide! {} {}".format(m, mi))
           promoted_rs.append([(ri+i*mi)%m for i in range(q)])
           # The modulo here isn't strictly necessary but it makes me feel better
-     for rs in cartesian_product(*promoted_rs):
+     out = []
+     actual_r = n % m
+     # Now we take all possible combinations of the possible individual residues, making
+     # sure to eliminate duplicate conditions (e.g. [1, 3, 5] mod 8 is the same as [3, 1, 5])
+     # Now even after this de-duplication, some unique combos may have the same multiplied
+     # residue mod m, e.g. [3, 5] and [1, 7] (mod 8), but they're still separate possibilities
+     # on each constituent prime
+     all_combos = {tuple(sorted(rs)) for rs in cartesian_product(*promoted_rs)}
+     for rs in all_combos:
           r = 1
           for ri in rs:
                r = (r*ri)%m
-          if n % m == r:
-               conds_str = ', '.join('p{}%{}=={}'.format(i, m, ri) for i, ri in enumerate(rs))
-               print(("Given that n%{}=={}, it's possible that the following conditionals hold: {}"+
-                     ", which means that n may have twos count {}={}").format(
-                     m, r, conds_str, x, '+'.join(str(x) for x in component_taus)))
-               return rs, r, m
-     return ()
+          if r == actual_r:
+               out.append(rs)
+     if out:
+          return out, actual_r, m, component_taus
+     else:
+          return []
+
+def analyze_tau_to_str(result, composite_str):
+     if not result:
+          return
+     out, r, m, comp_taus = result
+     x = sum(comp_taus)
+     xstr = '+'.join(str(x) for x in comp_taus)
+     template = '''Assuming that n={} is made of {} primes, then since it's {} (mod {}), it's possible that tau(n)={}={} via the following conditions:'''
+     string = template.format(composite_str, len(comp_taus), r, m, x, xstr)
+     for rs in out:
+          conds_str = ', '.join('p{}%{}=={}'.format(i, m, ri) for i, ri in enumerate(rs, 1))
+          string += '\n     ' + conds_str
+     return string
 
 @lru_cache(1<<10)
 def partitions_of_size(n, count):
      '''Creates all combinations of `count` numbers that sum to n (order doesn't
      matter, so combos are returned in sorted form)'''
+     # Use a simple recursive construction with caching for performance.
+     # A non-recursive construction certainly is not overly difficult
      if count < 1 or n < count:
           return set()
      if count == 1:
@@ -326,10 +359,10 @@ def partitions_of_size(n, count):
 
      combos = set()
      #print("making all sets n = {}, count = {}".format(n, count))
-     for i in range(1, n-1):
-          news = partitions_of_size(n-i, count-1)
+     for i in range(n-1, count-2, -1):
+          news = partitions_of_size(i, count-1)
           for new in news:
-               out = [i] + list(new)
+               out = [n-i] + list(new)
                out.sort()
                out = tuple(out)
                #print("n = {}, i = {}, count = {}, new combo: {}".format(n, i, count, out))
