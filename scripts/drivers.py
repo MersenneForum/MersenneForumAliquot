@@ -11,10 +11,10 @@ import json, re
 from _import_hack import add_path_relative_to_script
 add_path_relative_to_script('..')
 # this should be removed when proper pip installation is supported
-from numtheory import aliquot as aq
-import numtheory as nt
-from sequence import Sequence
-from myutils import blogotubes
+from mfaliquot import numtheory as nt
+from mfaliquot import aliquot as aq
+from mfaliquot.sequence import Sequence
+from mfaliquot.myutils import blogotubes
 
 
 smallfact = re.compile(r' <a href="index.php\?id=[0-9]+?"><font color="#000000">([0-9^]+?)</font></a>')

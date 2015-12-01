@@ -10,7 +10,7 @@ import json
 from _import_hack import add_path_relative_to_script
 add_path_relative_to_script('..')
 # this should be removed when proper pip installation is supported
-from myutils import email, Print
+from mfaliquot.myutils import email, Print
 
 
 Print('Merge finder starting')

@@ -127,7 +127,7 @@ a: 9  v: 3 * 11 * 31  guide: 2^9 * 3 * 11 * 31  class: 0
 a: 10  v: 23 * 89  guide: 2^10 * 23 * 89  class: 6
 """
 
-from . import is_prime, prp, Factors, factor, _sanitize, sigma, quick_pow_of_two, _positive
+from .numtheory import is_prime, prp, Factors, factor, _sanitize, sigma, quick_pow_of_two, _positive
 from functools import lru_cache
 from itertools import product as cartesian_product
      
