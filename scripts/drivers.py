@@ -95,10 +95,17 @@ def examine_seq(seq):
      #print("Seq {} checking composite".format(seq.seq))
      # For now, we only try the composite as a semi prime, though a decent number of the extant
      # composites haven't been ECMd, making 3 or more primes not implausible
+     out = []
      res = aq.possible_mutation(c, target_tau, [1,1])
      if res:
-          #print("Seq {} facts {} may mutate".format(seq.seq, seq.factors))
-          return res
+          out.append(res)
+     if target_tau > 2:
+          # Test triple prime forms as well
+          res = aq.possible_mutation(c, target_tau, [1,1,1])
+          if res:
+               out.append(res)
+     return out
+
 
 # The main function
 def main():
@@ -110,12 +117,13 @@ def main():
      targets = []
      for i, seq in enumerate(data.values()):
           #print('looking at seq {}'.format(i))
-          res = examine_seq(seq)
-          if res:
-               targets.append((seq, res))
+          ress = examine_seq(seq)
+          if ress:
+               targets.append((seq, ress))
      targets.sort(key=lambda tup: (not tup[0].driver, tup[0].clas, tup[0].cofact)) # Drivers first, then sort by class first, secondary sort by comp size
-     for seq, res in targets:
-          print("{:>6} with guide {} (class {}) may mutate: {}".format(seq.seq, seq.guide, seq.clas, aq.possible_mutation_to_str(res, 'C'+str(seq.cofact))))
+     for seq, ress in targets:
+          for res in ress:
+               print("{:>6} with guide {} (class {}) may mutate: {}".format(seq.seq, seq.guide, seq.clas, aq.possible_mutation_to_str(res, 'C'+str(seq.cofact))))
 
 if __name__ == "__main__":
      if 'http' in data_file:
