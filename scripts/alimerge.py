@@ -34,9 +34,10 @@ for ali in olddat:
           Print(big[0], 'seems to have merged with', big[1])
           merged.append(big)
 
-try:
-     email('Aliquot merge!', '\n'.join('{} seems to have merged with {}'.format(*merge) for merge in merged))
-except Exception as e:
-     Print("alimerge email failed")
+if merged:
+     try:
+          email('Aliquot merge!', '\n'.join('{} seems to have merged with {}'.format(*merge) for merge in merged))
+     except Exception as e:
+          Print("alimerge email failed")
 
 Print('Merge finder finished')
