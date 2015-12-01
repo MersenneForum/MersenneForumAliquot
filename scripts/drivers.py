@@ -1,16 +1,20 @@
 #! /usr/bin/env python3
 
-import sys, _import_hack # _import_hack assumes that the numtheory package is in the parent directory of this directory
-                         # this should be removed when proper pip installation is supported (and ad hoc python scripts are no longer necessary)
+# Some of the data handling code is copied from allseq.py
+data_file = 'http://rechenkraft.net/aliquot/AllSeq.json'
 
+
+###############################################################################
+
+import json, re
+
+from _import_hack import add_path_relative_to_script
+add_path_relative_to_script('..')
+# this should be removed when proper pip installation is supported
 from numtheory import aliquot as aq
 import numtheory as nt
 from sequence import Sequence
-import json, re
 from myutils import blogotubes
-
-# Some of the data handling code is copied from allseq.py
-data_file = 'http://rechenkraft.net/aliquot/AllSeq.json'
 
 
 smallfact = re.compile(r' <a href="index.php\?id=[0-9]+?"><font color="#000000">([0-9^]+?)</font></a>')

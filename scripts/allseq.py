@@ -1,16 +1,8 @@
 #! /usr/bin/python3 -u
 # -u to force line buffering of stdout
 
-import sys, _import_hack # _import_hack assumes that the numtheory package is in the parent directory of this directory
-			 # this should be removed when proper pip installation is supported (and ad hoc python scripts are no longer necessary)
+import sys
 
-from urllib import request, parse, error
-from time import strftime, gmtime, sleep, strptime
-from collections import Counter
-from numtheory.aliquot import get_guide, get_class, is_driver
-from myutils import linecount, email, Print
-from sequence import Sequence
-import re, signal, json, os
 dir = '../website/html/'
 FILE = dir + 'AllSeq.html'
 TXT = dir + 'AllSeq.txt'
@@ -43,6 +35,21 @@ broken = {319860: (1072, 2825523558447041736665230216235917892232717165769067317
           }
 #broken = {747720: (67, 1977171370480)}
 # A dict of tuples of {broken seq: (offset, new_start_val)}
+
+################################################################################
+
+from urllib import request, parse, error
+from time import strftime, gmtime, sleep, strptime
+from collections import Counter
+import re, signal, json, os
+
+from _import_hack import add_path_relative_to_script
+add_path_relative_to_script('..')
+# this should be removed when proper pip installation is supported
+from numtheory.aliquot import get_guide, get_class, is_driver
+from myutils import linecount, email, Print
+from sequence import Sequence
+
 error_msg = ''
 
 composite = re.compile(r'= <a.+<font color="#002099">[0-9.]+</font></a><sub>&lt;(?P<C>[0-9]+)')
@@ -52,7 +59,7 @@ stuff = re.compile('<td bgcolor="#BBBBBB">n</td>\n<td bgcolor="#BBBBBB">Digits</
 created = re.compile('([JFMASOND][a-z]{2,8}) ([0-9]{1,2}), ([0-9]{4})') # strftime('%d', strptime(month, "%B"))
 #oldpage = re.compile('(<tr> <td>([0-9]+?)</td> <td>([0-9]+?)</td>.*?<td>)[0-9A-Za-z_ ]*?</td> </tr>') # Kept for historical purposes
 #oldjson = re.compile(r'(\[([0-9]+?), ([0-9]+?), ([0-9]+?), .*?)[0-9A-Za-z_ ]*?"\]') # Ditto
-     
+
 quitting = False
 sleeping = False
 def handler(sig, frame):

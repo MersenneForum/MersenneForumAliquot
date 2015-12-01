@@ -1,15 +1,18 @@
 #! /usr/bin/python3
 
-import sys, _import_hack # _import_hack assumes that the numtheory package is in the parent directory of this directory
-                         # this should be removed when proper pip installation is supported (and ad hoc python scripts are no longer necessary)
+JSON = '../html/AllSeq.json'
+
+################################################################################
 
 from time import strftime
 import json
-from myutils import email
 
-JSON = '../html/AllSeq.json'
-def Print(*args):
-     print(strftime('%F - %H:%M:%S'), *args)
+from _import_hack import add_path_relative_to_script
+add_path_relative_to_script('..')
+# this should be removed when proper pip installation is supported
+from myutils import email, Print
+
+
 Print('Merge finder starting')
 
 with open(JSON, 'r') as f: # Read current table data

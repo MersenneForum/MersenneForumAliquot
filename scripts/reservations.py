@@ -6,11 +6,6 @@
 # The very first run only checks the most recent page of reservation posts, since
 # there isn't yet a record of last post checked
 
-import sys, _import_hack # _import_hack assumes that the numtheory package is in the parent directory of this directory
-			 # this should be removed when proper pip installation is supported (and ad hoc python scripts are no longer necessary)
-
-from sequence import Sequence
-
 reservation_page = 'http://www.mersenneforum.org/showpost.php'
 res_posts = (165249, 397318, 397319, 397320, 397912, 416583, 416585, 416586) # Tuple to be expanded as necessary
 use_local_reservations = False
@@ -46,9 +41,14 @@ email_msg = ''
 
 ###############################################################################
 
-from myutils import linecount, Print, strftime, blogotubes, add_cookies, email
 import re
 from time import time
+
+from _import_hack import add_path_relative_to_script
+add_path_relative_to_script('..')
+# this should be removed when proper pip installation is supported
+from sequence import Sequence
+from myutils import linecount, Print, strftime, blogotubes, add_cookies, email
 
 # Some slight modifications of the default global variables
 
