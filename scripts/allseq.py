@@ -323,7 +323,7 @@ def updateseq(old, reserves):
                error_msg += 'Reached query limit. Derp.\n'
 
 
-def main(special=None):
+def inner_main(special=None):
      global error_msg
      print('\n'+strftime(datefmt))
      total = linecount(seqfile)
@@ -431,7 +431,8 @@ def main(special=None):
 ################################################################################
 # Start actual code execution
 
-if __name__ == "__main__":
+def main():
+     global loop, sleeping
      if os.path.exists(lockfile):
           Print("Didn't start: lockfile is present")
           sys.exit(-1)
@@ -454,7 +455,7 @@ if __name__ == "__main__":
      # This means you can start it once and leave it, but by setting loop = False you can make it one-and-done
      # This would be a good place for a do...while syntax
           try:
-               main(special)
+               inner_main(special)
           except Exception:
                raise # Errors are unhandled except to interrupt a sleeping loop, and to cleanup via finally
           finally:
@@ -467,3 +468,6 @@ if __name__ == "__main__":
                sleeping = False
           else:
                break
+
+if __name__ == '__main__':
+     main()

@@ -25,6 +25,18 @@ composite = re.compile(largenums.format('#002099'))
 #prp = re.compile(largenums.format('#550000'))
 largedigits = re.compile(r'<td align="center">(([0-9\s]|(<br>))+?)</td>')
 
+def get_data():
+     global data_file
+     if 'http' in data_file:
+          print("Getting the current data")
+          txt = blogotubes(data_file)
+          if txt is None:
+               raise ValueError("Couldn't get data file")
+          else:
+               data_file = 'AllSeq.json'
+               with open(data_file, 'w') as f:
+                    f.write(txt)
+
 def read_data():
      with open(data_file, 'r') as f:
           data = json.load(f)['aaData']     
@@ -51,7 +63,7 @@ def get_id_info(id):
      #comp = get_num(compid)
      return nt.Factors(' * '.join(smalls + larges)), comps
 
-count = 0
+#count = 0
 def examine_seq(seq):
      '''Examines unreserved sequences to see if they are prone to mutation. This
      currently ignores solely-power-of-2 guides with b > 3'''
@@ -63,18 +75,22 @@ def examine_seq(seq):
      cls = aq.get_class(guide=guide)
      num_larges = seq.factors.count('P')
      upper_bound_tau = cls - num_larges - len(t)
+
      if cls < 2 or upper_bound_tau < 2: # Cheap tests to eliminate almost all sequences
           return None
+
      # Next we ignore sequences whose guide is solely a power of 2 greater than 3
      v = nt.Factors({p: a for p, a in guide.items() if p != 2 and a > 0})
      if int(v) == 1 and cls > 3:
           return None
+
      # This condition greatly reduces fdb load, but excludes a lot of sequences
      if not aq.is_driver(guide=guide):
           return None
+
      # Now we query the fdb for the full numbers comprising the last term
-     global count
-     count += 1
+     #global count
+     #count += 1
      #print('getting data for sequence {:>6} = {:<30} take {}'.format(seq.seq, seq.factors, count))
      primes, comps = get_id_info(seq.id)
      if len(comps) == 0:
@@ -83,6 +99,7 @@ def examine_seq(seq):
           raise ValueError("Wtf?!? two composites or composite to a power? seq {}, id {}".format(seq.seq, seq.id))
      c = int(list(comps.keys())[0])
      nprime, guideprime, s, t = aq.canonical_form(primes)
+
      # We do a cross check that the fdb and data file agree: to do this,
      # we cut primes >9 digits from the fdb data
      tmp = [p for p in nprime if len(str(p)) >= 10]
@@ -92,19 +109,20 @@ def examine_seq(seq):
           #raise ValueError("Disagreement between local file and fdb: {} {}".format(n, nprime))
           print("Weird! Seq {} apparently is bad data on the website.".format(seq.seq))
           return None
+
      # Now we do one last tau check
      target_tau = cls - aq.twos_count(t)
      if target_tau < 2:
           return None
+
      #print("Seq {} checking composite".format(seq.seq))
-     # For now, we only try the composite as a semi prime, though a decent number of the extant
-     # composites haven't been ECMd, making 3 or more primes not implausible
+     # First we assume the composite is a semiprime
      out = []
      res = aq.possible_mutation(c, target_tau, [1,1])
      if res:
           out.append(res)
+     # Next assume the composite is made of three primes
      if target_tau > 2:
-          # Test triple prime forms as well
           res = aq.possible_mutation(c, target_tau, [1,1,1])
           if res:
                out.append(res)
@@ -113,6 +131,9 @@ def examine_seq(seq):
 
 # The main function
 def main():
+     print('Getting data')
+     get_data()
+     print('Starting examinations')
      # This and other code in this and other modules is sometimes a bit confusing
      # because I use 'seq' for both just the integer of the sequence leader *and*
      # the corresponding Sequence object.
@@ -130,14 +151,4 @@ def main():
                print("{:>6} with guide {} (class {}) may mutate: {}".format(seq.seq, seq.guide, seq.clas, aq.possible_mutation_to_str(res, 'C'+str(seq.cofact))))
 
 if __name__ == "__main__":
-     if 'http' in data_file:
-          print("Getting the current data")
-          txt = blogotubes(data_file)
-          if txt is None:
-               raise ValueError("Couldn't get data file")
-          else:
-               data_file = 'AllSeq.json'
-               with open(data_file, 'w') as f:
-                    f.write(txt)
-     print('Starting examinations')
      main()

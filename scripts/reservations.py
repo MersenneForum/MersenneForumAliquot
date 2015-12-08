@@ -73,20 +73,22 @@ def get_reservations(pid):
      else:
           return page[ind+1:] # Dump the first line == "<b>Seq Who Index Size</b>"
 
-if res_posts and not use_local_reservations: 
-     reservations = '\n'.join(data for data in map(get_reservations, res_posts) if data)
-     try:
-          with open(resfile, 'r') as f:
-               local_data = f.read()
-     except:
-          with open(resfile, 'w') as f:
-               f.write(reservations)
-     else:
-          if local_data.strip() != reservations.strip():
-               Print("Warning: local file and forum post do not match!")
-               Print("Continuing using forum data, local changes are being lost!")
+
+def get_all_reservations():
+     if res_posts and not use_local_reservations: 
+          reservations = '\n'.join(data for data in map(get_reservations, res_posts) if data)
+          try:
+               with open(resfile, 'r') as f:
+                    local_data = f.read()
+          except:
                with open(resfile, 'w') as f:
                     f.write(reservations)
+          else:
+               if local_data.strip() != reservations.strip():
+                    Print("Warning: local file and forum post do not match!")
+                    Print("Continuing using forum data, local changes are being lost!")
+                    with open(resfile, 'w') as f:
+                         f.write(reservations)
 
 ################################################################################
 # Begin function definitions, the remaining top-level logic is at the very bottom
@@ -450,12 +452,14 @@ def spider(last_pid):
 #######################################################################################################
 # End of all function definitions
 
-if __name__ == '__main__':
+def main():
      err = "Error: commands are 'add', 'drop', 'send', 'update', 'print', or 'spider'"
      from sys import argv, exit
      if len(argv) < 2:
           print(err)
           exit(-1)
+
+     get_all_reservations()
      if argv[1] == 'send':
           if len(argv[2:]) < 1: argv.append('')
           send(' '.join(argv[2:]))
@@ -502,3 +506,6 @@ if __name__ == '__main__':
           except Exception as e:
                Print('Email failed:', e)
                Print('Message:\n', email_msg)
+
+if __name__ == '__main__':
+     main()
