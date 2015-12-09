@@ -1,16 +1,20 @@
 #! /usr/bin/env python3
 
-import sys, _import_hack # _import_hack assumes that the numtheory package is in the parent directory of this directory
-                         # this should be removed when proper pip installation is supported (and ad hoc python scripts are no longer necessary)
-
-from numtheory import aliquot as aq
-import numtheory as nt
-from sequence import Sequence
-import json, re
-from myutils import blogotubes
-
 # Some of the data handling code is copied from allseq.py
 data_file = 'http://rechenkraft.net/aliquot/AllSeq.json'
+
+
+###############################################################################
+
+import json, re
+
+from _import_hack import add_path_relative_to_script
+add_path_relative_to_script('..')
+# this should be removed when proper pip installation is supported
+from mfaliquot import numtheory as nt
+from mfaliquot import aliquot as aq
+from mfaliquot.sequence import Sequence
+from mfaliquot.myutils import blogotubes
 
 
 smallfact = re.compile(r' <a href="index.php\?id=[0-9]+?"><font color="#000000">([0-9^]+?)</font></a>')
@@ -20,6 +24,18 @@ composite = re.compile(largenums.format('#002099'))
 #unknown = re.compile(largenums.format('#BB0000'))
 #prp = re.compile(largenums.format('#550000'))
 largedigits = re.compile(r'<td align="center">(([0-9\s]|(<br>))+?)</td>')
+
+def get_data():
+     global data_file
+     if 'http' in data_file:
+          print("Getting the current data")
+          txt = blogotubes(data_file)
+          if txt is None:
+               raise ValueError("Couldn't get data file")
+          else:
+               data_file = 'AllSeq.json'
+               with open(data_file, 'w') as f:
+                    f.write(txt)
 
 def read_data():
      with open(data_file, 'r') as f:
@@ -47,8 +63,49 @@ def get_id_info(id):
      #comp = get_num(compid)
      return nt.Factors(' * '.join(smalls + larges)), comps
 
-count = 0
-def examine_seq(seq):
+def examine_seq(id, forms, n=None, guide=None, seq=None):
+     '''Query the FDB by ID to analyze if the corresponding number may mutate by assuming
+     the composite is of the given `forms`, where `forms` is a list of `form`s as used by
+     the mfaliquot.aliquot.possible_mutation function. The optional n and guide arguments
+     are for error checking purposes.'''
+     primes, comps = get_id_info(id)
+     if len(comps) == 0:
+          return None # json data for this seq is out of date
+     if len(comps) > 1 or list(comps.values()) != [1]:
+          raise ValueError("Wtf?!? two composites or composite to a power? seq {}, id {}".format(seq.seq, seq.id))
+     c = int(list(comps.keys())[0])
+     nprime, guideprime, s, t = aq.canonical_form(primes)
+
+     # We do a cross check that the fdb and data file agree: to do this,
+     # we cut primes >9 digits from the fdb data
+     tmp = [p for p in nprime if len(str(p)) >= 10]
+     for p in tmp:
+          del nprime[p]
+     if (n is not None and nprime != n) or (guide is not None and guideprime != guide):
+          #raise ValueError("Disagreement between local file and fdb: {} {}".format(n, nprime))
+          print("Weird! Seq {} apparently is bad info in the data file.".format(seq.seq if seq else None))
+          return None
+
+     cls = aq.get_class(guide=guideprime)
+     # Now we do one last tau check
+     target_tau = cls - aq.twos_count(t)
+     if target_tau < 2:
+          return None
+
+     forms = tuple(filter(lambda f: len(f) <= target_tau, forms))
+     if not forms:
+          return None
+     #print("Seq {} checking composite".format(seq.seq))
+     out = []
+     for form in forms:
+          res = aq.possible_mutation(c, target_tau, form)
+          if res:
+               out.append(res)
+     # Can't use list comprehension because of testing the return value
+     return out
+
+#count = 0
+def filter_seq(seq):
      '''Examines unreserved sequences to see if they are prone to mutation. This
      currently ignores solely-power-of-2 guides with b > 3'''
      if seq.res:
@@ -59,49 +116,27 @@ def examine_seq(seq):
      cls = aq.get_class(guide=guide)
      num_larges = seq.factors.count('P')
      upper_bound_tau = cls - num_larges - len(t)
+
      if cls < 2 or upper_bound_tau < 2: # Cheap tests to eliminate almost all sequences
           return None
+
      # Next we ignore sequences whose guide is solely a power of 2 greater than 3
      v = nt.Factors({p: a for p, a in guide.items() if p != 2 and a > 0})
      if int(v) == 1 and cls > 3:
           return None
+
      # This condition greatly reduces fdb load, but excludes a lot of sequences
      if not aq.is_driver(guide=guide):
           return None
-     # Now we query the fdb for the full numbers comprising the last term
-     global count
-     count += 1
-     #print('getting data for sequence {:>6} = {:<30} take {}'.format(seq.seq, seq.factors, count))
-     primes, comps = get_id_info(seq.id)
-     if len(comps) == 0:
-          return None # json data for this seq is out of date
-     if len(comps) > 1 or list(comps.values()) != [1]:
-          raise ValueError("Wtf?!? two composites or composite to a power? seq {}, id {}".format(seq.seq, seq.id))
-     c = int(list(comps.keys())[0])
-     nprime, guideprime, s, t = aq.canonical_form(primes)
-     # We do a cross check that the fdb and data file agree: to do this,
-     # we cut primes >9 digits from the fdb data
-     tmp = [p for p in nprime if len(str(p)) >= 10]
-     for p in tmp:
-          del nprime[p]
-     if nprime != n or guideprime != guide:
-          #raise ValueError("Disagreement between local file and fdb: {} {}".format(n, nprime))
-          print("Weird! Seq {} apparently is bad data on the website.".format(seq.seq))
-          return None
-     # Now we do one last tau check
-     target_tau = cls - aq.twos_count(t)
-     if target_tau < 2:
-          return None
-     #print("Seq {} checking composite".format(seq.seq))
-     # For now, we only try the composite as a semi prime, though a decent number of the extant
-     # composites haven't been ECMd, making 3 or more primes not implausible
-     res = aq.possible_mutation(c, target_tau, [1,1])
-     if res:
-          #print("Seq {} facts {} may mutate".format(seq.seq, seq.factors))
-          return res
+
+     # Assume either semi prime or 3 prime composition
+     return examine_seq(seq.id, [[1,1], [1,1,1]], n, guide, seq)
 
 # The main function
 def main():
+     print('Getting data')
+     get_data()
+     print('Starting examinations')
      # This and other code in this and other modules is sometimes a bit confusing
      # because I use 'seq' for both just the integer of the sequence leader *and*
      # the corresponding Sequence object.
@@ -110,22 +145,13 @@ def main():
      targets = []
      for i, seq in enumerate(data.values()):
           #print('looking at seq {}'.format(i))
-          res = examine_seq(seq)
-          if res:
-               targets.append((seq, res))
+          ress = filter_seq(seq)
+          if ress:
+               targets.append((seq, ress))
      targets.sort(key=lambda tup: (not tup[0].driver, tup[0].clas, tup[0].cofact)) # Drivers first, then sort by class first, secondary sort by comp size
-     for seq, res in targets:
-          print("{:>6} with guide {} (class {}) may mutate: {}".format(seq.seq, seq.guide, seq.clas, aq.possible_mutation_to_str(res, 'C'+str(seq.cofact))))
+     for seq, ress in targets:
+          for res in ress:
+               print("{:>6} with guide {} (class {}) may mutate: {}".format(seq.seq, seq.guide, seq.clas, aq.possible_mutation_to_str(res, 'C'+str(seq.cofact))))
 
 if __name__ == "__main__":
-     if 'http' in data_file:
-          print("Getting the current data")
-          txt = blogotubes(data_file)
-          if txt is None:
-               raise ValueError("Couldn't get data file")
-          else:
-               data_file = 'AllSeq.json'
-               with open(data_file, 'w') as f:
-                    f.write(txt)
-     print('Starting examinations')
      main()

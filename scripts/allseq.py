@@ -1,16 +1,8 @@
 #!/opt/rh/python33/root/usr/bin/python -u
 # -u to force line buffering of stdout
 
-import sys, _import_hack # _import_hack assumes that the numtheory package is in the parent directory of this directory
-			 # this should be removed when proper pip installation is supported (and ad hoc python scripts are no longer necessary)
+import sys
 
-from urllib import request, parse, error
-from time import strftime, gmtime, sleep, strptime
-from collections import Counter
-from numtheory.aliquot import get_guide, get_class, is_driver
-from myutils import linecount, email, Print
-from sequence import Sequence
-import re, signal, json, os
 dir = '/var/www/rechenkraft.net/aliquot/'
 FILE = dir + 'AllSeq.html'
 TXT = dir + 'AllSeq.txt'
@@ -43,6 +35,21 @@ broken = {319860: (1072, 2825523558447041736665230216235917892232717165769067317
           }
 #broken = {747720: (67, 1977171370480)}
 # A dict of tuples of {broken seq: (offset, new_start_val)}
+
+################################################################################
+
+from urllib import request, parse, error
+from time import strftime, gmtime, sleep, strptime
+from collections import Counter
+import re, signal, json, os
+
+from _import_hack import add_path_relative_to_script
+add_path_relative_to_script('..')
+# this should be removed when proper pip installation is supported
+from mfaliquot.aliquot import get_guide, get_class, is_driver
+from mfaliquot.myutils import linecount, email, Print
+from mfaliquot.sequence import Sequence
+
 error_msg = ''
 
 composite = re.compile(r'= <a.+<font color="#002099">[0-9.]+</font></a><sub>&lt;(?P<C>[0-9]+)')
@@ -316,7 +323,7 @@ def updateseq(old, reserves):
                error_msg += 'Reached query limit. Derp.\n'
 
 
-def main(special=None):
+def inner_main(special=None):
      global error_msg
      print('\n'+strftime(datefmt))
      total = linecount(seqfile)
@@ -424,7 +431,8 @@ def main(special=None):
 ################################################################################
 # Start actual code execution
 
-if __name__ == "__main__":
+def main():
+     global loop, sleeping
      if os.path.exists(lockfile):
           Print("Didn't start: lockfile is present")
           sys.exit(-1)
@@ -447,7 +455,7 @@ if __name__ == "__main__":
      # This means you can start it once and leave it, but by setting loop = False you can make it one-and-done
      # This would be a good place for a do...while syntax
           try:
-               main(special)
+               inner_main(special)
           except Exception:
                raise # Errors are unhandled except to interrupt a sleeping loop, and to cleanup via finally
           finally:
@@ -460,3 +468,6 @@ if __name__ == "__main__":
                sleeping = False
           else:
                break
+
+if __name__ == '__main__':
+     main()
