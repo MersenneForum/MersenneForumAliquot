@@ -268,7 +268,7 @@ def test_tau(n, x, form):
      # powers, subtract that from x, and then just proceed as if all primes are
      # power 1
      xtra = sum(beta((a+1)>>1) for a in form if a > 1) # The condition isn't necessary
-     # But I think it's faster than doing calculating beta(1) a whole bunch
+     # But I think it's faster than "calculating" beta(1) a whole bunch
      x -= xtra
      if count > x:
           return []
@@ -291,13 +291,13 @@ possible_mutation_to_str = test_tau_to_str
 def analyze_tau(n, x, component_taus):
      '''Helper to test_tau(). Given an odd number n and a target tau(n) together with
      a list of the specific tau(p) to be assumed for each prime in n, test if
-     the implied conditions on p_i mod x_i+1 are compatible with n. If such a
+     the implied conditions on p_i mod 2^{x_i+1} are compatible with n. If such a
      compatibility is possible, return it, else return an empty value.'''
      # First, ignore the even part of n
      b = beta(n)
      n >>= b
      # First we create the list of conditions on the component primes. We use the
-     # criterion tau(p) = x <-> p == 2^x-1 (mod 2^(x+1))
+     # criterion tau(p) = x <=> p == 2^x-1 (mod 2^(x+1))
      # We store the conditions as a list of (residue, modulus) conditions
      conditions = [((1<<x) - 1, 1<<(x+1)) for x in component_taus]
      # Now what we do is combine all the conditions modulo the largest modulus, which
@@ -308,8 +308,7 @@ def analyze_tau(n, x, component_taus):
           q, r = divmod(m, mi)
           if r != 0:
                raise ValueError("Moduli don't divide! {} {}".format(m, mi))
-          promoted_rs.append([(ri+i*mi)%m for i in range(q)])
-          # The modulo here isn't strictly necessary but it makes me feel better
+          promoted_rs.append([(ri+i*mi) for i in range(q)])
      out = []
      actual_r = n % m
      # Now we take all possible combinations of the possible individual residues, making
@@ -342,7 +341,7 @@ def analyze_tau_to_str(result, comp_str=''):
           string += ' ' + conds_str
      return string
 
-@lru_cache(1<<10)
+@lru_cache()
 def partitions_of_size(n, count):
      '''Creates all combinations of `count` numbers that sum to n (order doesn't
      matter, so combos are returned in sorted form)'''
