@@ -63,8 +63,49 @@ def get_id_info(id):
      #comp = get_num(compid)
      return nt.Factors(' * '.join(smalls + larges)), comps
 
+def examine_seq(id, forms, n=None, guide=None, seq=None):
+     '''Query the FDB by ID to analyze if the corresponding number may mutate by assuming
+     the composite is of the given `forms`, where `forms` is a list of `form`s as used by
+     the mfaliquot.aliquot.possible_mutation function. The optional n and guide arguments
+     are for error checking purposes.'''
+     primes, comps = get_id_info(id)
+     if len(comps) == 0:
+          return None # json data for this seq is out of date
+     if len(comps) > 1 or list(comps.values()) != [1]:
+          raise ValueError("Wtf?!? two composites or composite to a power? seq {}, id {}".format(seq.seq, seq.id))
+     c = int(list(comps.keys())[0])
+     nprime, guideprime, s, t = aq.canonical_form(primes)
+
+     # We do a cross check that the fdb and data file agree: to do this,
+     # we cut primes >9 digits from the fdb data
+     tmp = [p for p in nprime if len(str(p)) >= 10]
+     for p in tmp:
+          del nprime[p]
+     if (n is not None and nprime != n) or (guide is not None and guideprime != guide):
+          #raise ValueError("Disagreement between local file and fdb: {} {}".format(n, nprime))
+          print("Weird! Seq {} apparently is bad info in the data file.".format(seq.seq if seq else None))
+          return None
+
+     cls = aq.get_class(guide=guideprime)
+     # Now we do one last tau check
+     target_tau = cls - aq.twos_count(t)
+     if target_tau < 2:
+          return None
+
+     forms = tuple(filter(lambda f: len(f) <= target_tau, forms))
+     if not forms:
+          return None
+     #print("Seq {} checking composite".format(seq.seq))
+     out = []
+     for form in forms:
+          res = aq.possible_mutation(c, target_tau, form)
+          if res:
+               out.append(res)
+     # Can't use list comprehension because of testing the return value
+     return out
+
 #count = 0
-def examine_seq(seq):
+def filter_seq(seq):
      '''Examines unreserved sequences to see if they are prone to mutation. This
      currently ignores solely-power-of-2 guides with b > 3'''
      if seq.res:
@@ -88,46 +129,8 @@ def examine_seq(seq):
      if not aq.is_driver(guide=guide):
           return None
 
-     # Now we query the fdb for the full numbers comprising the last term
-     #global count
-     #count += 1
-     #print('getting data for sequence {:>6} = {:<30} take {}'.format(seq.seq, seq.factors, count))
-     primes, comps = get_id_info(seq.id)
-     if len(comps) == 0:
-          return None # json data for this seq is out of date
-     if len(comps) > 1 or list(comps.values()) != [1]:
-          raise ValueError("Wtf?!? two composites or composite to a power? seq {}, id {}".format(seq.seq, seq.id))
-     c = int(list(comps.keys())[0])
-     nprime, guideprime, s, t = aq.canonical_form(primes)
-
-     # We do a cross check that the fdb and data file agree: to do this,
-     # we cut primes >9 digits from the fdb data
-     tmp = [p for p in nprime if len(str(p)) >= 10]
-     for p in tmp:
-          del nprime[p]
-     if nprime != n or guideprime != guide:
-          #raise ValueError("Disagreement between local file and fdb: {} {}".format(n, nprime))
-          print("Weird! Seq {} apparently is bad data on the website.".format(seq.seq))
-          return None
-
-     # Now we do one last tau check
-     target_tau = cls - aq.twos_count(t)
-     if target_tau < 2:
-          return None
-
-     #print("Seq {} checking composite".format(seq.seq))
-     # First we assume the composite is a semiprime
-     out = []
-     res = aq.possible_mutation(c, target_tau, [1,1])
-     if res:
-          out.append(res)
-     # Next assume the composite is made of three primes
-     if target_tau > 2:
-          res = aq.possible_mutation(c, target_tau, [1,1,1])
-          if res:
-               out.append(res)
-     return out
-
+     # Assume either semi prime or 3 prime composition
+     return examine_seq(seq.id, [[1,1], [1,1,1]], n, guide, seq)
 
 # The main function
 def main():
@@ -142,7 +145,7 @@ def main():
      targets = []
      for i, seq in enumerate(data.values()):
           #print('looking at seq {}'.format(i))
-          ress = examine_seq(seq)
+          ress = filter_seq(seq)
           if ress:
                targets.append((seq, ress))
      targets.sort(key=lambda tup: (not tup[0].driver, tup[0].clas, tup[0].cofact)) # Drivers first, then sort by class first, secondary sort by comp size
