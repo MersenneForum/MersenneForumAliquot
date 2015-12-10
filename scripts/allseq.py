@@ -7,7 +7,7 @@
 
 #    Copyright (C) 2014-2015 Bill Winslow
 #
-#    This module is a part of the CodeSchematics package.
+#    This module is a part of the mfaliquot package.
 #
 #    This program is libre software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
