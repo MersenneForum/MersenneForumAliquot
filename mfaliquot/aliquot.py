@@ -308,8 +308,8 @@ def test_composite_tau(n, x, form):
                possible_residues.append(t)
      return possible_residues
 
-def test_tau_to_str(result, comp_str=''):
-     return ' '.join(analyze_tau_to_str(res, comp_str) for res in result)
+def test_tau_to_str(result, comp_str='', sep=' '):
+     return sep.join(analyze_tau_to_str(res, comp_str) for res in result)
 
 composite_tau_lte_to_str = test_tau_to_str
 
@@ -359,12 +359,12 @@ def analyze_tau_to_str(result, comp_str=''):
      out, r, m, comp_taus = result
      x = sum(comp_taus)
      xstr = '+'.join(str(x) for x in comp_taus)
-     template = '''Assuming that {} is made of {} primes, then since it's {} (mod {}), it's possible that tau(n)={}={} via the following conditions:'''
+     template = '''Assuming that {} is made of {} primes, then since it's {} (mod {}), it's possible that tau(n)={}={} via the following conditions: '''
      string = template.format(comp_str if comp_str else 'n', len(comp_taus), r, m, x, xstr)
-     for rs in out:
-          conds_str = ', '.join('p{}%{}=={}'.format(i, m, ri) for i, ri in enumerate(rs, 1))
-          string += ' ' + conds_str
-     return string
+     allconds_str = '; '.join(
+          ', '.join('p{}%{}=={}'.format(i, m, ri) for i, ri in enumerate(rs, 1)) for rs in out
+          )
+     return string + allconds_str + '.'
 
 @lru_cache()
 def partitions_of_size(n, count):
