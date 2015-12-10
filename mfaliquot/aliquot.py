@@ -176,14 +176,15 @@ def canonical_form(n):
 
      if int(guide) * int(s) * int(t) != int(n):
           raise ValueError("Aliquot classification failed! Wtf?")
-     return n, guide, s, t
+     return guide, s, t
 
 def twos_count(t): # The power of two of sigma(t)
      t = _sanitize(t) # Check that n is a positive int
      if not isinstance(t, Factors): t = factor(t) # Factor n if not done already
      # http://www.rechenkraft.net/aliquot/intro-analysis.html#tauprimepowers
+     odd_primes = set(t.keys()) - {2}
      tau = 0
-     for p in t:
+     for p in odd_primes:
           a = t[p]
           if a & 1 == 1:
                tau += quick_pow_of_two(p+1) + quick_pow_of_two((a+1)>>1)
@@ -195,8 +196,14 @@ tau = twos_count
 def get_class(n=0, guide=None, powers=True):
      if guide is None:
           guide = get_guide(n, powers)
-     v = Factors({key: (powe if powers else 1) for key, powe in guide.items() if key != 2 and powe > 0})
-     return guide[2] - twos_count(v)
+     if powers:
+          return guide[2] - twos_count(guide)
+     else:
+          v = guide.copy()
+          del v[2]
+          for p in v:
+               v[p] = 1
+          return guide[2] - twos_count(v)
 
 def is_driver(n=0, guide=None):
      if guide is None:
@@ -216,8 +223,26 @@ def is_driver(n=0, guide=None):
 #          two_to_xp1 <<= 1
 #     return x
 
-def possible_mutation(composite, x, form):
-     '''This function is literally a one line list comprehension around test_tau.
+def mutation_possible(known_factors, composite, forms=None):
+     '''Given an aliquot term in the form `known_factors` * `composite` (where the
+     former is an `nt.Factors` instance), then test if a mutation is possible
+     depending on how the composite factors. Returning an empty list guarantees
+     that a mutation won't happen, but a non-empty list (which comprises the
+     conditions on the component primes in the composite) does not guarantee that
+     a mutation will occur.
+
+     If `forms` is not passed, then the composite will be assumed to be either a
+     semi-prime or a product of three primes (that is, `forms` == [(1,1), (1,1,1)] ).'''
+     if forms is None:
+          forms = [(1,1), (1,1,1)]
+     target_tau = known_factors[2] - twos_count(known_factors)
+     if target_tau < 2:
+          return []
+     forms = tuple(filter(lambda f: len(f) <= target_tau, forms)) # tau(n primes) >= n
+     return [allowed_res for form in forms for allowed_res in composite_tau_lte(composite, target_tau, form)]
+
+def composite_tau_lte(composite, x, form):
+     '''This function is literally a one line list comprehension around test_composite_tau.
      
      Given an odd number n of unknown factorization, test if it's possible for tau(n)
      to be <= x, assuming in factors in the form given. A false retval guarantees 
@@ -231,9 +256,9 @@ def possible_mutation(composite, x, form):
      raise a value error.
      
      Returns a series of the congruence conditions which n may satisfy.'''
-     return [pos_res for xprime in range(2, x+1) for pos_res in test_tau(composite, xprime, form)]
+     return [pos_res for xprime in range(2, x+1) for pos_res in test_composite_tau(composite, xprime, form)]
 
-def test_tau(n, x, form):
+def test_composite_tau(n, x, form):
      '''Given an odd number n of unknown factorization, test if it's possible for tau(n)
      to be x, assuming in factors in the form given. False guarantees that
      tau(n) != x, but true does not guarantee that tau(n) = x.
@@ -278,7 +303,7 @@ def test_tau(n, x, form):
      # Now we analyze each combo separately, and any possible matches are returned
      possible_residues = []
      for combo in combos:
-          t = analyze_tau(n, x, combo)
+          t = analyze_composite_tau(n, x, combo)
           if t:
                possible_residues.append(t)
      return possible_residues
@@ -286,10 +311,10 @@ def test_tau(n, x, form):
 def test_tau_to_str(result, comp_str=''):
      return ' '.join(analyze_tau_to_str(res, comp_str) for res in result)
 
-possible_mutation_to_str = test_tau_to_str
+composite_tau_lte_to_str = test_tau_to_str
 
-def analyze_tau(n, x, component_taus):
-     '''Helper to test_tau(). Given an odd number n and a target tau(n) together with
+def analyze_composite_tau(n, x, component_taus):
+     '''Helper to test_composite_tau(). Given an odd number n and a target tau(n) together with
      a list of the specific tau(p) to be assumed for each prime in n, test if
      the implied conditions on p_i mod 2^{x_i+1} are compatible with n. If such a
      compatibility is possible, return it, else return an empty value.'''
