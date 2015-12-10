@@ -10,10 +10,10 @@ The scripts/ folder contains the main website script, as well as the
 reservations tracking script, a small script to find sequences with drivers
 susceptible to breaking, and the merge detecting script.
 
-The numtheory/ pseudo-package contains the numtheory.py and aliquot.py modules
+The mfaliquot/ package contains the numtheory.py and aliquot.py modules
 I wrote while I was talking a number theory course -- the former module has a
 lot of unrelated-to-aliquot material, but has a bunch of relevant stuff as well,
-which aliquot.py and in turn the website depend on.
+which aliquot.py and in turn the website and other scripts depend on.
 
 The fdb/ pseudo-package can be ignored for now. (I had the ambitious idea of
 writing a Python package that extends some HTML parsing done in the scripts/
