@@ -61,6 +61,7 @@ from urllib import request, parse, error
 from time import strftime, gmtime, sleep, strptime
 from collections import Counter
 import re, signal, json, os
+import matplotlib.pyplot as plt
 
 from _import_hack import add_path_relative_to_script
 add_path_relative_to_script('..')
@@ -342,6 +343,24 @@ def updateseq(old, reserves):
                error_msg += 'Reached query limit. Derp.\n'
 
 
+def produce_barchart(data, bar_width, filename):
+     # We implicitly ignore all indices > 1 in data (that is, we allow tuples of
+     # size greater than 2, since the length table includes percentile data)
+     plt.clf() # Worst name ever. clear() or clearfigure() would be infinitely better
+     data = [tuple(datum[:2]) for datum in data] # Toss extraneous data
+     indices, vals = zip(*data)
+     bars = plt.bar(indices, vals, bar_width, align='center')
+     plt.savefig(dir+filename)
+
+#plt.xlabel('Group')
+#plt.ylabel('Scores')
+#plt.title('Scores by group and gender')
+#plt.xticks(index + bar_width, ('A', 'B', 'C', 'D', 'E'))
+#plt.legend()
+
+#plt.tight_layout()
+#plt.show()
+
 def inner_main(special=None):
      global error_msg
      print('\n'+strftime(datefmt))
@@ -413,6 +432,10 @@ def inner_main(special=None):
      guidetable = [ [key, value] for key, value in guides.items() ]
      progtable = [ [key, value] for key, value in progs.items() ]
      stats = stats.format(totinc=totlen/totsiz, avginc=avginc/total, totprog=totprog, progcent=totprog/total)
+     barchartfiles = ['sizechart.svg', 'lenchart.svg']
+     produce_barchart(lentable, 20, 'lenchart.svg')
+     produce_barchart(sizetable, 0.8, 'sizechart.svg')
+     map(produce_barchart, *zip((sizetable, lentable), (0.35 for i in range(len(barchartfiles))), barchartfiles))
      
      # Write all the data and webpages
      with open(FILE, 'w') as f:
