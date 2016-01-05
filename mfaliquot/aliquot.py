@@ -330,6 +330,7 @@ def test_tau_to_str(result, comp_str='', sep=' '):
      return sep.join(analyze_tau_to_str(res, comp_str) for res in result)
 
 composite_tau_lte_to_str = test_tau_to_str
+mutation_possible_to_str = test_tau_to_str
 
 def analyze_composite_tau(n, x, component_taus):
      '''Helper to test_composite_tau(). Given an odd number n and a target tau(n) together with
