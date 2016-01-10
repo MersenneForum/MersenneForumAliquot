@@ -153,6 +153,10 @@ def aliquot(n):
      n = _sanitize(n)
      return sigma(n) - int(n)
 
+def abundance(n):
+     n = _sanitize(n)
+     return sigma(n)/int(n) - 1
+
 def get_guide(facts, powers=True):
      # powers: if false, '2 * 3^2 * 5' returns '2 * 3'; if true, returns '2 * 3^2'
      # "facts" is the factorization of n, which is allowed to contain extraneous factors
