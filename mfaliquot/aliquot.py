@@ -177,7 +177,7 @@ def get_guide(facts, powers=True):
 def canonical_form(n):
      '''Splits a number into its canonical aliquot form, i.e. (2^b*v)*s*t where 2^b*v
      is the guide, s is even powered primes, and t is everything else/odd powered primes.
-     The return value is (n, guide, s, t) where each is a Factors instance'''
+     The return value is (guide, s, t) where each is a Factors instance'''
      n = _sanitize(n)
      if not isinstance(n, Factors): n = factor(n)
 
@@ -263,7 +263,7 @@ def composite_tau_lte(composite, x, form):
      '''This function is literally a one line list comprehension around test_composite_tau.
      
      Given an odd number n of unknown factorization, test if it's possible for tau(n)
-     to be <= x, assuming in factors in the form given. A false retval guarantees 
+     to be <= x, assuming it factors into the form given. A false retval guarantees 
      that tau(n) > x, but true does not guarantee that tau(n) <= x.
 
      `form` is a tuple-like object containing the prime powers that describe the
@@ -278,7 +278,7 @@ def composite_tau_lte(composite, x, form):
 
 def test_composite_tau(n, x, form):
      '''Given an odd number n of unknown factorization, test if it's possible for tau(n)
-     to be x, assuming in factors in the form given. False guarantees that
+     to be x, assuming it factors into the form given. False guarantees that
      tau(n) != x, but true does not guarantee that tau(n) = x.
 
      `form` is a tuple-like object containing the prime powers that describe the
@@ -373,7 +373,7 @@ def analyze_composite_tau(n, x, component_taus):
 
 def analyze_tau_to_str(result, comp_str=''):
      if not result:
-          return
+          return ''
      out, r, m, comp_taus = result
      x = sum(comp_taus)
      xstr = '+'.join(str(x) for x in comp_taus)
