@@ -13,7 +13,7 @@ MathJax.Hub.Config({
   }
 });
 </script>
-<script type="text/javascript" src="MathJax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 <style type="text/css">
      footer         { text-align: center;
                       font-size: 70%; }
@@ -53,7 +53,7 @@ perfect number, and some low level college mathematics notation. We'll develop t
 
 <h3 id="sigma">The sum of divisors function and aliquot sequences (or, the introduction to the introduction)</h3>
 
-<p>6 is a <b>perfect number</b> because the sum of its divisors, 1, 2, and 3, is 1+2+3=6. Except that this is a slight
+<p>6 is a <b>perfect number</b> because the sum of its divisors, 1, 2, and 3, is 1 + 2 + 3 = 6. Except that this is a slight
 misunderstanding, because if 1 divides 6, then we must also say 6 divides 6 (consistent with the number
 theoretic definition of divisibility), and so the "actual" sum of divisors
 of 6 is 1+2+3+6=12. Lets formalize this. We define the <b>sum of divisors function</b> as follows:
@@ -65,20 +65,22 @@ To allow 6 as a perfect number, we define the <b>aliquot function</b>, the sum o
 
 $$a(n) = \sigma(n) - n$$
 
-and say that a perfect number is a number $n$ such that $a(n) = n$, or equivalently,
-$\sigma(n) = 2n$. But how many numbers are perfect in this sense? It is conjectured to be infinite, but
-as it turns out, there are very few known. It is relatively easy to prove (first done by Euclid) that if
-$2^n - 1$ is a prime number
+(that is, all the divisors except the number itself,) and say that a perfect number is a number $n$ such that
+$a(n) = n$, or equivalently, $\sigma(n) = 2n$. But how many numbers are perfect in this sense? It is conjectured
+to be infinite, but as it turns out, there are very few known. It is relatively easy to prove (first done by
+Euclid) that if $2^n - 1$ is a prime number
 (a Mersenne prime), then $$p = 2^{n-1}(2^n - 1)$$ is a perfect number. To see this, first list the powers of 2
 that divide $p$: $1$, $2$, $2^2$, $2^3$, ..., $2^{n-1}$. Next, $(2^n - 1)$ is clearly a divisor, but finally we
 also have to include $2 \cdot (2^n - 1)$, $2^2 \cdot (2^n - 1)$, ..., $2^{n-1} \cdot (2^n - 1)$. (If $2^n - 1$
-were not prime, there would be other divisors besides $2^n - 1$ to worry about.) A general geometric series
-$\sum_{i=0}^{k}{r^k}$ sums to $\frac{r^{k+1} - 1}{r - 1}$, so where $r = 2$
-and $k = n - 1$, we have the powers of 2 from $1$ to $2^{n-1}$ sum to $S = \frac{2^{n-1 + 1}-1}{2-1} = 2^n -
-1$; meanwhile we note that the divisors containing $2^n - 1$ correspond to the same series multipled by
-$2^n - 1$, so that the sum of all the divisors is equal to
+were not prime, there would be other divisors besides $2^n - 1$ to worry about.) In order to add up all these
+divisors, we use the formula for the sum of a geometric series:
 
-$$\sigma(p) = S + (2^n - 1)S = S(1 + 2^n - 1) = 2^n S = 2^n (2^n - 1) = 2 \cdot 2^{n-1}(2^n - 1) = 2p$$
+$$ 1 + r + r^2 + r^3 + ... + r^k = \sum_{i=0}^{k}{r^k} = \frac{r^{k+1} - 1}{r - 1}$$
+
+In this case, we have $r = 2$ and $k = n - 1$, so that the powers of 2 from $1$ to $2^{n-1}$ sum to $S = \frac{2^{n-1 + 1}-1}{2-1} = 2^n - 1$; meanwhile we note that the divisors containing $2^n - 1$ correspond to the same
+series multipled by $2^n - 1$, so that the sum of all the divisors is equal to
+
+$$\sigma(p) = S + (2^n - 1)S = S(1 + 2^n - 1) = 2^n \cdot S = 2^n \cdot (2^n - 1) = 2 \cdot 2^{n-1}(2^n - 1) = 2p$$
 
 so $\sigma(p) = 2p$, and $p$ is indeed a perfect number.
 Proving the converse is slightly more involved, but it will be done in short order. Note that these perfect
@@ -89,14 +91,15 @@ perfect numbers (most mathematicians believe not).</p>
 prime number. Let $p$ be any prime number; then its only divisors (by definition) are $1$ and $p$, so
 $\sigma(p) = p + 1$, and consequently $a(p) = \sigma(p) - p = 1$. (What's $a(1)$? Only $1$ divides $1$, so
 $a(1) = 1 - 1 = 0$. Meanwhile, $a(0)$ is not defined because it makes no sense to talk about the divisors of 0.)
-Well, that's interesting. Is it possible for $a(n)$ to be prime? Yes, for $a(4) = 1 + 2 + 4 - 4 = 3$. So we see
+Well, that's interesting. Is it possible for $a(n)$ to be prime? Yes, for example, $a(4) = 1 + 2 + 4 - 4 = 3$.
+So we see
 that $a(a(4))$ = 1. Does this work for other numbers? Sure. Let's try 12: $a(12) = 1 + 2 + 3 + 4 + 6 = 16$ (note
 that in this case $a(n) \gt n$). Next, $a(16) = 1 + 2 + 4 + 8 = 15$, and $a(15) = 1 + 3 + 5 = 9$, and $a(9) = 1
 + 3 = 4$, and as we discussed, $a(4)$ is prime and thus $a(a(4)) = a(a(a(a(a(a(12)))))) = 1$. This iterated
 aliquot function application is called an <b>aliquot sequence</b>, and they are the main objects of interest on
 this page.</p>
 
-<p>And so we've seen that the aliquot sequence starting at $12$ <b>terminates</b> with $1$. Are there other
+<p>And so we've seen that the aliquot sequence starting at $12$ <b>terminates</b> with the prime number $3$, and in turn $1$. Are there other
 ways an aliquot sequence can terminate? As it turns out, yes: consider $n = 220$. In order to calculate
 $a(220)$, we must first factor 220. This is fairly straight forward: $220 = 22 \cdot 10 =
 2 \cdot 11 \cdot 2 \cdot 5 = 2^2 \cdot 5 \cdot 11$. So its divisors include 1, 2, 4, 5, 11, 10, 20, 22, 44, 55,
@@ -104,21 +107,28 @@ $a(220)$, we must first factor 220. This is fairly straight forward: $220 = 22 \
 surprise in store here, for in fact $284 = 2^2 \cdot 71$, and $1 + 2 + 4 + 71 + 142$ is actually <i>220</i> once
 again! So $a(220) = 284$, and simultaneously $a(284) = 220$. These are called <b>amicable numbers</b>, and they
 demonstrate that it's possible for aliquot sequences to "terminate" without "reaching" a prime (and thus 1).
-Amicable numbers are an example of <b>aliquot cycles</b> of order 2; higher order cylces exist, such
-as that starting with $n=12496$: $a(12496) = 14288$, $a(14288) = 15472$, $a(15472) = 14536$, $a(14536) = 14264$,
+Amicable numbers are an example of <b>aliquot cycles</b> of order 2; higher order cylces exist, whose members are
+called <b>sociable numbers</b>. Examples include the
+cycle starting with $n=12496$: $a(12496) = 14288$, $a(14288) = 15472$, $a(15472) = 14536$, $a(14536) = 14264$,
 and finally $a(14264) = 12496$, for a cycle of order 5. There are several million amicable pairs known, 225
 cycles of order 4 known, the sole cycle above known of order 5, five cycles of order 6, three cycles of order 8,
 one cycle of order 9, one curious cycle of order 28, and perhaps strangely, no cycles whatsoever of order 3.
-We could arguably classify perfect numbers as aliquot cycles of order 1 -- there are 48 known Mersenne primes, and thus 48 known
-cycles of order 1.</p>
+We could arguably classify perfect numbers as aliquot cycles of order 1 -- there are
+<span style="text-decoration:line-through;">48</span>
+<a href="http://www.mersenne.org/primes/?press=M74207281">49</a> known Mersenne primes, and thus 49 known cycles
+of order 1.</p>
 
 <p>And now, the big question. Are there numbers which commence an aliquot sequence that never terminates? That
 is, is there an aliquot sequence which never has a prime term and which never reaches a repeating cycle (of 
 order 1, 2, or otherwise)? Such a sequence would, by necessisity, grow without bound. This question is known as
 Catalan's aliquot sequence conjecture, and it remains open to this day. The smallest number whose aliquot
-sequence is as yet not known in its entirety is 276; as of writing, it has 1853 terms, with the last terms
-having nearly 190 digits. The rest of this page is dedicated to analysis of aliquot sequences as it relates to
-the ongoing computational research into unknown sequences.</p>
+sequence is as yet not known in its entirety is <a href="http://factordb.com/sequences.php?se=1&aq=276">276</a>;
+as of writing, it has 1855 terms, with the last terms
+having nearly 190 digits. (As a small fun fact milestone, on January 28th 2016, Tom Womack took the sequence
+starting with <a href="http://factordb.com/sequences.php?se=1&aq=2340&action=last20">2340</a> to
+<a href="http://factordb.com/sequences.php?se=1&aq=2340&action=range&fr=749&to=750">200 digits</a>, the first 
+sequence to reach that size.) The rest of this page is dedicated to analysis of aliquot sequences as it relates
+to the ongoing computational research into unknown sequences.</p>
 
 <h3 id="background">Some more fundamentals</h3>
 
@@ -126,34 +136,37 @@ the ongoing computational research into unknown sequences.</p>
 functions. They are of large importance in elementary number theory, and we shall make use of their defining
 property quite a lot while studying $\sigma$.</p>
 
-<p>Definition: a number-theoretic function $f$ on integers is called <b>multiplicative</b> if, for any integers
+<p>Definition: a number-theoretic function on integers $f$ is called <b>multiplicative</b> if, for any integers
 $m$ and $n$ where $gcd(m, n) = 1$, $f(m \cdot n) = f(m) \cdot f(n)$. (By extension, $f$ is called <b>completely
 multipicative</b> if the property holds even when $m$ and $n$ share some divisors.) For example: the identity
 function, $f(x) = x$, is multiplicative (in fact completely so) for $f(xy) = xy = x \cdot y = f(x) \cdot f(y)$.</p>
 
 <p>Our goal now is to prove that $\sigma$, the sum of divisors function, is also multiplicative. This will allow
-us to deduce a great deal of other things about $\sigma$. First, we'll start with a small helper theorem: given
-a multiplicative function $f$, define $F(n) = \sum_{d \mid n}{f(d)}$ as the sum of $f$ applied to the divisors
-of $n$. Then, $F$ too is multiplicative. Proof: Let $m$ and $n$ again share no common divisors (besides $1$).
+us to deduce a great deal of other things about $\sigma$. In fact, the multiplicativity of $\sigma$ follows
+trivially from a simple, general and incredibly useful helper theorem: given a multiplicative function $f$,
+define a new function $$F(n) = \sum_{d \mid n}{f(d)}$$ as the sum of $f$ applied to the divisors
+of $n$; then $F$ too is multiplicative.</p>
+
+<p>Proof: Let $m$ and $n$ again share no common factors (besides $1$).
 Then the divisors $d$ of $mn$ may be written as $d = rs$, where $r \mid m$ and $s \mid n$, and $gcd(r, s) = 1$
 (which follows from $gcd(m, n) = 1$). And so:
 
 $$F(mn) = \sum_{d \mid mn}{f(d)} = \sum_{r \mid m, s \mid n}{f(rs)} = \sum_{r \mid m, s \mid n}{f(r) f(s)}$$
 
 where the last equality follows from the multiplicativity of $f$. Now, note the range
-of the sum -- $r$ and $s$ <i>independently</i> range over the divisors of $m$ and $n$ respectively, with one term in the
-sum for each possible product of $r$ and $s$, and so we notice the sum may be written as a rectangular "cross
-table" of terms: the divisors $r$ of $m$ label the columns, the divisors $s$ of $n$ label the rows, and the
-term at column $r$ and row $s$ is $f(r) \cdot f(s)$. But consider
+of the sum -- $r$ and $s$ <i>independently</i> range over the divisors of $m$ and $n$ respectively (since
+$gcd(r, s) = 1$), with one term in the sum for each possible product of $r$ and $s$, and so we notice the sum may
+be written as a rectangular "cross table" of terms: the divisors $r$ of $m$ label the columns, the divisors $s$
+of $n$ label the rows, and the term at column $r$ and row $s$ is $f(r) \cdot f(s)$. But consider
 
 $$F(m) F(n) = \left(\sum_{r \mid m}{f(r)}\right) \left(\sum_{s \mid n}{f(s)}\right) $$
 
 By distributing the terms of one sum over the other, this product is in fact the sum of all possible products of
 terms -- all possible products of $f(r)$ and $f(s)$. But these are exactly the terms that comprise our cross
-term table from before! And so $F(m) F(n) = \sum_{r \mid m, s \mid n}{f(r) f(s)} = F(mn)$, and the
+term table from before! And so $$F(m) F(n) = \sum_{r \mid m, s \mid n}{f(r) f(s)} = F(mn)$$ and the
 multiplicativity of $F$ follows from that of $f$, as desired.</p>
 
-<p>This theorem has a number of immediate corollaries, two of which are as follows: the number of divisors of a
+<p>This theorem has a number of immediate corollaries, two of which are as follows: the count of divisors of a
 number, label it $\nu(n)$, is multiplicative, for $\nu(n) = \sum_{d \mid n}{1}$, and $f(x) = 1$ is trivially
 multiplicative, so $\nu$ is as well. Our close friend $\sigma(n)$ is also multiplicative, for $\sigma(n) =
 \sum_{d \mid n}{d}$, where the function of the divisors is just the identity function, which we also know is
@@ -161,30 +174,34 @@ multiplicative, and so $\sigma$ is as well.</p>
 
 <p>Now we use multiplicativity to deduce some properties of $\nu$ and $\sigma$. Most importantly, it suffices to
 know a multiplicative function's value over powers of primes, since all integers
-uniquely factor as a product of prime powers (which are by definition pairwise coprime). As an example: let $p$
-be any prime number, and let $a$ be a positive integer. Then $\nu(p) = 2$ and $\nu(p^a) = a + 1$. Now we
-consider any integer $n$, which can be factored as $n = \prod_{p_i \mid n}{{p_i}^{a_i}}$. Then
+uniquely factor as a product of prime powers (which are by definition mutually coprime). As an example: let $p$
+be any prime number, and let $a$ be a positive integer. Then $\nu(p) = 2$ (all primes have exactly two divisors)
+and $\nu(p^a) = a + 1$ (powers of prime numbers have as many divisors as the power plus one). Now we
+consider any integer $n$, which can be factored as $$n = \prod_{p_i \mid n}{{p_i}^{a_i}}$$
+Then
 
 $$\nu(n) = \nu\left(\prod_{p_i \mid n}{{p_i}^{a_i}}\right) =
 \prod_{p_i \mid n}{\nu\left({p_i}^{a_i}\right)} = \prod_{p_i \mid n}{(a_i + 1)}$$
 
 (That is, take the powers of the primes dividing $n$, add one to each power,
-and multiply those all together to get $\nu(n)$.) And now we apply the same process to $\sigma$:
-$\sigma(p) = p + 1$, and
-$\sigma(p^a) = \sum_{d \mid p^a}{d} = \sum_{i=0}^{a}{p^i}$, which by the sum of geometric series is $\frac{p^{a+1}-1}{p-1}$, and so
+and multiply those all together to get $\nu(n)$. The middle equality follows from the multiplicativity of
+$\nu$.) And now we apply the same process to $\sigma$: $\sigma(p) = p + 1$, and
+$\sigma(p^a) = \sum_{d \mid p^a}{d} = \sum_{i=0}^{a}{p^i}$, which by the sum of geometric series is
+$\frac{p^{a+1}-1}{p-1}$, and so
 
 $$\sigma(n) = \sigma\left(\prod_{p_i \mid n}{{p_i}^{a_i}}\right) =
 \prod_{p_i \mid n}{\sigma\left({p_i}^{a_i}\right)} = \prod_{p_i \mid n}{\frac{{p_i}^{{a_i}+1}-1}{{p_i}-1}}$$
 
-So in general, to calculate $\sigma(n)$ and in turn
-$a(n)$, it suffices to factor $n$ into its constituent prime powers, after which $\sigma(n)$ is only a few
-multiplications. Of course factoring an integer is in general difficult, but that is currently the best known
-method to calculate $\sigma(n)$ (after all, it's hard to calculate the sum of divisors without knowing the
-divisors).</p>
+(where the middle equality again follows from multiplicativity). So in general, to calculate $\sigma(n)$ and in
+turn $a(n)$, it suffices to factor $n$ into its constituent prime powers, after which $\sigma(n)$ is only a few
+multiplications (as opposed to actually enumerating every single possible divisor, which can take a long time if
+there lots of prime factors). Of course factoring an integer is in general difficult, but that is currently the
+best known method to calculate $\sigma(n)$ (after all, it's hard to calculate the sum of divisors without
+knowing the divisors).</p>
 
-<p>Finally, we conclude this detour by finishing the discussion of even perfect numbers. Using the
-multiplicatively of $\sigma$, first note that the statement we proved earlier can be proven in a much simpler
-manner. Let $n = 2^{p-1} \cdot (2^p-1)$, where $2^p-1$ is prime. Then
+<p>Finally, we conclude this detour by applying our newfound properties of $\sigma$ to the discussion of even
+perfect numbers. First we note that the statement we already proved about even perfect numbers can be proven
+again in a much simpler manner using $\sigma$: let $n = 2^{p-1} \cdot (2^p-1)$, where $2^p-1$ is prime. Then
 
 $$\sigma(n) = \sigma(2^{p-1} \cdot (2^p -1)) = \sigma(2^{p-1}) \cdot \sigma(2^p-1) =
 (2^p-1) \cdot 2^p = 2 \cdot 2^{p-1} \cdot (2^p-1) = 2n$$
@@ -195,9 +212,10 @@ Then
 
 $$2^{b+1} \cdot m = 2n = \sigma(n) = \sigma(2^b \cdot m) = \sigma(2^b) \cdot \sigma(m) = (2^{b+1}-1) \cdot \sigma(m)$$
 
-Note that since $(2^{b+1}-1)$ is odd and at least 3, it must divide the odd $m$ on the other side of the
-equation. We thus define $$l = \frac{m}{(2^{b+1}-1)}$$ (noting that $l$ is a proper divisor of $m$), such that
-upon dividing the equation by $(2^{b+1}-1)$, we have
+Note that since $(2^{b+1}-1)$ is odd, it must divide the odd $m$ on the other side of the equation. We thus
+define $$l = \frac{m}{(2^{b+1}-1)}$$
+Also note that since $b \ge 1$, then $2^{b+1}-1 \ge 3$, and thus $l$ is a <i>proper</i> divisor of $m$. We now
+divide the equation by $(2^{b+1}-1)$:
 
 $$2^{b+1} \cdot l = \sigma(m)$$
 
@@ -250,14 +268,26 @@ odd sequences or even sequences only.
 <p>Now we come to deficiency and abundancy. First, we define the <b>abundance</b> of a number to be
 $$\frac{a(n)}{n}$$ so that deficient numbers have abundance less than 1, perfect numbers have abundance 1, and
 abundant numbers have abundance greater than 1. We can make a pretty simple but powerful heuristic argument: let
-$d$ be a divisor of a number $n$, with $d \lt \sqrt{n}$, and let its partner be $e = n/d$. Then the pair's
+$d$ be a divisor of a number $n$, with $1 \lt d \lt \sqrt{n}$, and let its partner be $e = n/d$. Then the pair's
 collective contribution to the abundance of $n$ is
 
 $$\frac{d+e}{n} = \frac{d+n/d}{n} = \frac{d}{n} + \frac{1}{d}$$
 
-Consider which of these terms is the larger contributor: the ratio of the right term to the left term is
-$\frac{1/d}{d/n} = \frac{n}{d^2}$
+Logarithmically speaking, $\log(d/n) = \log(d) - \log(n)$, while $\log(1/d) = -\log(d)$. Since by assumption
+$d \lt \sqrt{n}$, this means that $\log(d) \lt \frac{1}{2} \log(n)$, so that approximately speaking,
+$\log(d/n) \simeq -\log(n) \ll -\log(d) = \log(1/d)$, so that the $\frac{1}{d}$ term domniates, and so
+$$\frac{d+e}{n} \simeq \frac{1}{d}$$
+The error is of course $\frac{d}{n}$. If, say, $d$ has 5 digits and $n$ has 20 digits, then the error in this
+approximation for the abundance is at roughly the 15th decimal place -- a very small error.
 </p>
+
+<p>Heuristically then, we can get a powerfully close approximation to the abundance of a number just by knowing
+a few of its smallest divisors (the smaller the divisor, the larger $\frac{1}{d}$ is and the smaller the error
+term is). One example: let $n = 2 \cdot 3 \cdot 5 \cdot 54673257461630679457$. A first approximation to the
+abundance of $n$ is $\frac{1}{2} + \frac{1}{3} + \frac{1}{5} = 1.03\bar{3}$; a second approximation includes the
+small divisors that are product of the three small primes (i.e. the exact abundance of $2 \cdot 3 \cdot 5 = 30$):
+$\frac{1}{2} + \frac{1}{3} + \frac{1}{5} + \frac{1}{6} + \frac{1}{10} + \frac{1}{15} + \frac{1}{30} =
+\frac{7}{5} = 1.4$</p>
 
 <p>
 Regarding deficiency and abundancy, we'll make a simple heuristic argument. Let $p$ be the smallest prime
