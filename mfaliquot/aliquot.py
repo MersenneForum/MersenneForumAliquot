@@ -153,6 +153,10 @@ def aliquot(n):
      n = _sanitize(n)
      return sigma(n) - int(n)
 
+def abundance(n):
+     n = _sanitize(n)
+     return sigma(n)/int(n) - 1
+
 def get_guide(facts, powers=True):
      # powers: if false, '2 * 3^2 * 5' returns '2 * 3'; if true, returns '2 * 3^2'
      # "facts" is the factorization of n, which is allowed to contain extraneous factors
@@ -330,6 +334,7 @@ def test_tau_to_str(result, comp_str='', sep=' '):
      return sep.join(analyze_tau_to_str(res, comp_str) for res in result)
 
 composite_tau_lte_to_str = test_tau_to_str
+mutation_possible_to_str = test_tau_to_str
 
 def analyze_composite_tau(n, x, component_taus):
      '''Helper to test_composite_tau(). Given an odd number n and a target tau(n) together with

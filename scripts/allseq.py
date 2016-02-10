@@ -1,4 +1,4 @@
-#! /usr/bin/env python3 -u
+#! /usr/bin/env python3
 # -u to force line buffering of stdout
 
 # This is written to Python 3.3 standards (may use 3.4 features, I haven't kept track)
