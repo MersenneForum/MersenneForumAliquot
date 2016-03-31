@@ -266,24 +266,20 @@ odd sequences or even sequences only.
 </p>
 
 <p>Now we come to deficiency and abundancy. First, we define the <b>abundance</b> of a number to be
-$$\frac{a(n)}{n}$$ so that deficient numbers have abundance less than 1, perfect numbers have abundance 1, and
-abundant numbers have abundance greater than 1. We can make a pretty simple but powerful heuristic argument: let
-$d$ be a divisor of a number $n$, with $1 \lt d \lt \sqrt{n}$, and let its partner be $e = n/d$. Then the pair's
-collective contribution to the abundance of $n$ is
+$$\alpha(n) = \frac{a(n)}{n}$$ so that deficient numbers have abundance less than 1, perfect numbers have
+abundance 1, and abundant numbers have abundance greater than 1. Lets develop a sense for how the prime factors
+of a number affect its abundance. First, denote the divisors of $n$ as $d_i$, where $i$ runs from
+$1$ to $k$, where $k$ is the number of divisors, such that $d_1 = 1$ and $d_k = n$. Note that by construction,
+$n/d_i = d_{k-i+1}$. Then:
 
-$$\frac{d+e}{n} = \frac{d+n/d}{n} = \frac{d}{n} + \frac{1}{d}$$
+$$\alpha(n) = \frac{a(n)}{n} = \frac{1}{n} \sum_{i=1}^{k-1}{d_i} = \sum_{i=1}^{k-1}{\frac{d_i}{n}} =
+\sum_{i=1}^{k-1}{\frac{1}{d_{k-i+1}}} = \sum_{i=2}^{k}{\frac{1}{d_i}}$$
 
-Logarithmically speaking, $\log(d/n) = \log(d) - \log(n)$, while $\log(1/d) = -\log(d)$. Since by assumption
-$d \lt \sqrt{n}$, this means that $\log(d) \lt \frac{1}{2} \log(n)$, so that approximately speaking,
-$\log(d/n) \simeq -\log(n) \ll -\log(d) = \log(1/d)$, so that the $\frac{1}{d}$ term domniates, and so
-$$\frac{d+e}{n} \simeq \frac{1}{d}$$
-The error is of course $\frac{d}{n}$. If, say, $d$ has 2 digits and $n$ has 20 digits, then the error in this
-approximation for the abundance is at roughly the 18th decimal place -- a very small error.
-</p>
-
-<p>Heuristically then, we can get a powerfully close approximation to the abundance of a number just by knowing
-a few of its smallest divisors (the smaller the divisor, the larger $\frac{1}{d}$ is and the smaller the error
-term is). One example: let $n = 2 \cdot 3 \cdot 5 \cdot 54673257461630679457$. A first approximation to the
+Thus abundance is the sum of the inverse of the divisors greater than $1$, including $n$ itself. Obviously the
+smallest divisors dominate the sum, i.e. a divisor of $x$ digits affects the abundance in only the $x$th decimal
+place. Heuristically then, we can get a powerfully close approximation to the abundance of a number just by
+knowing a few of its smallest divisors. One example: let $n = 2 \cdot 3 \cdot 5 \cdot 54673257461630679457$. A
+first approximation to the
 abundance of $n$ is $\frac{1}{2} + \frac{1}{3} + \frac{1}{5} = 1.03\bar{3}$; a second approximation includes the
 small divisors that are product of the three small primes (i.e. the exact abundance of $2 \cdot 3 \cdot 5 = 30$):
 $\frac{1}{2} + \frac{1}{3} + \frac{1}{5} + \frac{1}{6} + \frac{1}{10} + \frac{1}{15} + \frac{1}{30} =
@@ -295,7 +291,7 @@ beyond the precision that standard double-sized floating point numbers can repre
 even numbers are abundant: all of them have an abundance of at least $\frac{1}{2}$, and any further powers of two
 or a couple more small primes will push the abundance over 1 in a pinch. Conversely, odd numbers have no
 guaranteed small factor: if an odd number's smallest prime factor is, say, 101, then unless there are hundreds or
-thousands of other prime factors of this number, the abundance will certainly be less than 1. For example, these
+thousands of other divisors of this number, the abundance will certainly be less than 1. For example, these
 are the five smallest odd abundant numbers:
 <ul>
   <li>$945 = 3^3 \cdot 5 \cdot 7$</li>
@@ -319,19 +315,15 @@ $b(n)$.
 </p>
 
 <p>At any rate, we've beaten to death the subject of abundance. We'll finish up with a couple further small but
-important properties of abundance. The main property in question is that $\frac{a(mn)}{mn} \gt \frac{a(n)}{n}$,
-i.e. the abundance of a number is greater than the max of the abundance of any of its divisors. The proof uses
-the same logic the above discussion: $\frac{a(mn)}{mn} \ge \frac{a(n)}{n} + \frac{1}{mn} \gt \frac{a(n)}{n}$.
-If this is not immediately evident (think about how we calculated the abundance of $2 \cdot 3 \cdot 5 \cdot
-54673257461630679457$), we can verify it by enumerating the divisors: list the proper divisors of $n$ as
-$\{1, d_2, d_3, ..., d_k\}$ (where $k = \nu(n)-1$ is the count of the proper divisors). Then $a(n) =
-\sum_{i=1}^{k}{d_i}$, as usual. Now we can't list all the divisors of $mn$, nor determine which are shared
-between $m$ and $n$, but we can see that $mn$ has <i>at least</i> the divisors $\{m, m d_2, m d_3, ..., m d_k\}$,
-whose sum is $\sum_{i=1}^{k}{m d_i} = m \sum_{i=1}^{k}{d_i} = m \cdot a(n)$. After including 1 in the sum, we have $a(mn) \geq 1 + m \cdot a(n)$; the final form is obtained by dividing through by $(mn)$.</p>
+important properties of abundance. The main property in question is that $\alpha(mn) \gt \alpha(n)$,
+i.e. the abundance of a number is greater than the max of the abundance of any of its divisors. This is
+immediately evident from the above discussion: $mn$ has at least the divisors of $n$ (such that $\alpha(mn) \ge
+\alpha(n)$), while guaranteeing the additional divisor $mn$ to be included in the sum of inverse divisors, such
+that $\alpha(mn) \ge \alpha(n) + \frac{1}{mn} \gt \alpha(n)$, as desired.</p>
 
 <p>This propery of the aliquot function has two immediate corrolaries: first, if $mn$ is perfect or deficient,
-then $ 1 \geq \frac{a(mn)}{mn} \gt \frac{a(n)}{n}$, so any divisor of $mn$ is itself deficient. Second and more
-importantly, if $n$ is perfect or abundant, then $1 \leq \frac{a(n)}{n} \lt \frac{a(mn)}{mn}$ for any $m$, so
+then $ 1 \geq \alpha(mn) \gt \alpha(n)$, so any divisor of $mn$ is itself deficient. Second and more
+importantly, if $n$ is perfect or abundant, then $1 \leq \alpha(n) \lt \alpha(mn)$ for any $m$, so
 any multiple of $n$ is also abundant. This latter property is the bane of sequence extenders everywhere, for as
 we'll see shortly, an even sequence is almost always guaranteed to be "driven" by a specific, small perfect or
 abundant number, and so even sequences nearly always increase. This is the main reason that many people suspect
