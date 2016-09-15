@@ -68,21 +68,27 @@ $$a(n) = \sigma(n) - n$$
 (that is, all the divisors except the number itself,) and say that a perfect number is a number $n$ such that
 $a(n) = n$, or equivalently, $\sigma(n) = 2n$. But how many numbers are perfect in this sense? It is conjectured
 to be infinite, but as it turns out, there are very few known. It is relatively easy to prove (first done by
-Euclid) that if $2^n - 1$ is a prime number
-(a Mersenne prime), then $$p = 2^{n-1}(2^n - 1)$$ is a perfect number. To see this, first list the powers of 2
-that divide $p$: $1$, $2$, $2^2$, $2^3$, ..., $2^{n-1}$. Next, $(2^n - 1)$ is clearly a divisor, but finally we
-also have to include $2 \cdot (2^n - 1)$, $2^2 \cdot (2^n - 1)$, ..., $2^{n-1} \cdot (2^n - 1)$. (If $2^n - 1$
-were not prime, there would be other divisors besides $2^n - 1$ to worry about.) In order to add up all these
-divisors, we use the formula for the sum of a geometric series:
+Euclid) that if $2^p - 1$ is a prime number
+(a Mersenne prime), then $$n = 2^{p-1}(2^p - 1)$$ is a perfect number. To see this, first list the powers of 2
+that divide $n$: $1$, $2$, $2^2$, $2^3$, ..., $2^{p-1}$. Next, $(2^p - 1)$ is clearly a divisor, but finally we
+also have to include $2 \cdot (2^p - 1)$, $2^2 \cdot (2^p - 1)$, $2^3 \cdot (2^p - 1)$, ..., $2^{p-1} \cdot (2^p - 1)$.
+(If $2^p - 1$ were not prime, there would be other divisors besides $2^p - 1$ to worry about.) In order to add
+up all these divisors, we use the formula for the sum of a geometric series:
 
 $$ 1 + r + r^2 + r^3 + ... + r^k = \sum_{i=0}^{k}{r^k} = \frac{r^{k+1} - 1}{r - 1}$$
 
-In this case, we have $r = 2$ and $k = n - 1$, so that the powers of 2 from $1$ to $2^{n-1}$ sum to $S = \frac{2^{n-1 + 1}-1}{2-1} = 2^n - 1$; meanwhile we note that the divisors containing $2^n - 1$ correspond to the same
-series multipled by $2^n - 1$, so that the sum of all the divisors is equal to
+In this case, we have $r = 2$ and $k = p - 1$, so that the powers of 2 from $1$ to $2^{p-1}$ sum to $S = \frac{2^{p-1 + 1}-1}{2-1}
+= 2^p - 1$; meanwhile we note that the divisors
+containing $2^p - 1$ correspond to the same series multipled by $2^p - 1$, so that the sum of all the divisors is equal to
 
-$$\sigma(p) = S + (2^n - 1)S = S(1 + 2^n - 1) = 2^n \cdot S = 2^n \cdot (2^n - 1) = 2 \cdot 2^{n-1}(2^n - 1) = 2p$$
+$$\sigma(n) = S + (2^p - 1)S = S + S^2 = S (1+S)$$
 
-so $\sigma(p) = 2p$, and $p$ is indeed a perfect number.
+But by the definition of $S = 2^p - 1$, we thus also know that $n = 2^{p-1} \cdot (2^p - 1) = \frac{S+1}{2} S$, and so
+
+$$\sigma(n) = S(1+S) = 2n$$
+
+thus $n$ is indeed a perfect number.
+
 Proving the converse is slightly more involved, but it will be done in short order. Note that these perfect
 numbers are even; it is still an open mathematical problem of some interest whether or not there are any odd
 perfect numbers (most mathematicians believe not).</p>
@@ -121,13 +127,13 @@ of order 1.</p>
 <p>And now, the big question. Are there numbers which commence an aliquot sequence that never terminates? That
 is, is there an aliquot sequence which never has a prime term and which never reaches a repeating cycle (of 
 order 1, 2, or otherwise)? Such a sequence would, by necessisity, grow without bound. This question is known as
-Catalan's aliquot sequence conjecture, and it remains open to this day. The smallest number whose aliquot
+Catalan's aliquot sequence conjecture, and it remains open to this day. (Catalan specifically conjectured that
+all aliquot sequences terminate, which is to say, are bounded in size.) The smallest number whose aliquot
 sequence is as yet not known in its entirety is <a href="http://factordb.com/sequences.php?se=1&aq=276">276</a>;
-as of writing, it has 1855 terms, with the last terms
-having nearly 190 digits. (As a small fun fact milestone, on January 28th 2016, Tom Womack took the sequence
-starting with <a href="http://factordb.com/sequences.php?se=1&aq=2340&action=last20">2340</a> to
-<a href="http://factordb.com/sequences.php?se=1&aq=2340&action=range&fr=749&to=750">200 digits</a>, the first 
-sequence to reach that size.) The rest of this page is dedicated to analysis of aliquot sequences as it relates
+as of writing, it has 2044 terms, with the last terms having more than 200 digits. (As a small fun fact milestone,
+the first sequence to reach <a href="http://factordb.com/sequences.php?se=1&aq=2340&action=range&fr=749&to=750">200 digits</a>
+was <a href="http://factordb.com/sequences.php?se=1&aq=2340&action=last20">2340</a> on January 28th 2016, by Tom Womack.)
+The rest of this page is dedicated to analysis of aliquot sequences as it relates
 to the ongoing computational research into unknown sequences.</p>
 
 <h3 id="background">Some more fundamentals</h3>
@@ -212,19 +218,18 @@ Then
 
 $$2^{b+1} \cdot m = 2n = \sigma(n) = \sigma(2^b \cdot m) = \sigma(2^b) \cdot \sigma(m) = (2^{b+1}-1) \cdot \sigma(m)$$
 
-Note that since $(2^{b+1}-1)$ is odd, it must divide the odd $m$ on the other side of the equation. We thus
-define $$l = \frac{m}{(2^{b+1}-1)}$$
-Also note that since $b \ge 1$, then $2^{b+1}-1 \ge 3$, and thus $l$ is a <i>proper</i> divisor of $m$. We now
-divide the equation by $(2^{b+1}-1)$:
+Note that since $(2^{b+1}-1)$ is odd, it must divide the odd $m$ on the other side of the equation. We thus define
 
-$$2^{b+1} \cdot l = \sigma(m)$$
+$$l = \frac{m}{(2^{b+1}-1)}$$
 
-On the other hand,
+Also note that since $b \ge 1$, then $2^{b+1}-1 \ge 3$, and thus $l$ is a <i>proper</i> divisor of $m$.</p>
 
-$$2^{b+1} \cdot l = (2^{b+1} - 1 + 1) \cdot l = (2^{b+1} - 1) \cdot l + l = m + l$$
+<p>Next we isolate $\sigma(m)$ and replace the terms with $2^{b+1}$ by $\frac{m}{l} + 1$ (obtained by rearranging
+the definition of $l$):
 
-Putting these together, we have $$\sigma(m) = m+l$$
-and this is the fundamental deduction of the proof, for that equality precisely means that $l$ <i>is the only proper
+$$ \sigma(m) = 2^{b+1} \cdot \frac{m}{2^{b+1}-1} = (\frac{m}{l} + 1) \cdot l = m + l$$
+
+This is the fundamental deduction of the proof, for that equality $$\sigma(m) = m + l$$ precisely means that $l$ <i>is the only proper
 divisor of</i> $m$. Thus we conclude a number of things, namely that 1) $l = 1$, 2) $m$ is prime, 3)
 $m = 2^{b+1}-1$, and collectively that our even perfect number $n = 2^b \cdot m$ is of the form $2^b \cdot (2^{b+1}-1)$ with
 $2^{b+1}-1$ a Mersenne prime, which is what we set out to prove.</p>
@@ -303,7 +308,7 @@ are the five smallest odd abundant numbers:
 Note how they are all combinations of powers of the very smallest possible odd primes.
 </p>
 
-<p>As an aside, it's easy to see
+<p>(As an aside, it's easy to see
 how abundance and deficiency are related to the concepts of <b>smooth</b> and <b>rough</b> numbers, which
 are defined as those numbers with their largest prime divisor smaller than a bound B, or the smallest prime
 divisor larger than B, respectively. Of course, the modified definitions of <b>powersmoothness</b> are more
@@ -311,36 +316,40 @@ relevant to our discussion, where all prime powers dividing the number must be l
 define $b(n)$ to be the smallest number B such that $n$ is <b>B-powersmooth</b>, then there is a very close
 correlation between $a(n)/n$ and $n/b(n)$ -- though the former arguably accounts better for the cases where
 there are several high powers of multiple primes, instead of just one prime with a large exponent "inflating"
-$b(n)$.
+$b(n)$.)
 </p>
 
 <p>At any rate, we've beaten to death the subject of abundance. We'll finish up with a couple further small but
 important properties of abundance. The main property in question is that $\alpha(mn) \gt \alpha(n)$,
 i.e. the abundance of a number is greater than the max of the abundance of any of its divisors. This is
-immediately evident from the above discussion: $mn$ has at least the divisors of $n$ (such that $\alpha(mn) \ge
+immediately evident from the above discussion: $mn$ has at least the divisors that $n$ has (such that $\alpha(mn) \ge
 \alpha(n)$), while guaranteeing the additional divisor $mn$ to be included in the sum of inverse divisors, such
 that $\alpha(mn) \ge \alpha(n) + \frac{1}{mn} \gt \alpha(n)$, as desired.</p>
 
-<p>This propery of the aliquot function has two immediate corrolaries: first, if $mn$ is perfect or deficient,
+<p>This propery of the aliquot abundance function has two immediate corrolaries: first, if $mn$ is perfect or deficient,
 then $ 1 \geq \alpha(mn) \gt \alpha(n)$, so any divisor of $mn$ is itself deficient. Second and more
 importantly, if $n$ is perfect or abundant, then $1 \leq \alpha(n) \lt \alpha(mn)$ for any $m$, so
-any multiple of $n$ is also abundant. This latter property is the bane of sequence extenders everywhere, for as
-we'll see shortly, an even sequence is almost always guaranteed to be "driven" by a specific, small perfect or
-abundant number, and so even sequences nearly always increase. This is the main reason that many people suspect
-Catalan's aliquot conjecture to be false. 
+any multiple of $n$ is also abundant. This latter property is the bane of sequence extenders
+everywhere. Odd sequences are (to the best of my knowledge) merely composed of essentially random odd numbers,
+the large majority of which are deficient, and so there is not currently known an unterminated odd sequence with a
+substantial number of its terms abundant. Even sequences, on the other hand, do <i>not</i> have random terms, and as
+the next secion discusses, even sequences follow patterns, where nearly all of the patterns guarantee a particuar perfect
+or abundant number to occur in <i>every</i> line of the sequence -- thus, according to the prior property, guaranteeing
+nearly every term is (substantially) larger than the previous one, growing quickly and without bound (with one primary
+exception). This is the main reason that many people suspect Catalan's aliquot conjecture to be false. Quantifiers the
+whys and wherefores of these patterns (and how they change) is the goal of the next section.
 </p>
 
 <h3 id="analysis">Sequence analysis</h3>
 
 <p>Finally we can start talking about the details of aliquot sequences as it pertains to the ongoing brute force
-sequence calculations. As above, odd sequences stay odd and strongly tend to decrease; there is not currently
-known an unterminated odd sequence with a substantial number of its terms abundant. And so from now on we only
+sequence calculations. As above, odd sequences terminate quickly and are of no interest, so from now on we only
 deal with even numbers.</p>
 
 <h4 id="guides">Guides</h4>
 
 <p>As a first step, if we were to pick a random even number and let it run for several terms, we notice that in
-most cases, there are some primes (other than 2) that are consistently a factor in every term of the sequence.
+most cases, there are some primes (other than 2!) that are consistently a factor in every term of the sequence.
 One such prototypical example is $n = 759679647438 = 2 \cdot 3 \cdot 47 \cdot 1039 \cdot 2592781$. The next five
 terms in its aliquot sequence are:
 <ul>
@@ -455,7 +464,7 @@ $$\tau(kl) = \beta(\sigma(kl)) = \beta(\sigma(k)\sigma(l)) = \beta(\sigma(k))+\b
 \tau(k)+\tau(l)$$ (Note that if $f$ were not completely multiplicative, we could not conclude that $\tau$ is
 logarithmically multiplicative, since we don't know that $\sigma(k)$ and $\sigma(l)$ are coprime.) As an
 example, $\tau(5) = \beta(\sigma(5)) = \beta(6) = \beta(2^1\cdot3) = 1$. Meanwhile, $\tau(11) =
-\beta(\sigma(11)) = \beta(12) = \beta(2^2\cdot4) = 2$, and finally, by the "multiplicativity" of $\tau$, we thus
+\beta(\sigma(11)) = \beta(12) = \beta(2^2 \cdot 3) = 2$, and finally, by the "multiplicativity" of $\tau$, we thus
 have that $\tau(55) = \tau(5\cdot11) = \tau(5)+\tau(11) = 1+2=3$ (which we can verify by noting that $\sigma(55)
 = 2^3\cdot3^2$). The final stop on the detour is the following criterion for $\beta$: $\beta(n) = x$ means that
 $2^x \mid n$, but $2^{x+1} \nmid n$ -- a simple way to quantify this is that $n \equiv 2^x \pmod{2^{x+1}}$,
@@ -466,19 +475,25 @@ which is equivalent to $\beta(n) = x$.
 Now we can dive head first to the bottom of the pool. In this paragraph we write $n$ in the usual
 form $2^b \cdot v \cdot m$, $m$ odd, where by definition of $v$, it and $m$ are coprime. A mutation occurs when
 the power of two changes, which means we want to know what circumstances of $n$ and $a(n)$ cause
-$\beta(a(n)) \neq \beta(n) = b$. Proceeding directly, $\beta(a(n)) = \beta(\sigma(n)-n)$. We need some
-way to relate $\beta$ of a sum to $\beta$ applied to the summands. Fortunately, this is quite easy: let $x$ and
-$y$ be two numbers of the form $2^i \cdot l$ and $2^j \cdot m$, where $l$ and $m$ are odd. Without loss of
-generality, lets assume that $i \leq j$. Then $x+y = 2^i(2^{j-i}m+l)$. If $i \neq j$, then $(2^{j-i}m+l)$ is odd
-and so $\beta(x+y) = i = \min(\beta(x), \beta(y))$. Otherwise if $i=j$, then $x+y = 2^i(m+l)$, where $m+l$ is thus
+$\beta(a(n)) \neq \beta(n) = b$.</p>
+
+<p>Proceeding directly: $$\beta(a(n)) = \beta(\sigma(n)-n)$$ We need some
+way to relate $\beta$ of a sum to $\beta$ applied to the summands. Fortunately, this is straightforward: let $x$ and
+$y$ be two numbers of the form $2^i \cdot k$ and $2^j \cdot l$, where $k$ and $l$ are odd. Without loss of
+generality, lets assume that $i \leq j$. Then $x+y = 2^i(k + 2^{j-i}l)$. If $i \neq j$, then $(k + 2^{j-i}l)$ is odd
+and so $\beta(x+y) = i = \min(\beta(x), \beta(y))$. Otherwise if $i=j$, then $x+y = 2^i(k+l)$, where $k+l$ is thus
 even and $\beta(x+y) \gt i=j$. Unfortunately we can't say more about that case without knowing more about $m$ and
-$l$ (though fortunately it doesn't matter much). Note that the same conclusions apply to $x-y$. Applying these
+$l$ (though fortunately it doesn't matter much). Note that these same conclusions apply to $x-y$.</p>
+
+<p>Applying these
 results to $\beta(a(n)) = \beta(\sigma(n) - n)$, we see that if $\beta(\sigma(n)) = \tau(n) \gt b$, then
-$\beta(a(n)) = \min(\tau(n) \gt b, b) = b$, and no mutation occurs. If $\tau(n) = b$, then $\beta(a(n)) > b$, and
-a mutation occurs like in the example at the beginning of the section, where the power of 2 increases (how much it
-increases again depends on the odd parts of $n$ and $\sigma(n)$). Finally, if $\tau(n) \lt b$, then $\beta(a(n)) =
-\min(\tau(n) \lt b, b) = \tau(n)$, and again we have a mutation, this time where the exponent decreases to
-$\tau(n)$. The criterion for a mutation occuring, then, is that $$\tau(n) \leq b .$$
+$\beta(a(n)) = \min(\tau(n) \gt b, b) = b$ and no mutation occurs.</p>
+
+<p>If $\tau(n) = b$, then $\beta(a(n)) > b$, and a mutation occurs like in the example at the beginning of the
+section, where the power of 2 increases (how much it increases again depends on the odd parts of $n$ and $\sigma(n)$).</p>
+
+<p>Finally, if $\tau(n) \lt b$, then $\beta(a(n)) = \min(\tau(n) \lt b, b) = \tau(n)$ and again we have a mutation,
+this time where the exponent decreases to $\tau(n)$. The criterion for a mutation occuring, then, is that $$\tau(n) \leq b .$$
 </p>
 
 <p id="tauprimepowers">
@@ -596,9 +611,9 @@ such that the effective class is now $b - \tau(v') \gt b - \tau(v)$; the class i
 raised by the twos count of the primes in $v$ whose power is even. Therefore the guide $2^2 \cdot 7^2$ has class
 $-1 + \tau(7) = 2$ (even though the 7 is still guaranteed to be perpetuated to each term), $2^3 \cdot 3^2
 \cdot 5$ has class $0 + \tau(3) = 3 - \tau(5) = 2$, and $2^5 \cdot 3 \cdot 7^2$ has class $3$. Here's some food
-for thought: the largest known Mersenne prime is currently $M = 2^{57,885,161}-1$, and if we define the
-corresponding perfect number as $P_M=2^{57,885,160}(2^{57,885,161}-1)$, what are the odds that the sequence
-starting with $n = 3*P_M$ will ever be divisble by $M^2$, as would be required to make the sequence bounded?
+for thought: the largest known Mersenne prime is currently $M = 2^{74,207,281}-1$, and if we define the
+corresponding perfect number as $P_M=2^{74,207,280}(2^{74,207,281}-1)$, what are the odds that the sequence
+starting with $n = 3*P_M$ will ever be divisible by $M^2$, as would be required to make the sequence bounded?
 Or conversely, given a truly infinite number of iterations, surely even the most unlikely things must eventually
 happen...
 </p>
