@@ -1,5 +1,20 @@
 #!/opt/rh/python33/root/usr/bin/python
 
+#    Copyright (C) 2014-2015 Bill Winslow
+#
+#    This module is a part of the mfaliquot package.
+#
+#    This program is libre software: you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation, either version 3 of the License, or
+#    (at your option) any later version.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+#
+#    See the LICENSE file for more details.
+
 # Run from a cron file like "reservations.py spider" however often to parse
 # the MF thread and update its head post. Be sure the dir, username and password
 # are set correctly.

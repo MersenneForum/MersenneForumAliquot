@@ -1,5 +1,24 @@
 #! /usr/bin/env python3
 
+# This is written to Python 3.3 standards (may use 3.4 features, I haven't kept track)
+# Note: tab depth is 5, as a personal preference
+
+
+#    Copyright (C) 2014-2015 Bill Winslow
+#
+#    This module is a part of the mfaliquot package.
+#
+#    This program is libre software: you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation, either version 3 of the License, or
+#    (at your option) any later version.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+#
+#    See the LICENSE file for more details.
+
 # Some of the data handling code is copied from allseq.py
 data_file = 'http://rechenkraft.net/aliquot/AllSeq.json'
 
@@ -66,7 +85,7 @@ def get_id_info(id):
 def examine_seq(id, forms, n=None, guide=None, seq=None):
      '''Query the FDB by ID to analyze if the corresponding number may mutate by assuming
      the composite is of the given `forms`, where `forms` is a list of `form`s as used by
-     the mfaliquot.aliquot.possible_mutation function. The optional n and guide arguments
+     the mfaliquot.aliquot.composite_tau_lte function. The optional n and guide arguments
      are for error checking purposes.'''
      primes, comps = get_id_info(id)
      if len(comps) == 0:
@@ -74,35 +93,17 @@ def examine_seq(id, forms, n=None, guide=None, seq=None):
      if len(comps) > 1 or list(comps.values()) != [1]:
           raise ValueError("Wtf?!? two composites or composite to a power? seq {}, id {}".format(seq.seq, seq.id))
      c = int(list(comps.keys())[0])
-     nprime, guideprime, s, t = aq.canonical_form(primes)
+     guideprime, s, t = aq.canonical_form(primes)
 
      # We do a cross check that the fdb and data file agree: to do this,
      # we cut primes >9 digits from the fdb data
-     tmp = [p for p in nprime if len(str(p)) >= 10]
-     for p in tmp:
-          del nprime[p]
+     nprime = {p: a for p, a in primes.items() if len(str(p)) <= 9}
      if (n is not None and nprime != n) or (guide is not None and guideprime != guide):
           #raise ValueError("Disagreement between local file and fdb: {} {}".format(n, nprime))
           print("Weird! Seq {} apparently is bad info in the data file.".format(seq.seq if seq else None))
           return None
 
-     cls = aq.get_class(guide=guideprime)
-     # Now we do one last tau check
-     target_tau = cls - aq.twos_count(t)
-     if target_tau < 2:
-          return None
-
-     forms = tuple(filter(lambda f: len(f) <= target_tau, forms))
-     if not forms:
-          return None
-     #print("Seq {} checking composite".format(seq.seq))
-     out = []
-     for form in forms:
-          res = aq.possible_mutation(c, target_tau, form)
-          if res:
-               out.append(res)
-     # Can't use list comprehension because of testing the return value
-     return out
+     return aq.mutation_possible(primes, c, forms)
 
 #count = 0
 def filter_seq(seq):
@@ -110,7 +111,8 @@ def filter_seq(seq):
      currently ignores solely-power-of-2 guides with b > 3'''
      if seq.res:
           return None
-     n, guide, s, t = aq.canonical_form(nt.Factors(seq.factors))
+     n = nt.Factors(seq.factors)
+     guide, s, t = aq.canonical_form(n)
      seq.guide = guide
      # The target_tau for the composite is at most the class minus extant prime factor count
      cls = aq.get_class(guide=guide)
@@ -124,11 +126,9 @@ def filter_seq(seq):
      v = nt.Factors({p: a for p, a in guide.items() if p != 2 and a > 0})
      if int(v) == 1 and cls > 3:
           return None
-
      # This condition greatly reduces fdb load, but excludes a lot of sequences
      if not aq.is_driver(guide=guide):
           return None
-
      # Assume either semi prime or 3 prime composition
      return examine_seq(seq.id, [[1,1], [1,1,1]], n, guide, seq)
 
@@ -151,7 +151,7 @@ def main():
      targets.sort(key=lambda tup: (not tup[0].driver, tup[0].clas, tup[0].cofact)) # Drivers first, then sort by class first, secondary sort by comp size
      for seq, ress in targets:
           for res in ress:
-               print("{:>6} with guide {} (class {}) may mutate: {}".format(seq.seq, seq.guide, seq.clas, aq.possible_mutation_to_str(res, 'C'+str(seq.cofact))))
+               print("{:>6} with guide {} (class {}) may mutate: {}".format(seq.seq, seq.guide, seq.clas, aq.analyze_tau_to_str(res, 'C'+str(seq.cofact))))
 
 if __name__ == "__main__":
      main()

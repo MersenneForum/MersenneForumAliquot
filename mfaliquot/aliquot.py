@@ -1,4 +1,22 @@
-#! /usr/bin/python3
+# This is written to Python 3.3 standards (may use 3.4 features, I haven't kept track)
+# Note: tab depth is 5, as a personal preference
+
+
+#    Copyright (C) 2014-2015 Bill Winslow
+#
+#    This module is a part of the mfaliquot package.
+#
+#    This program is libre software: you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation, either version 3 of the License, or
+#    (at your option) any later version.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+#
+#    See the LICENSE file for more details.
+
 """
 This is module to do basic Aliquot sequence analysis as described by Clifford
 Stern at <http://rechenkraft.net/aliquot/analysis.html>. This is version 2, with
@@ -135,6 +153,10 @@ def aliquot(n):
      n = _sanitize(n)
      return sigma(n) - int(n)
 
+def abundance(n):
+     n = _sanitize(n)
+     return sigma(n)/int(n) - 1
+
 def get_guide(facts, powers=True):
      # powers: if false, '2 * 3^2 * 5' returns '2 * 3'; if true, returns '2 * 3^2'
      # "facts" is the factorization of n, which is allowed to contain extraneous factors
@@ -159,7 +181,7 @@ def get_guide(facts, powers=True):
 def canonical_form(n):
      '''Splits a number into its canonical aliquot form, i.e. (2^b*v)*s*t where 2^b*v
      is the guide, s is even powered primes, and t is everything else/odd powered primes.
-     The return value is (n, guide, s, t) where each is a Factors instance'''
+     The return value is (guide, s, t) where each is a Factors instance'''
      n = _sanitize(n)
      if not isinstance(n, Factors): n = factor(n)
 
@@ -176,14 +198,15 @@ def canonical_form(n):
 
      if int(guide) * int(s) * int(t) != int(n):
           raise ValueError("Aliquot classification failed! Wtf?")
-     return n, guide, s, t
+     return guide, s, t
 
 def twos_count(t): # The power of two of sigma(t)
      t = _sanitize(t) # Check that n is a positive int
      if not isinstance(t, Factors): t = factor(t) # Factor n if not done already
      # http://www.rechenkraft.net/aliquot/intro-analysis.html#tauprimepowers
+     odd_primes = set(t.keys()) - {2}
      tau = 0
-     for p in t:
+     for p in odd_primes:
           a = t[p]
           if a & 1 == 1:
                tau += quick_pow_of_two(p+1) + quick_pow_of_two((a+1)>>1)
@@ -195,8 +218,14 @@ tau = twos_count
 def get_class(n=0, guide=None, powers=True):
      if guide is None:
           guide = get_guide(n, powers)
-     v = Factors({key: (powe if powers else 1) for key, powe in guide.items() if key != 2 and powe > 0})
-     return guide[2] - twos_count(v)
+     if powers:
+          return guide[2] - twos_count(guide)
+     else:
+          v = guide.copy()
+          del v[2]
+          for p in v:
+               v[p] = 1
+          return guide[2] - twos_count(v)
 
 def is_driver(n=0, guide=None):
      if guide is None:
@@ -216,11 +245,29 @@ def is_driver(n=0, guide=None):
 #          two_to_xp1 <<= 1
 #     return x
 
-def possible_mutation(composite, x, form):
-     '''This function is literally a one line list comprehension around test_tau.
+def mutation_possible(known_factors, composite, forms=None):
+     '''Given an aliquot term in the form `known_factors` * `composite` (where the
+     former is an `nt.Factors` instance), then test if a mutation is possible
+     depending on how the composite factors. Returning an empty list guarantees
+     that a mutation won't happen, but a non-empty list (which comprises the
+     conditions on the component primes in the composite) does not guarantee that
+     a mutation will occur.
+
+     If `forms` is not passed, then the composite will be assumed to be either a
+     semi-prime or a product of three primes (that is, `forms` == [(1,1), (1,1,1)] ).'''
+     if forms is None:
+          forms = [(1,1), (1,1,1)]
+     target_tau = known_factors[2] - twos_count(known_factors)
+     if target_tau < 2:
+          return []
+     forms = tuple(filter(lambda f: len(f) <= target_tau, forms)) # tau(n primes) >= n
+     return [allowed_res for form in forms for allowed_res in composite_tau_lte(composite, target_tau, form)]
+
+def composite_tau_lte(composite, x, form):
+     '''This function is literally a one line list comprehension around test_composite_tau.
      
      Given an odd number n of unknown factorization, test if it's possible for tau(n)
-     to be <= x, assuming in factors in the form given. A false retval guarantees 
+     to be <= x, assuming it factors into the form given. A false retval guarantees 
      that tau(n) > x, but true does not guarantee that tau(n) <= x.
 
      `form` is a tuple-like object containing the prime powers that describe the
@@ -231,11 +278,11 @@ def possible_mutation(composite, x, form):
      raise a value error.
      
      Returns a series of the congruence conditions which n may satisfy.'''
-     return [pos_res for xprime in range(2, x+1) for pos_res in test_tau(composite, xprime, form)]
+     return [pos_res for xprime in range(2, x+1) for pos_res in test_composite_tau(composite, xprime, form)]
 
-def test_tau(n, x, form):
+def test_composite_tau(n, x, form):
      '''Given an odd number n of unknown factorization, test if it's possible for tau(n)
-     to be x, assuming in factors in the form given. False guarantees that
+     to be x, assuming it factors into the form given. False guarantees that
      tau(n) != x, but true does not guarantee that tau(n) = x.
 
      `form` is a tuple-like object containing the prime powers that describe the
@@ -278,18 +325,19 @@ def test_tau(n, x, form):
      # Now we analyze each combo separately, and any possible matches are returned
      possible_residues = []
      for combo in combos:
-          t = analyze_tau(n, x, combo)
+          t = analyze_composite_tau(n, x, combo)
           if t:
                possible_residues.append(t)
      return possible_residues
 
-def test_tau_to_str(result, comp_str=''):
-     return ' '.join(analyze_tau_to_str(res, comp_str) for res in result)
+def test_tau_to_str(result, comp_str='', sep=' '):
+     return sep.join(analyze_tau_to_str(res, comp_str) for res in result)
 
-possible_mutation_to_str = test_tau_to_str
+composite_tau_lte_to_str = test_tau_to_str
+mutation_possible_to_str = test_tau_to_str
 
-def analyze_tau(n, x, component_taus):
-     '''Helper to test_tau(). Given an odd number n and a target tau(n) together with
+def analyze_composite_tau(n, x, component_taus):
+     '''Helper to test_composite_tau(). Given an odd number n and a target tau(n) together with
      a list of the specific tau(p) to be assumed for each prime in n, test if
      the implied conditions on p_i mod 2^{x_i+1} are compatible with n. If such a
      compatibility is possible, return it, else return an empty value.'''
@@ -330,16 +378,16 @@ def analyze_tau(n, x, component_taus):
 
 def analyze_tau_to_str(result, comp_str=''):
      if not result:
-          return
+          return ''
      out, r, m, comp_taus = result
      x = sum(comp_taus)
      xstr = '+'.join(str(x) for x in comp_taus)
-     template = '''Assuming that {} is made of {} primes, then since it's {} (mod {}), it's possible that tau(n)={}={} via the following conditions:'''
+     template = '''Assuming that {} is made of {} primes, then since it's {} (mod {}), it's possible that tau(n)={}={} via the following conditions: '''
      string = template.format(comp_str if comp_str else 'n', len(comp_taus), r, m, x, xstr)
-     for rs in out:
-          conds_str = ', '.join('p{}%{}=={}'.format(i, m, ri) for i, ri in enumerate(rs, 1))
-          string += ' ' + conds_str
-     return string
+     allconds_str = '; '.join(
+          ', '.join('p{}%{}=={}'.format(i, m, ri) for i, ri in enumerate(rs, 1)) for rs in out
+          )
+     return string + allconds_str + '.'
 
 @lru_cache()
 def partitions_of_size(n, count):
