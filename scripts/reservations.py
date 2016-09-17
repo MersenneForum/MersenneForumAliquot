@@ -45,7 +45,7 @@ import re
 from time import time
 
 from _import_hack import add_path_relative_to_script
-add_path_relative_to_script('..')
+add_path_relative_to_script('.')
 # this should be removed when proper pip installation is supported
 from mfaliquot.sequence import Sequence
 from mfaliquot.myutils import linecount, Print, strftime, blogotubes, add_cookies, email

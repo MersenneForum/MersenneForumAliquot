@@ -44,7 +44,7 @@ from collections import Counter
 import re, signal, json, os
 
 from _import_hack import add_path_relative_to_script
-add_path_relative_to_script('..')
+add_path_relative_to_script('.')
 # this should be removed when proper pip installation is supported
 from mfaliquot.aliquot import get_guide, get_class, is_driver
 from mfaliquot.myutils import linecount, email, Print
