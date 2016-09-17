@@ -27,7 +27,7 @@ from time import strftime
 import json
 
 from _import_hack import add_path_relative_to_script
-add_path_relative_to_script('..')
+add_path_relative_to_script('.')
 # this should be removed when proper pip installation is supported
 from mfaliquot.myutils import email, Print
 

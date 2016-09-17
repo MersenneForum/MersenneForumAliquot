@@ -33,7 +33,7 @@ info = dir+'/AllSeq.txt'
 
 username = 'Dubslow'
 passwd = '<nope>'
-txtfiles = {'yoyo@home': 'http://yafu.myfirewall.org/yafu/download/ali/ali.txt.all'}
+txtfiles = {'yafu@home': 'http://yafu.myfirewall.org/yafu/download/ali/ali.txt.all'}
 template = """[B]For newcomers:[/B] Please post reservations here. There are workers that extend aliquot sequences; reservations here flag the workers off a sequence so no effort is wasted.
 
 For an archive of old reservations, click [URL="http://www.mersenneforum.org/showthread.php?t=14330"]here[/URL].
@@ -60,7 +60,7 @@ import re
 from time import time
 
 from _import_hack import add_path_relative_to_script
-add_path_relative_to_script('..')
+add_path_relative_to_script('.')
 # this should be removed when proper pip installation is supported
 from mfaliquot.sequence import Sequence
 from mfaliquot.myutils import linecount, Print, strftime, blogotubes, add_cookies, email
