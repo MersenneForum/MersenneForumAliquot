@@ -145,17 +145,21 @@ a: 9  v: 3 * 11 * 31  guide: 2^9 * 3 * 11 * 31  class: 0
 a: 10  v: 23 * 89  guide: 2^10 * 23 * 89  class: 6
 """
 
+
 from .numtheory import is_prime, prp, Factors, factor, _sanitize, sigma, quick_pow_of_two, _positive
 from functools import lru_cache
 from itertools import product as cartesian_product
+
      
 def aliquot(n):
      n = _sanitize(n)
      return sigma(n) - int(n)
 
+
 def abundance(n):
      n = _sanitize(n)
      return sigma(n)/int(n) - 1
+
 
 def get_guide(facts, powers=True):
      # powers: if false, '2 * 3^2 * 5' returns '2 * 3'; if true, returns '2 * 3^2'
@@ -177,6 +181,7 @@ def get_guide(facts, powers=True):
                     guide[guider] = 1
 
      return guide
+
 
 def canonical_form(n):
      '''Splits a number into its canonical aliquot form, i.e. (2^b*v)*s*t where 2^b*v
@@ -200,6 +205,7 @@ def canonical_form(n):
           raise ValueError("Aliquot classification failed! Wtf?")
      return guide, s, t
 
+
 def twos_count(t): # The power of two of sigma(t)
      t = _sanitize(t) # Check that n is a positive int
      if not isinstance(t, Factors): t = factor(t) # Factor n if not done already
@@ -215,6 +221,7 @@ def twos_count(t): # The power of two of sigma(t)
 beta = quick_pow_of_two
 tau = twos_count
 
+
 def get_class(n=0, guide=None, powers=True):
      if guide is None:
           guide = get_guide(n, powers)
@@ -227,10 +234,12 @@ def get_class(n=0, guide=None, powers=True):
                v[p] = 1
           return guide[2] - twos_count(v)
 
+
 def is_driver(n=0, guide=None):
      if guide is None:
           guide = get_guide(n, powers=False)
      return get_class(guide=guide, powers=False) <= 1
+
 
 #def tau(p):
 #     '''Indirectly calculates tau(p) by examining p mod powers of 2 (only works on odd primes)'''
@@ -245,6 +254,7 @@ def is_driver(n=0, guide=None):
 #          two_to_xp1 <<= 1
 #     return x
 
+
 def mutation_possible(known_factors, composite, forms=None):
      '''Given an aliquot term in the form `known_factors` * `composite` (where the
      former is an `nt.Factors` instance), then test if a mutation is possible
@@ -253,15 +263,21 @@ def mutation_possible(known_factors, composite, forms=None):
      conditions on the component primes in the composite) does not guarantee that
      a mutation will occur.
 
-     If `forms` is not passed, then the composite will be assumed to be either a
-     semi-prime or a product of three primes (that is, `forms` == [(1,1), (1,1,1)] ).'''
-     if forms is None:
-          forms = [(1,1), (1,1,1)]
+     If `forms` is not passed, then all possible square-free forms will be tried.
+
+     Use mutation_possible_to_str to interpret the results.'''
+
      target_tau = known_factors[2] - twos_count(known_factors)
      if target_tau < 2:
           return []
-     forms = tuple(filter(lambda f: len(f) <= target_tau, forms)) # tau(n primes) >= n
+
+     if forms is None:
+          forms = [(1,)*i for i in range(2, target_tau+1)]
+     else:
+          forms = tuple(filter(lambda f: len(f) <= target_tau, forms)) # tau(n primes) >= n
+
      return [allowed_res for form in forms for allowed_res in composite_tau_lte(composite, target_tau, form)]
+
 
 def composite_tau_lte(composite, x, form):
      '''This function is literally a one line list comprehension around test_composite_tau.
@@ -277,8 +293,10 @@ def composite_tau_lte(composite, x, form):
      equivalent). Given that tau(p^(2i)) = 0, even powers in the form will
      raise a value error.
      
-     Returns a series of the congruence conditions which n may satisfy.'''
+     Returns a series of the congruence conditions which n may satisfy. Use
+     composite_tau_lte_to_str to interpret the congruence conditions.'''
      return [pos_res for xprime in range(2, x+1) for pos_res in test_composite_tau(composite, xprime, form)]
+
 
 def test_composite_tau(n, x, form):
      '''Given an odd number n of unknown factorization, test if it's possible for tau(n)
@@ -292,10 +310,11 @@ def test_composite_tau(n, x, form):
      equivalent). Given that tau(p^(2i)) = 0, even powers in the form will
      raise a value error.
      
-     Returns a series of the congruence conditions which n may satisfy.'''
+     Returns a series of the congruence conditions which n may satisfy. Use
+     test_composite_tau_to_str to interpret the congruence conditions.'''
 
-     n = int(_positive(n, "test_tau"))
-     x = int(_positive(x-1, "test_tau"))+1
+     n = int(_positive(n, "test_composite_tau"))
+     x = int(_positive(x-1, "test_composite_tau"))+1
      # First, ignore the even part of n
      b = beta(n)
      n >>= b
@@ -314,8 +333,8 @@ def test_composite_tau(n, x, form):
      # the purposes of this analysis, just calculate the extra tau from higher
      # powers, subtract that from x, and then just proceed as if all primes are
      # power 1
-     xtra = sum(beta((a+1)>>1) for a in form if a > 1) # The condition isn't necessary
-     # But I think it's faster than "calculating" beta(1) a whole bunch
+     xtra = sum(beta((a+1)>>1) for a in form if a > 1) # The condition isn't necessary,
+     # but I think it's faster than "calculating" beta(1) a whole bunch
      x -= xtra
      if count > x:
           return []
@@ -330,11 +349,13 @@ def test_composite_tau(n, x, form):
                possible_residues.append(t)
      return possible_residues
 
-def test_tau_to_str(result, comp_str='', sep=' '):
-     return sep.join(analyze_tau_to_str(res, comp_str) for res in result)
 
-composite_tau_lte_to_str = test_tau_to_str
-mutation_possible_to_str = test_tau_to_str
+def test_composite_tau_to_str(result, comp_str='', sep=' '):
+     return sep.join(analyze_composite_tau_to_str(res, comp_str) for res in result)
+
+composite_tau_lte_to_str = test_composite_tau_to_str
+mutation_possible_to_str = test_composite_tau_to_str
+
 
 def analyze_composite_tau(n, x, component_taus):
      '''Helper to test_composite_tau(). Given an odd number n and a target tau(n) together with
@@ -376,7 +397,8 @@ def analyze_composite_tau(n, x, component_taus):
      else:
           return []
 
-def analyze_tau_to_str(result, comp_str=''):
+
+def analyze_composite_tau_to_str(result, comp_str=''):
      if not result:
           return ''
      out, r, m, comp_taus = result
@@ -388,6 +410,7 @@ def analyze_tau_to_str(result, comp_str=''):
           ', '.join('p{}%{}=={}'.format(i, m, ri) for i, ri in enumerate(rs, 1)) for rs in out
           )
      return string + allconds_str + '.'
+
 
 @lru_cache()
 def partitions_of_size(n, count):
