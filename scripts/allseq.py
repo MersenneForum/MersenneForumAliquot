@@ -253,6 +253,7 @@ def updateseq(old, reserves):
                     ali.res = reserves.get(seq, '')
                     if 'Not all factors known' in page:
                          factors = ''; size = 2
+
                          try:
                               factors += smalls[0]
                               for small in smalls[1:]:
@@ -260,10 +261,21 @@ def updateseq(old, reserves):
                                    size += len(small)
                          except: # Happens if no regex match
                               Print('Seq:', seq, "no smalls match")
+                              tries -= 1
+                              if tries == 0:
+                                   Print('>'*10 + 'ERROR NO SMALL FACTORS')
+                                   error_msg += 'Seq {} had no smalls too many times\n'.format(seq)
+                                   return old
+                              else: 
+                                   Print('Retrying ('+str(tries), 'tries left)')
+                              sleep(5)
+                              continue
+
                          if bigs:
                               for big in bigs:
                                    factors += " * P"+big
                                    size += int(big)
+
                          if comps:
                               for comp in comps:
                                    factors += ' * C'+comp
@@ -272,8 +284,18 @@ def updateseq(old, reserves):
                          else:
                               cofact = 0
                               Print('Seq:', seq, "no comps match")
-                         # Note to self: handle lack of regex matches in same fashion as below
-                         # Also why do I even need cofactor()? derp derp
+                              Print('Seq:', seq, "no smalls match")
+                              tries -= 1
+                              if tries == 0:
+                                   Print('>'*10 + 'ERROR NO COMPOSITES FOUND')
+                                   error_msg += 'Seq {} had no composite too many times\n'.format(seq)
+                                   return old
+                              else: 
+                                   Print('Retrying ('+str(tries), 'tries left)')
+                              sleep(5)
+                              continue
+                         # ~~Note to self: handle lack of regex matches in same fashion as below~~
+                         # ^ Only took several years to accomplish this
 
                          # Now some sanity checks
                          if size < 0.9*ali.size: # Garbage values
