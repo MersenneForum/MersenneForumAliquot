@@ -38,7 +38,7 @@ datefmt = '%Y-%m-%d %H:%M:%S'
 reservation_page = 'http://www.rechenkraft.net/aliquot/res_post.php'
 res_post_ids = [ 1 ]
 
-per_hour = 55
+per_hour = 110
 sleep_minutes = 60
 loop = False
 drop = [ ]
