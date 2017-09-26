@@ -82,7 +82,7 @@ def get_id_info(id):
      #comp = get_num(compid)
      return nt.Factors(' * '.join(smalls + larges)), comps
 
-def examine_seq(id, forms, n=None, guide=None, seq=None):
+def examine_seq(id, forms=None, n=None, guide=None, seq=None):
      '''Query the FDB by ID to analyze if the corresponding number may mutate by assuming
      the composite is of the given `forms`, where `forms` is a list of `form`s as used by
      the mfaliquot.aliquot.composite_tau_lte function. The optional n and guide arguments
@@ -129,8 +129,8 @@ def filter_seq(seq):
      # This condition greatly reduces fdb load, but excludes a lot of sequences
      if not aq.is_driver(guide=guide):
           return None
-     # Assume either semi prime or 3 prime composition
-     return examine_seq(seq.id, [[1,1], [1,1,1]], n, guide, seq)
+
+     return n, guide
 
 # The main function
 def main():
@@ -142,16 +142,21 @@ def main():
      # the corresponding Sequence object.
      # data is a dictionary mapping the ints to the Sequence objects.
      data = read_data()
-     targets = []
+     targets = []; derp = []
      for i, seq in enumerate(data.values()):
           #print('looking at seq {}'.format(i))
           ress = filter_seq(seq)
           if ress:
-               targets.append((seq, ress))
+               derp.append((seq, ress))
+     print('Getting details for {} seqs'.format(len(derp)))
+     for seq, ress in derp:
+          res = examine_seq(seq.id, None, *ress, seq)
+          if res:
+               targets.append((seq, res))
      targets.sort(key=lambda tup: (not tup[0].driver, tup[0].clas, tup[0].cofact)) # Drivers first, then sort by class first, secondary sort by comp size
      for seq, ress in targets:
           for res in ress:
-               print("{:>6} with guide {} (class {}) may mutate: {}".format(seq.seq, seq.guide, seq.clas, aq.analyze_tau_to_str(res, 'C'+str(seq.cofact))))
+               print("{:>6} with guide {} (class {}) may mutate: {}".format(seq.seq, seq.guide, seq.clas, aq.analyze_composite_tau_to_str(res, 'C'+str(seq.cofact))))
 
 if __name__ == "__main__":
      main()
