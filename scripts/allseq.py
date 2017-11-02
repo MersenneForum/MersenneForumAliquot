@@ -127,12 +127,12 @@ def get_reservations(pids):
      for pid in pids:
           page = blogotubes(reservation_page + '?p={}&postcount=1'.format(str(pid)),
                     hdrs={'User-Agent': 'Dubslow/AliquotSequences'})
-          update = re.search(r'<!-- edit note -->.*Last fiddled with by [A-Za-z_0-9 -]+? on ([0-9a-zA-Z ]+) at <span class="time">([0-9:]{5})</span>', page, flags=re.DOTALL)
+          update = re.search(r'<!-- edit note -->.*Last fiddled with by [A-Za-z_0-9 -]+? on ([0-9a-zA-Z -]+) at <span class="time">([0-9:]{5})</span>', page, flags=re.DOTALL)
           updated = update.group(1)+' '+update.group(2)
           # Isolate the [code] block with the reservations
           page = re.search(r'<pre.*?>(.*?)</pre>', page, flags=re.DOTALL).group(1)
           for line in page.splitlines():
-               herp = re.match(r' {0,3}([0-9]{3,6})  ([0-9A-Za-z_@. -]{1,16})', line) # "seq name"
+               herp = re.match(r' {0,3}([0-9]{3,7})  ([0-9A-Za-z_@. -]{1,16})', line) # "seq name"
                try:
                     name = herp.group(2)
                except: pass # Ignore non-matching lines
