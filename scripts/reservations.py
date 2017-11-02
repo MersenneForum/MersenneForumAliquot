@@ -333,6 +333,7 @@ def spider(last_pid):
      backup()
      db = read_db()
      spider_msg = []
+     seq_regex = re.compile(r'(?<![0-9])[0-9]{5,7}(?![0-9])') # matches only 5-7 digit numbers
 
      ###############################################################################################
      # First the standalone func that processes mass text file reservations
@@ -342,7 +343,7 @@ def spider(last_pid):
           txt = blogotubes(url)
           current = set()
           for line in txt.splitlines():
-               if re.match(r'(?<![0-9])[0-9]{5,6}(?![0-9])', line):
+               if seq_regex.match(line):
                     seq = int(line)
                     if seq in current:
                          string = "Duplicate sequence? {} {}".format(seq, url)
@@ -368,12 +369,13 @@ def spider(last_pid):
      def process_msg(pid, name, msg):
           add = []; addkws = ('Reserv', 'reserv', 'Add', 'add', 'Tak', 'tak')
           drop = []; dropkws = ('Unreserv', 'unreserv', 'Drop', 'drop', 'Releas', 'releas')
+
           for line in msg.splitlines():
                if any(kw in line for kw in dropkws):
-                    for s in re.findall(r'(?<![0-9])[0-9]{5,6}(?![0-9])', line): # matches only 5/6 digit numbers
+                    for s in seq_regex.findall(line):
                          drop.append(int(s))
                elif any(kw in line for kw in addkws):
-                    for s in re.findall(r'(?<![0-9])[0-9]{5,6}(?![0-9])', line):
+                    for s in seq_regex.findall(line):
                          add.append(int(s))
           la = len(add)
           ld = len(drop)
