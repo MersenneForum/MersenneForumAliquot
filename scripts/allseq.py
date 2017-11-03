@@ -236,6 +236,7 @@ def check(old, tries=3, reserves=None, special=None):
 
 def updateseq(old, reserves):
      global error_msg
+     global quitting
      tries = 5
      if old.seq in broken:
           seq = broken[old.seq][1]
@@ -366,6 +367,8 @@ def updateseq(old, reserves):
                     page).group(1)
                Print(reqs, 'page requests,', queries, 'db queries since', when)
                error_msg += 'Reached query limit. Derp.\n'
+               quitting = True
+               return old
 
 
 def inner_main(special=None):
