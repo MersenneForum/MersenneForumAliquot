@@ -355,13 +355,11 @@ def updateseq(old, reserves):
                     return ali
           else: # Reached query limit
                Print('Seq:', seq, 'the DB is refusing requests.')
-               reqs = re.search('bgcolor="#DDDDDD">Page requests</td>\n<td align="center" bgcolor="#DDDDDD">([0-9,]+)</td>',
-                    page).group(1)
-               queries = re.search('bgcolor="#DDDDDD">Database queries</td>\n<td align="center" bgcolor="#DDDDDD">([0-9,]+)</td>',
-                    page).group(1)
-               when = re.search('bgcolor="#DDDDDD">Counting since</td>\n<td align="center" bgcolor="#DDDDDD">(.*?)</td>',
-                    page).group(1)
-               Print(reqs, 'page requests,', queries, 'db queries since', when)
+               reqs = re.search('Page requests</td>\n<td[^>]*>([0-9,]+)</td>', page).group(1)
+               queries = re.search('Database queries</td>\n<td[^>]*>([0-9,]+)</td>', page).group(1)
+               cputime = re.search('CPU \(Wall clock time\)</td>\n<td[^>]*>([0-9,.]+) seconds</td>', page).group(1)
+               when = re.search('Counting since</td>\n<td[^>]*>(.*?)</td>', page).group(1)
+               Print(reqs, 'page requests,', queries, 'db queries,', cputime, 'cpu seconds since', when)
                error_msg += 'Reached query limit. Derp.\n'
 
 
