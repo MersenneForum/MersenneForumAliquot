@@ -61,7 +61,7 @@ of 6 is 1+2+3+6=12. Lets formalize this. We define the <b>sum of divisors functi
 $$\sigma(n) = \sum_{d \mid n}{d}$$
 
 To allow 6 as a perfect number, we define the <b>aliquot function</b>, the sum of
-<b>proper divisors</b>,  as 
+<b>proper divisors</b>,  as
 
 $$a(n) = \sigma(n) - n$$
 
@@ -125,7 +125,7 @@ We could arguably classify perfect numbers as aliquot cycles of order 1 -- there
 of order 1.</p>
 
 <p>And now, the big question. Are there numbers which commence an aliquot sequence that never terminates? That
-is, is there an aliquot sequence which never has a prime term and which never reaches a repeating cycle (of 
+is, is there an aliquot sequence which never has a prime term and which never reaches a repeating cycle (of
 order 1, 2, or otherwise)? Such a sequence would, by necessisity, grow without bound. This question is known as
 Catalan's aliquot sequence conjecture, and it remains open to this day. (Catalan specifically conjectured that
 all aliquot sequences terminate, which is to say, are bounded in size.) The smallest number whose aliquot
@@ -288,7 +288,7 @@ first approximation to the
 abundance of $n$ is $\frac{1}{2} + \frac{1}{3} + \frac{1}{5} = 1.03\bar{3}$; a second approximation includes the
 small divisors that are product of the three small primes (i.e. the exact abundance of $2 \cdot 3 \cdot 5 = 30$):
 $\frac{1}{2} + \frac{1}{3} + \frac{1}{5} + \frac{1}{6} + \frac{1}{10} + \frac{1}{15} + \frac{1}{30} =
-\frac{7}{5} = 1.4$. The last terms to include in the full abundance are $\frac{1}{54673257461630679457}$, 
+\frac{7}{5} = 1.4$. The last terms to include in the full abundance are $\frac{1}{54673257461630679457}$,
 $\frac{1.4}{54673257461630679457}$, and $\frac{1}{30 \cdot 54673257461630679457}$, which are 1.83e-20, 2.56e-20, and 6.10e-22 respectively, meaning the actual abundance is roughly 1.4000000000000000000445, which is actually
 beyond the precision that standard double-sized floating point numbers can represent.</p>
 
@@ -440,7 +440,7 @@ brings us directly to the next section.
 The next question of course, is when and how the power of 2 changes. Recall earlier when we were talking about
 guides that, when noting that $2^b \cdot v \mid a(2^b \cdot v \cdot m)$, we only assumed that $2^b \mid a(2^b
 \cdot v \cdot m)$ (as is nearly always the case) in order to perpetuate the guide. If the power of 2 changes, then
-$v$ no longer divides $\sigma(2^{b'})$, and we have a new guide based on $2^{b'}$ instead of $2^b$. For example, 
+$v$ no longer divides $\sigma(2^{b'})$, and we have a new guide based on $2^{b'}$ instead of $2^b$. For example,
 let $n = 2^5 \cdot 5 \cdot 7 \cdot 13$. Then $b = 5$ and $v = 7$, and $a(n) = 2^7 \cdot 7 \cdot 31$. Although $v$
 does indeed divide $a(n)$, the power of 2 changed and thus the $2^5 \cdot 7$ guide was lost, transforming into
 $2^7$. (In this case, $\sigma(2^7) = 3 \cdot 5 \cdot 17$, so fortunately $v = 1$ in the new guide.) We call these
@@ -542,7 +542,7 @@ implies that $\beta(1+r^{2i}) = 1$, as necessary.)
 <p>
 Now that we know how to calculate $\tau(p^a)$, we can come back to our criterion for mutation: $$\tau(n) \leq b$$
 We now recall that $\tau(kl) = \tau(k)+\tau(l)$ when $k$ and $l$ are coprime, and expand $$\tau(n) = \tau(2^b
-\cdot v \cdot m) = \tau(2^b) + \tau(v) +\tau(m)$$ But we know the prime powers composing $v$ and $m$, and in 
+\cdot v \cdot m) = \tau(2^b) + \tau(v) +\tau(m)$$ But we know the prime powers composing $v$ and $m$, and in
 particular we know that even-powered primes contribute nothing to the sum in $\tau(n)$. Thus we define the
 <b>canonical form</b> of an aliquot sequence as follows: $$n = 2^b \cdot v \cdot s \cdot t$$ where $v$ consists
 of the (powers of) primes that divide $\sigma(2^b)$; $s$ consists of the powers of all other primes whose

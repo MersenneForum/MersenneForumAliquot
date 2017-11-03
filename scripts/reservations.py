@@ -16,7 +16,7 @@
 #    See the LICENSE file for more details.
 
 # Run from a cron file like "reservations.py spider" however often to parse
-# the MF thread and update its head post. Be sure the dir, username and password 
+# the MF thread and update its head post. Be sure the dir, username and password
 # are set correctly.
 # The very first run only checks the most recent page of reservation posts, since
 # there isn't yet a record of last post checked
@@ -35,11 +35,11 @@ username = 'Dubslow'
 passwd = '<nope>'
 txtfiles = {'yoyo@home': 'http://yafu.myfirewall.org/yafu/download/ali/ali.txt.all'}
 template = """[B]For newcomers:[/B] Please post reservations here. There are workers that extend aliquot sequences; reservations here flag the workers off a sequence so no effort is wasted.
- 
+
 For an archive of old reservations, click [URL="http://www.mersenneforum.org/showthread.php?t=14330"]here[/URL].
- 
+
 For current driver/guide info, click [URL="http://rechenkraft.net/aliquot/AllSeq.html"]here[/URL].
- 
+
 Current reservations:
 [code][B]   Seq  Who             Index  Size  [/B]
 {}
@@ -90,7 +90,7 @@ def get_reservations(pid):
 
 
 def get_all_reservations():
-     if res_posts and not use_local_reservations: 
+     if res_posts and not use_local_reservations:
           reservations = '\n'.join(data for data in map(get_reservations, res_posts) if data)
           try:
                with open(resfile, 'r') as f:
@@ -365,7 +365,7 @@ def spider(last_pid):
 
      ###############################################################################################
      # This processes the parsed HTML and its add/drop commands, and actually affects the current reservations
-     
+
      def process_msg(pid, name, msg):
           add = []; addkws = ('Reserv', 'reserv', 'Add', 'add', 'Tak', 'tak')
           drop = []; dropkws = ('Unreserv', 'unreserv', 'Drop', 'drop', 'Releas', 'releas')
@@ -389,12 +389,12 @@ def spider(last_pid):
      # Begin the parsers, converts the various HTML into Python data structures for processing
      # Also reverse stack order
      # For each page of the thread, the parsers return a list of (post_id, author, html-replaced-post_body)
-     
+
      # All of my previous html parsing needs have been simple enough that regexs were sufficient,
      # and a proper parser would have been overkill; this, though, is much closer to the border, and if I
      # already knew how to use any parser, I would. But the overhead is too much to start now, so...
-     # thankfully there are comments in the html that are individually closed; without that, 
-     # this would be substantially harder and I'd probably resort to a parser.     
+     # thankfully there are comments in the html that are individually closed; without that,
+     # this would be substantially harder and I'd probably resort to a parser.
      def parse_msg(msg):
           # Drop text after the last </div>
           ind = msg.rfind('</div>')
@@ -408,7 +408,7 @@ def spider(last_pid):
                ind = msg.find('>')
                msg = msg[ind+1:]
           return msg.replace('<br />', '').strip()
-     
+
      def parse_post(post):
           name = re.search(r'''alt="(.*?) is o''', post).group(1) # "is offline" or "is online"
           msg = re.search(r'<!-- message -->(.*?)<!-- / message -->', post, re.DOTALL).group(1)

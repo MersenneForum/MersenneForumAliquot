@@ -33,21 +33,21 @@ get_class()
 is_driver()
 twos_count()
 
-The main datatype of this module is (instances of) the Factors class. All of the 
+The main datatype of this module is (instances of) the Factors class. All of the
 functions are capable of taking a Factors() object as their argument; they are
 also able to take an int or a literal string of factors. A string of factors is
-a list of factors separated by '*', with optional powers marked by '^'. Such a 
+a list of factors separated by '*', with optional powers marked by '^'. Such a
 valid string might be:
 "2^3 * 3^2 * 5 * 7 * 31^5"
 Whitespace doesn't matter.
 
-The Factors class, factor() function and primality functions are provided in a 
+The Factors class, factor() function and primality functions are provided in a
 different module; you can see the source for it at
 <https://github.com/dubslow/MersenneForumAliquot/blob/master/numtheory/numtheory.py>.
 In the future, I might look at adding Sage's abilities, or adding other
 factoring/primality methods of my own design.
 
-The important functionality of the module also comes from the Factors class, which 
+The important functionality of the module also comes from the Factors class, which
 is a subclass of dict(). The keys are the individual factors, and the corresponding
 values are the power of that factor. Example:
 
@@ -132,7 +132,7 @@ False
 ...     guide = a.get_guide(2**b * int(v))
 ...     classs = a.get_class(guide)
 ...     print('a:', b, ' v:', v, ' guide:', guide, ' class:', classs)
-... 
+...
 a: 1  v: 3  guide: 2 * 3  class: -1
 a: 2  v: 7  guide: 2^2 * 7  class: -1
 a: 3  v: 3 * 5  guide: 2^3 * 3 * 5  class: 0
@@ -150,7 +150,7 @@ from .numtheory import is_prime, prp, Factors, factor, _sanitize, sigma, quick_p
 from functools import lru_cache
 from itertools import product as cartesian_product
 
-     
+
 def aliquot(n):
      n = _sanitize(n)
      return sigma(n) - int(n)
@@ -169,7 +169,7 @@ def get_guide(facts, powers=True):
      # Be sure it's properly factored
 
      pow_of_2 = facts[2]
-     
+
      potential_guiders = factor(sigma(1 << pow_of_2))
      guide = Factors(); guide[2] = pow_of_2
 
@@ -281,9 +281,9 @@ def mutation_possible(known_factors, composite, forms=None):
 
 def composite_tau_lte(composite, x, form):
      '''This function is literally a one line list comprehension around test_composite_tau.
-     
+
      Given an odd number n of unknown factorization, test if it's possible for tau(n)
-     to be <= x, assuming it factors into the form given. A false retval guarantees 
+     to be <= x, assuming it factors into the form given. A false retval guarantees
      that tau(n) > x, but true does not guarantee that tau(n) <= x.
 
      `form` is a tuple-like object containing the prime powers that describe the
@@ -292,7 +292,7 @@ def composite_tau_lte(composite, x, form):
      n is a prime multiplied by a prime cubed, then `form = (1, 3)` (or (3, 1) is
      equivalent). Given that tau(p^(2i)) = 0, even powers in the form will
      raise a value error.
-     
+
      Returns a series of the congruence conditions which n may satisfy. Use
      composite_tau_lte_to_str to interpret the congruence conditions.'''
      return [pos_res for xprime in range(2, x+1) for pos_res in test_composite_tau(composite, xprime, form)]
@@ -309,7 +309,7 @@ def test_composite_tau(n, x, form):
      n is a prime multiplied by a prime cubed, then `form = (1, 3)` (or (3, 1) is
      equivalent). Given that tau(p^(2i)) = 0, even powers in the form will
      raise a value error.
-     
+
      Returns a series of the congruence conditions which n may satisfy. Use
      test_composite_tau_to_str to interpret the congruence conditions.'''
 

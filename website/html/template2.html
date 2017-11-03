@@ -8,17 +8,17 @@
      <link rel="Shortcut Icon" href="http://img4.wikia.nocookie.net/__cb20110423145435/bungie/images/3/32/Twinkie_7thMarathon.gif">
      <style type="text/css">
           body      {{ background: #0000D2;
-                    font-family: "sans serif"; 
+                    font-family: "sans serif";
                     color: #FFFFFF;
                     text-align: center; }}
           a         {{ color:#FF9B00 }}
           footer    {{ text-align: center;
                     font-size: 70%; }}
-          .dataTables_wrapper {{ 
+          .dataTables_wrapper {{
                     float: left;
                     margin-left: 2%;
                     margin-right: 2%;
-                    width: 240px; 
+                    width: 240px;
                     margin-bottom: 24px; }}
           table     {{ text-align: center;
                     color: #000000;
@@ -31,9 +31,9 @@
                      clear: both;
                      margin-left: auto;
                      margin-right: auto; }}
-          .headerrow {{ background-color: #E0E0E0; 
-                     font-size: 105%; 
-                     font-weight: bold; 
+          .headerrow {{ background-color: #E0E0E0;
+                     font-size: 105%;
+                     font-weight: bold;
                      cursor: pointer; }}
           .factorcol {{ text-align: left; }}
      </style>
@@ -50,7 +50,7 @@
        if( typeof b == "string" )
          y = b.indexOf('-') > -1; // true for date
        else y = false; // ints are not dates
-       
+
        if( x ) {{
          if( y ) {{
            return (a < b) ? 1 : ( (a > b) ? -1 : 0);
@@ -134,7 +134,7 @@
      <br>First, the total lengths (of all seqs) divided by total size: <b>{totinc:1.4f}</b> lines per digit increase
      <br>Second, the average of the individual length/size ratios for each sequence: <b>{avginc:1.4f}</b> lines per digit increase
      <br>Total sequences extended in the last week: <b>{totprog:d}</b> (or <b>{progcent:2.2%}</b>)<br>
-     <br><br>Now some tables. 
+     <br><br>Now some tables.
      <br>First, a table giving the counts of how many sequences are at what size. (Sizes &lt; ~110 are probably FactorDB <a href="http://www.mersenneforum.org/showthread.php?t=16935">sequence errors</a>.)
      <br>Second, a table giving the counts of how many sequences have what size cofactors. (This table is obviously highly volatile, especially thanks to <a href="http://yafu.myfirewall.org/yafu/">yafu@home</a>.)
      <br>Third, a table giving the counts of how many sequences are at what length. (Lengths &lt;  400 are definitely FDB errors.)

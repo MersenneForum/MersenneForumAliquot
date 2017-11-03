@@ -100,14 +100,14 @@ def opnpoly(k, b, n, c, deg, hi=None):
      # on http://www.mersenneforum.org/showpost.php?p=54606&postcount=39 and
      # http://www.mersenneforum.org/showthread.php?t=15773.
      # Currently it only works for prime b & n, n > 13. (Rather, results are
-     # guaranteed to be pseudo-optimal only under those conditions. The code 
+     # guaranteed to be pseudo-optimal only under those conditions. The code
      # will work in some other cases, but it might not be the best option. I
      # plan to add in some other cases later.)
 
      N = k * b**n + c
      out = "c{deg}: {cdeg}\nc0: {c0}\nm: {m}\nskew: {skew}\ntype: snfs\nsize: {size}"
 
-     def low_poly(k, b, n, c, N, deg):      
+     def low_poly(k, b, n, c, N, deg):
           # Round down to multiple of deg
           m, cdeg = divmod(n, deg)
           m = b**m

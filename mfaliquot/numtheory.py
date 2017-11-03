@@ -31,7 +31,7 @@ class Factors(dict):
           elif isinstance(facts, int):
                super().__init__()
                self = factor(facts, self)
-               self.num = facts               
+               self.num = facts
           elif isinstance(facts, str):
                super().__init__()
                try:
@@ -61,7 +61,7 @@ class Factors(dict):
                     fact, power = fact.split('^')
                except ValueError:
                     power = 1
-               try: 
+               try:
                     fact = int(fact)
                except ValueError: pass
                else:
@@ -71,25 +71,25 @@ class Factors(dict):
                          self.full = False
                     self[fact] = int(power)
           self._unparse()
-     
+
      def _unparse(self):
           num = 1
           for fact in self.keys():
                num *= fact**self[fact]
           self.num = num
           return num
-     
+
      def int(self, recalc=False):
           if not recalc:
                try:
                     return self.num
                except AttributeError as e:
-                    pass               
+                    pass
           return self._unparse()
-     
+
      def __int__(self):
           return self.int()
-     
+
      def keys(self):
           return sorted(super().keys()) # Lose viewing capability
 
@@ -111,7 +111,7 @@ class Factors(dict):
                return '1'
           else:
                return sep.join(power_str(self, key) for key in facts)
-     
+
      def __str__(self):
           return self.str()
 
@@ -137,7 +137,7 @@ from math import sqrt as sr # Used in factor()/is_prime()
 from itertools import compress
 
 def primes(depth=10**6):
-     # /u/Veedrac had the great ideas to change inner loop to slice assignment, 
+     # /u/Veedrac had the great ideas to change inner loop to slice assignment,
      # and to not append to the list of primes while looping
      # http://www.reddit.com/r/Python/comments/20x61y/share_the_code_youre_most_proud_of/cg7umpa
      #print("Precalcing primes")
@@ -145,7 +145,7 @@ def primes(depth=10**6):
      if depth <= 1: return []
      length = depth // 2
      sieve = [True] * length # 3, 5, 7, etc. might be prime
-     
+
      # i is the index, n = number = 2*i + 3
      # j = index of n^2 = (n^2-3)/2 = ((2i+3)^2-3)/2 = 2i^2 + 6i + 3
      # if i+=1, then j+=4i+8 (by 2(i+1)^2 + 6(i+1) - 2i^2 - 6i)
@@ -159,11 +159,11 @@ def primes(depth=10**6):
                # Number of items changed = slice size // step + 1 if not perfect fit
                # Using -(-a // b) to round upwards
                sieve[j::step] = [False] * -(-(length-j) // step)
-          
+
           j += 4*i + 8
           i += 1
           step += 2
-          
+
      # translate sieve to primes
      primes = list(compress(range(3, depth+1, 2), sieve)) # itertools.compress filters one list by another
      primes.insert(0, 2)
@@ -224,7 +224,7 @@ def factor(num, depth=0, factors=None, start=3):
           else:
                raise OverflowError('num is too big for math.sqrt() to handle. '+
                     'If you still want to look for small factors, set the depth.')
-     
+
      if start < _depth:
           ind = _primes.index(next_prime(start))
      else:
@@ -280,7 +280,7 @@ Tell me if you think of a better idea.'''
      sqrt = int(sr(n))+1
 
      for p in _primes:
-          if p > sqrt: 
+          if p > sqrt:
                return True
           if n % p == 0:
                return False
@@ -291,7 +291,7 @@ Tell me if you think of a better idea.'''
      #print("Mangled trial division", n, sqrt, depth)
      start = (_depth+1) | 1 # start = next_odd(_depth)
      end = depth+1 if sqrt > depth > 1 else sqrt+1
-     
+
      sstart = sr(start)
      if _primes[-1] < sstart:
           sieve_max = nt._count # Use whole list
@@ -420,7 +420,7 @@ def solve_congruence(a, b, m, verbose=False):
      x0 = r*e
      if verbose: print(x0, '== {}*{} is a solution to {}x=={} mod {}'
                     .format(r, e, a, b, m) )
-     # by porism 2.7, the full incongruent solutions are 
+     # by porism 2.7, the full incongruent solutions are
      # x0+(m/d)n, for n==0,1,2,...,d-1
      c = m // d
      out = []
@@ -478,7 +478,7 @@ def miller_rabin(n, b=2):
      for r in range(1, s): # Calculate b^( 2^r * d) for 0 <= r < s
           # x is already b^( 2^0 * d), so just square it to increment r
           x = pow(x, 2, n) # x = modmul(x, x, n)
-          if x == 1: # Then x will never be n-1 (and in particular, 2^r*d 
+          if x == 1: # Then x will never be n-1 (and in particular, 2^r*d
                return False # divides the order of b in n)
           if x == n-1:
                return True
@@ -487,7 +487,7 @@ def miller_rabin(n, b=2):
 def miller(n): return miller_bach(n)
 def miller_bach(n):
      from math import log
-     # This is a deterministic primality test, IF (a subset of) the 
+     # This is a deterministic primality test, IF (a subset of) the
      # Generalized Riemann Hypothesis is true.
      lg = int(2 * log(n)**2)
      for a in range(2, lg+1):
@@ -505,7 +505,7 @@ def is_composite(n, witnesses=20, base=None):
                     return p
           return 0
 
-def prp(n, witnesses=20, base=None): 
+def prp(n, witnesses=20, base=None):
      # just a wrapper to the above with more intuitive name/value
      return True if not is_composite(n, witnesses, base) else False
 
@@ -560,10 +560,10 @@ def divisors(n):
      # len(this list) == num_divisors(n) (includes 1)
      n = _positive(n, "divisors")
      if not isinstance(n, Factors): n = factor(n)
-     
+
      # Create list by making a list of lists of prime powers for each prime
      # dividing n
-     # Then take a "cartesian product" of all these lists, i.e. take all 
+     # Then take a "cartesian product" of all these lists, i.e. take all
      # combinations of one element from each list, i.e. take all combinations
      # of prime powers for each prime dividing n
      biglist = [ [prime**power for power in range(n[prime]+1)] for prime in n]
@@ -602,7 +602,7 @@ def mu(n):
      if int(n) == 1: return 1
      out = 1
      for fact in n:
-          if n[fact] > 1: 
+          if n[fact] > 1:
                return 0 # Not square free
           else:
                out = -out
@@ -631,7 +631,7 @@ def rootmod(k, b, m, verbose=True):
      else:
           if verbose: print("u =", u)
           out = pow(b, u, int(m))
-          
+
           if gcd(b, m) > 1:
                if verbose: print("b^(ku-1) == {} mod {}".format(pow(b, k*u-1, m), m))
                if out == 0:
@@ -656,7 +656,7 @@ def rootmod(k, b, m, verbose=True):
      # Note: As some of the above if statements might suggest, the algorithm still sometimes works even if (b,m) > 1.
 
 def huh(count=100, hi=100, verbose=False):
-	# I found that the above algorithm sometimes works when it's not supposed to, 
+	# I found that the above algorithm sometimes works when it's not supposed to,
 	# i.e. when (b,m) != 1 and b^(ku-1) =!= 1 mod m. This produces some stats about
 	# when that happens.
      from random import randint
@@ -687,7 +687,7 @@ def legendre(a, p):
      return l
 
 def descend(A, B, M, p):
-     # A^2 + B^2 = Mp     
+     # A^2 + B^2 = Mp
      # Reduce A, B into [-M/2, M/2]
      u, v = A % M, B % M
      if u > M/2:
@@ -715,12 +715,12 @@ def descend(A, B, M, p):
 
 def prime_square_sum(p, verbose=False):
      if p == 2: return 1, 1
-     elif not is_prime(p): 
+     elif not is_prime(p):
           if verbose: print("input {} isn't prime!".format(p))
           return
      # Write p as a sum of two squares
      # Only works if p=1 mod 4
-     if p % 4 != 1: 
+     if p % 4 != 1:
           if verbose: print("input {} is 3 mod 4!".format(p))
           return
      # p==1[4] -> (-1/p) = 1 -> A^2==-1 [p] has a solution
@@ -773,7 +773,7 @@ def square_sum(m, verbose=False):
                     v3.append((p, m[p]))
           else:
                v1.append((p, m[p]))
-     
+
      out = 1, 0
      tmp = 1
      for i in range(two):
@@ -793,7 +793,7 @@ def square_sum(m, verbose=False):
           B *= pow(p, n//2)
           tmp *= p*p
           if verbose: print("{} = {}^2 + {}^2".format(tmp, A, B))
-     
+
      A, B = abs(A), abs(B)
      if A >= B:
           return A, B
@@ -804,7 +804,7 @@ def square_mul(A, u):
      # (A^2 + B^2)(u^2 + v^2) = (uA + vB)^2 + (vA - uB)^2
      # args are 2-tuples
      #return A[0]*u[0] + A[1]*u[1], abs(u[1]*A[0] - u[0]*A[1])
-     # This operation is not unique for arbitrary tuples; swapping the 
+     # This operation is not unique for arbitrary tuples; swapping the
      # entry in a tuple gives a different answer.
      # To produce a result that is as balanced as possible, order them.
      if A[0] > A[1]:
@@ -861,7 +861,7 @@ def rsa_decrypt(string, *args):
      return M.decode(errors='ignore').replace('\x00','')
 
 def halve_degree(coeffs, verbose=False):
-     '''Takes a list of coefficients, index corresponding to power as usual. 
+     '''Takes a list of coefficients, index corresponding to power as usual.
 The list is assumed to be the coeffs from 0 to deg/2 + 1.'''
      coeffs.reverse()
      l = len(coeffs)
@@ -895,7 +895,7 @@ def _binomial(n, k):
      return out
 
 def binomial(n, k):
-     if n < 0 or k < 0: 
+     if n < 0 or k < 0:
           return
      # Uniqeify the args before caching them
      if n < k:
@@ -923,7 +923,7 @@ def fib(n):
                c += 1
                _list.append(b)
      return _list[n]
-	
+
 #if __name__ == "__main__":
 #     from timeit import Timer
 #     num1 = int(input('\nEnter a positive integer: '))
