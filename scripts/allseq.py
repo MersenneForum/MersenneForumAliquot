@@ -152,7 +152,7 @@ def get_old_info(JSON, reserves, this, drop):
                    data.append(ali)
                elif seq in this:
                     tmp[seq] = ali
-          for seq in this: # This and the above line serve to re-add any sequences lost due to garbage
+          for seq in this: # This and the above line serve to re-add any sequences lost due to garbage (edit: and also newly-extended sequences with no data)
                try:
                     oldinfo.append(tmp[seq])
                except KeyError:
@@ -389,7 +389,7 @@ def inner_main(special=None):
                data.append(old)
                continue
           ali = check(old, reserves=reserves, special=special)
-          if ali:
+          if ali and ali.index > 0: # never-before-checked sequences have index -1 (see get_old_info()) and if such a seq errors, there's no data here: ignore it.
                data.append(ali)
                if not quitting:
                     count += 1
