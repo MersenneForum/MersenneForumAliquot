@@ -361,11 +361,15 @@ def updateseq(old, reserves):
                Print('Seq:', seq, 'the DB is refusing requests.')
                error_msg += 'Reached query or cpu limit. Oops.\n'
                try:
-                    pages = re.search(r'>Page requests</td>\n<td[^>]*?>([0-9,]+)</td>', page).group(1)
-                    ids = re.search(r'>IDs created</td>\n<td[^>]*?>([0-9,]+)</td>', page).group(1)
-                    queries = re.search(r'>Database queries</td>\n<td[^>]*?>([0-9,]+)</td>', page).group(1)
-                    cputime = re.search(r'>CPU \(Wall clock time\)</td>\n<td[^>]*?>([0-9,.]+) seconds</td>', page).group(1)
-                    when = re.search(r'>Counting since</td>\n<td[^>]*?>(.*?)</td>', page).group(1)
+                    # pages = re.search(r'>Page requests</td>\n<td[^>]*?>([0-9,]+)</td>', page).group(1)
+                    # ^ avoid repeating the entire regex 5 times with slight variations. very typo prone.
+                    retmpl = r'>{}</td>\n<td[^>]*?>{}</td>'
+                    pages, ids, queries, cputime, when = [re.search(retmpl.format(name, valgroup), page).group(1) for name, valgroup in (
+                                                          (r'Page requests',           r'([0-9,]+)'),
+                                                          (r'IDs created',             r'([0-9,]+)'),
+                                                          (r'Database queries',        r'([0-9,]+)'),
+                                                          (r'CPU \(Wall clock time\)', r'([0-9,.]+) seconds'),
+                                                          (r'Counting since',          r'(.*?)'))]
                     Print("{} page reqs, {} new ids, {} db queries, {} cputime since {}".format(pages, ids, queries, cputime, when))
                except AttributeError: # some re.search() failed
                     Print('Not only is it refusing requests, but its formatting has changed!')
