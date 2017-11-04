@@ -391,11 +391,14 @@ def inner_main(special=None):
 
      count = 0
      for old in oldinfo: # Loop over every sequence to be updated
+          # never-before-checked sequences have index -1 (see get_old_info()) and if such a seq errors, there's no data here: ignore it.
           if quitting:
-               data.append(old)
+               if old.index > 0:
+                    data.append(old)
                continue
+
           ali = check(old, reserves=reserves, special=special)
-          if ali and ali.index > 0: # never-before-checked sequences have index -1 (see get_old_info()) and if such a seq errors, there's no data here: ignore it.
+          if ali and ali.index > 0:
                data.append(ali)
                if not quitting:
                     count += 1
