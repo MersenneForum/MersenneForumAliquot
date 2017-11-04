@@ -46,13 +46,13 @@ class Sequence(list):
                self[self._map[name][0]] = value
           except KeyError:
                super().__setattr__(name, value)
-     
+
      def __getattribute__(self, name):
           try:
                return self[Sequence._map[name][0]]
           except KeyError:
                return super().__getattribute__(name)
-     
+
      def __init__(self, **kwargs):
           '''This recognizes all valid attributes, as well as the 'lst' kwarg
           to convert from list format (must be correct length).'''
@@ -71,11 +71,11 @@ class Sequence(list):
           # Toss unknown keys
           for kw, val in kwargs.items():
                if kw in self._map:
-                    self.__setattr__(kw, val)               
+                    self.__setattr__(kw, val)
 
      def well_formed(self):
           return self.seq and self.size and self.index and self.factors
-     
+
      def __str__(self):
           if self.well_formed():
                return "{:>6d} {:>5d}. sz {:>3d} {:s}\n".format(self.seq, self.index, self.size, self.factors)

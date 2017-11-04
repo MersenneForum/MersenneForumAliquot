@@ -20,7 +20,7 @@ If you want email alerts from the allseq.py and alimerge.py, you'll need to put
 your information in myutils.py -- setup should be the same as e.g. Thunderbird.
 It is currently configured for Gmail as a reference.
 
-Let me know via Github or MersenneForum PM if something doesn't work right -- 
+Let me know via Github or MersenneForum PM if something doesn't work right --
 I'm not sure if everything has been properly sanitized from my files. For
 instance, the Python files might need their working directory adjusted to
 find each other.

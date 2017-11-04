@@ -42,17 +42,6 @@ per_hour = 110
 sleep_minutes = 60
 loop = False
 drop = [ ]
-#broken = {319860: (1072, 2825523558447041736665230216235917892232717165769067317116537832686621082273062400083298623866666431871912457614030538),
-#          270870: (1552, 129111051894876298008618452174572111386084321838395106159352526283699001422613851356969918762669577402931599473069044),
-#          337344: (867, 171841874709467777407137210519724745777155213118050606411137596612474196944001558441112921996396264019339265486232710),
-#          706104: (938, 41056247340555352160404327938385124070914568373289825909365899066462655085280970624745514385381813768355098498287234724),
-#          228504: (1601, 115002363456781951116353025432393722069665825524716257351967573745719336629908761109140183558732708396906923367555454),
-#          305460: (1278, 153930603295623579438311517767087301544108450139577880157761944822979334442803898050679690506918213552493053494172082),
-#          322686: (688, 302926126903899986879677895288088736941245823142759900740695496639749231035725570564906453951622576176253465079992650),
-#          327852: (1251, 686850216844208461856962371309231689049988200182761949020962964975366230549349069889648461306631311470409163996946786),
-#          296886: (1307, 929613060469964142613395787623511040369650794668964528799792248592927016853533671095941458486258918363963289280347604)
-#          }
-#broken = {747720: (67, 1977171370480)}
 broken = {}
 # A dict of tuples of {broken seq: (offset, new_start_val)}
 
@@ -80,6 +69,7 @@ created = re.compile('([JFMASOND][a-z]{2,8}) ([0-9]{1,2}), ([0-9]{4})') # strfti
 #oldpage = re.compile('(<tr> <td>([0-9]+?)</td> <td>([0-9]+?)</td>.*?<td>)[0-9A-Za-z_ ]*?</td> </tr>') # Kept for historical purposes
 #oldjson = re.compile(r'(\[([0-9]+?), ([0-9]+?), ([0-9]+?), .*?)[0-9A-Za-z_ ]*?"\]') # Ditto
 
+
 quitting = False
 sleeping = False
 def handler(sig, frame):
@@ -90,6 +80,7 @@ def handler(sig, frame):
           sys.exit()
 signal.signal(signal.SIGTERM, handler)
 signal.signal(signal.SIGINT, handler)
+
 
 def current_update(per_hour):
      this = []
@@ -122,6 +113,7 @@ def current_update(per_hour):
                     break
      return this, start
 
+
 def get_reservations(pids):
      reserves = {}
      for pid in pids:
@@ -142,6 +134,7 @@ def get_reservations(pids):
                     reserves[int(herp.group(1))] = name.strip()
      return reserves, updated
 
+
 def get_old_info(JSON, reserves, this, drop):
      data = []; tmp = {}; oldinfo = []
      with open(JSON, 'r') as f: # Read current table data
@@ -155,12 +148,13 @@ def get_old_info(JSON, reserves, this, drop):
                    data.append(ali)
                elif seq in this:
                     tmp[seq] = ali
-          for seq in this: # This and the above line serve to re-add any sequences lost due to garbage
+          for seq in this: # This and the above line serve to re-add any sequences lost due to garbage (edit: and also newly-extended sequences with no data)
                try:
                     oldinfo.append(tmp[seq])
                except KeyError:
                     oldinfo.append(Sequence(seq=seq, index=-1))
           return data, oldinfo
+
 
 def guide(string):
      """Returns a tuple of (str_of_guide, class_with_powers, is_driver)"""
@@ -176,9 +170,11 @@ def guide(string):
           else:
                return drs, get_class(string), is_driver(guide=dr)
 
+
 def cofactor(s):
      out = [ int(t[1:]) for t in [t.strip() for t in s.split('*')] if t[0] == 'C' ] # forall stripped sections of s separated by '*': if the first character is 'C', return the int in the rest of the section
      return out[0] if len(out) == 1 else None # Be sure there is exactly one cofactor
+
 
 def blogotubes(url, encoding='utf-8', hdrs=None):
      global error_msg
@@ -201,6 +197,7 @@ def blogotubes(url, encoding='utf-8', hdrs=None):
      else:
           return page
 
+
 def id_created(i):
      i = str(i)
      #Print('Querying id', i)
@@ -211,6 +208,7 @@ def id_created(i):
      if len(day) == 1: day = '0'+day
      month = strftime('%m', strptime(date.group(1), '%B'))
      return '-'.join(iter((year, month, day)))
+
 
 def check(old, tries=3, reserves=None, special=None):
      if tries <= 0:
@@ -230,6 +228,7 @@ def check(old, tries=3, reserves=None, special=None):
           return updateseq(old, reserves)
      else:
           return check(old, tries-1, special)
+
 
 def updateseq(old, reserves):
      global error_msg
@@ -268,7 +267,7 @@ def updateseq(old, reserves):
                                    Print('>'*10 + 'ERROR NO SMALL FACTORS')
                                    error_msg += 'Seq {} had no smalls too many times\n'.format(seq)
                                    return old
-                              else: 
+                              else:
                                    Print('Retrying ('+str(tries), 'tries left)')
                               sleep(5)
                               continue
@@ -292,7 +291,7 @@ def updateseq(old, reserves):
                                    Print('>'*10 + 'ERROR NO COMPOSITES FOUND')
                                    error_msg += 'Seq {} had no composite too many times\n'.format(seq)
                                    return old
-                              else: 
+                              else:
                                    Print('Retrying ('+str(tries), 'tries left)')
                               sleep(5)
                               continue
@@ -384,7 +383,7 @@ def inner_main(special=None):
                data.append(old)
                continue
           ali = check(old, reserves=reserves, special=special)
-          if ali:
+          if ali and ali.index > 0: # never-before-checked sequences have index -1 (see get_old_info()) and if such a seq errors, there's no data here: ignore it.
                data.append(ali)
                if not quitting:
                     count += 1

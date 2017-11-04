@@ -58,7 +58,7 @@ def get_data():
 
 def read_data():
      with open(data_file, 'r') as f:
-          data = json.load(f)['aaData']     
+          data = json.load(f)['aaData']
      return {seq[0]: Sequence(lst=seq) for seq in data}
 
 def get_num(id):
