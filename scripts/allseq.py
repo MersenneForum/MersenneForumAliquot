@@ -37,8 +37,10 @@ LOCKFILE = sys.argv[0] + '.lock'
 DATEFMT = '%Y-%m-%d %H:%M:%S'
 
 
-RESPAGE = 'http://www.mersenneforum.org/showpost.php'
-RESPOSTIDS = (165249, 397318, 397319, 397320, 397912, 416583, 416585, 416586)
+#RESPAGE = 'http://www.mersenneforum.org/showpost.php'
+#RESPOSTIDS = (165249, 397318, 397319, 397320, 397912, 416583, 416585, 416586)
+RESPAGE = 'http://www.rechenkraft.net/aliquot/res_post.php'
+RESPOSTIDS = (1,)
 
 
 PERHOUR = 55
@@ -61,7 +63,7 @@ add_path_relative_to_script('..')
 # this should be removed when proper pip installation is supported
 from mfaliquot.aliquot import get_guide, get_class, is_driver
 from mfaliquot.myutils import linecount, email, Print
-from mfaliquot.sequence import Sequence
+from mfaliquot.sequence import AliquotSequence
 
 ERRORMSG = ''
 
@@ -86,42 +88,90 @@ def handler(sig, frame):
 signal.signal(signal.SIGTERM, handler)
 signal.signal(signal.SIGINT, handler)
 
+###############################################################################
+# Functions relating to to reading/writing SEQLIST and STATEFILE, including do_drops()
 
-def current_update(per_hour):
-     this = []
+def read_state():
      try:
           with open(STATEFILE, 'r') as conf: # Read which sequences to update
                start = int(conf.readline())
      except FileNotFoundError as e:
           Print('State file not found, starting from sequence 0')
           start = 0
-     Print('Start:', start)
+     return start
 
-     if TODROP: # Remove a sequence from the file
-          seqs = []
-          with open(SEQLIST, 'r') as f:
-               for line in f:
-                    num = int(line)
-                    if num not in TODROP:
-                         seqs.append(num)
-          with open(SEQLIST, 'w') as f:
-               for seq in seqs:
-                    f.write(str(seq)+'\n')
 
+def write_state(state):
+     with open(STATEFILE, 'w') as conf: # Save how many sequences we updated
+          conf.write(str(state)+'\n')
+
+
+def read_seqlist():
      with open(SEQLIST, 'r') as f:
-          for i in range(start): # Skip to line number 'start'
-               f.readline()
-          for i in range(per_hour):
-               try:
-                    this.append(int(f.readline()))
-               except ValueError: # Error thrown by int() at EOF
-                    break
-     return this, start
+          return list(int(line) for line in f)
 
 
-def get_reservations(pids):
+def write_seqlist(seqlist):
+     with open(SEQLIST, 'w') as f:
+          for seq in seqlist:
+               f.write(str(seq)+'\n')
+
+
+def read_and_parse_data():
+     with open(JSON, 'r') as f:
+          olddat = json.load(f)['aaData']
+     data_dict = {}
+     for dat in olddat:
+          ali = AliquotSequence(lst=dat)
+          data_dict[ali.seq] = ali
+     return data_dict
+
+
+def write_data(data_dict):
+     ali_list = list(data_dict.values())
+     ali_list.sort(key=lambda ali: ali.seq)
+
+     json_string = json.dumps({"aaData": ali_list}).replace('],', '],\n')+'\n'
+     with open(JSON, 'w') as f:
+          f.write(json_string)
+
+     txt_string = '\n'.join(str(ali) for ali in ali_list)
+     with open(ASTXT, 'w') as f:
+          f.write(txt_string+'\n')
+
+
+def do_drops(drops):
+     '''Returns (succesful drops, failed drops, seqlist_total). Updates SEQLIST.
+     Direct data files are updated, html/stats are not.
+     BE CERTAIN THE DATA FILES ARE UP TO DATE BEFORE CALLING.'''
+     global ERRORMSG
+     seqlist = read_seqlist()
+     data_dict = read_and_parse_data()
+
+     drops = set(drops)
+     faildrops = drops.difference(seqlist) # drops - seqlist
+     succdrops = drops.intersection(seqlist) # drops & seqlist
+
+     for d in succdrops:
+          seqlist.remove(d)
+          del data_dict[d]
+
+     if faildrops:
+          for d in faildrops:
+               del data_dict[d]
+          Print("These seqs were in data but not seqlist, deleted from data: {}".format(faildrops))
+          ERRORMSG += "These seqs were in data but not seqlist, deleted from data: {}\n".format(faildrops)
+
+     write_seqlist(seqlist)
+     write_data(data_dict)
+     Print("Dropped {} seqs: {}".format(len(succdrops), succdrops))
+
+     return succdrops, faildrops, len(seqlist)
+
+
+def get_reservations():
      reserves = {}
-     for pid in pids:
+     for pid in RESPOSTIDS:
           page = blogotubes(RESPAGE + '?p={}&postcount=1'.format(str(pid)),
                     hdrs={'User-Agent': 'Dubslow/AliquotSequences'})
           update = re.search(r'<!-- edit note -->.*Last fiddled with by [A-Za-z_0-9 -]+? on ([0-9a-zA-Z -]+) at <span class="time">([0-9:]{5})</span>', page, flags=re.DOTALL)
@@ -139,27 +189,7 @@ def get_reservations(pids):
                     reserves[int(herp.group(1))] = name.strip()
      return reserves, updated
 
-
-def get_old_info(JSON, reserves, this, drop):
-     data = []; tmp = {}; oldinfo = []
-     with open(JSON, 'r') as f: # Read current table data
-          olddat = json.load(f)['aaData']
-     if olddat:
-          for dat in olddat:
-               ali = Sequence(lst=dat)
-               seq = ali.seq
-               if seq not in this and seq not in drop: # If this sequence is not about to be
-                   ali.res = reserves.get(seq, '')     # updated, save its current data
-                   data.append(ali)
-               elif seq in this:
-                    tmp[seq] = ali
-          for seq in this: # This and the above line serve to re-add any sequences lost due to garbage (edit: and also newly-extended sequences with no data)
-               try:
-                    oldinfo.append(tmp[seq])
-               except KeyError:
-                    oldinfo.append(Sequence(seq=seq, index=-1))
-          return data, oldinfo
-
+###############################################################################
 
 def guide(string):
      """Returns a tuple of (str_of_guide, class_with_powers, is_driver)"""
@@ -177,7 +207,8 @@ def guide(string):
 
 
 def cofactor(s):
-     out = [ int(t[1:]) for t in [t.strip() for t in s.split('*')] if t[0] == 'C' ] # forall stripped sections of s separated by '*': if the first character is 'C', return the int in the rest of the section
+     out = [ int(t[1:]) for t in [t.strip() for t in s.split('*')] if t[0] == 'C' ]
+     # forall stripped sections of s separated by '*': if the first character is 'C', return the int in the rest of the section
      return out[0] if len(out) == 1 else None # Be sure there is exactly one cofactor
 
 
@@ -214,11 +245,14 @@ def id_created(i):
      return '-'.join(iter((year, month, day)))
 
 
+###############################################################################
+# WOULD YOU LIKE SOME MEATBALLS WITH THIS SPAGHETTI?
+
 def check(old, tries=3, reserves=None, special=None):
      if tries <= 0:
           Print('Bad sequence or id! Seq:', old.seq)
           return old
-     if old.id is None or old.id == 0 or special:
+     if not old or not old.is_valid() or not old.id or special:
           return updateseq(old, reserves)
      # else:
      page = blogotubes('http://factordb.com/index.php?id='+str(old.id))
@@ -252,7 +286,7 @@ def updateseq(old, reserves):
                smalls = SMALLFACTREGEX.findall(page)
                bigs = LARGEFACTREGEX         .findall(page)
                if info: # Make sure we can actually get size/index info before in depth parsing
-                    ali = Sequence(seq=seq, size=int(info.group('size')), index=int(info.group('index')), id=int(info.group('id')))
+                    ali = AliquotSequence(seq=seq, size=int(info.group('size')), index=int(info.group('index')), id=int(info.group('id')))
                     ali.time = strftime(DATEFMT, gmtime())
                     ali.res = reserves.get(seq, '')
                     if 'Not all factors known' in page:
@@ -369,58 +403,109 @@ def updateseq(old, reserves):
                                                           (r'Database queries',        r'([0-9,]+)'),
                                                           (r'CPU \(Wall clock time\)', r'([0-9,.]+) seconds'),
                                                           (r'Counting since',          r'(.*?)'))]
-                    Print("{} page reqs, {} new ids, {} db queries, {} cputime since {}".format(pages, ids, queries, cputime, when))
+                    Print("{} page reqs, {} new ids, {} db queries, {}s cpu time since {}".format(pages, ids, queries, cputime, when))
                except AttributeError: # some re.search() failed
                     Print('Not only is it refusing requests, but its formatting has changed!')
                QUITTING = True
                return old
 
+# End spaghetti... hopefully
+###############################################################################
+# Begin the family of "main" functions: first the main_helpers
 
-def inner_main(special=None):
-     global ERRORMSG
-     print('\n'+strftime(DATEFMT))
-     total = linecount(SEQLIST)
+def main_initialize(special=None):
+     seqlist = read_seqlist()
+
      if special:
-          this = special
+          seqs_todo = special
+          start = None
      else:
-          this, start = current_update(PERHOUR)
-     reserves, updated = get_reservations(RESPOSTIDS)
-     data, oldinfo = get_old_info(JSON, reserves, this, TODROP)
-     Print('Init complete, starting FDB queries')
+          start = read_state()
+          Print('Start:', start)
+          seqs_todo = seqlist[start: (start + PERHOUR)]
 
-     count = 0
-     for old in oldinfo: # Loop over every sequence to be updated
-          # never-before-checked sequences have index -1 (see get_old_info()) and if such a seq errors, there's no data here: ignore it.
-          if QUITTING:
-               if old.index > 0:
-                    data.append(old)
-               continue
+     if TODROP:
+          drops, fails, _ = do_drops(TODROP)
+          for d in drops:
+               seqs_todo.remove(d)
+          # We get seqs_todo *before* doing drops to ensure that `start` is accurate (otherwise possible that some seqs get skipped)
 
-          ali = check(old, reserves=reserves, special=special)
-          if ali and ali.index > 0:
-               data.append(ali)
-               if not QUITTING:
-                    count += 1
-                    Print(count, 'sequences complete:', old.seq)
-          sleep(1)
+     # After do_drops, re-get all data and also update all reservations
+     seqlist = read_seqlist()
+     data_dict = read_and_parse_data()
+     reservations, reservations_time = get_reservations()
+     for seq, res in reservations.items():
+          if seq in data_dict: # If reservations are out of date
+               data_dict[seq].res = res
 
-     with open(TMPLT, 'r') as f: # Read in webpage templates
-          html = f.read()
-     with open(STATSTMPLT, 'r') as f:
-          stats = f.read()
+     # Check for garbage and/or new sequences
+     newseqs = []
+     for seq in seqs_todo:
+          ali = data_dict.get(seq, None)
+          if not ali:
+               data_dict[seq] = AliquotSequence(seq=seq, index=-1)
+               if seq not in seqlist:
+                    if seq <= 276 or seq >= 10**7 or not seq & 1 == 0:
+                         del data_dict[seq]
+                         raise ValueError("Can't add sequence {}".format(seq))
+                    seqlist.append(seq)
+                    newseqs.append(seq)
+     if newseqs:
+          write_seqlist(seqlist)
+          Print('Added {} new sequences: {}'.format(len(newseqs), newseqs))
 
-     #dato = {ali.seq: ali for ali in data}
-     #data = [dato[seq] for seq in set(dato.keys())]
+     seqlist_total = len(seqlist)
+     #print(start, seqs_todo)
+
+     return seqs_todo, start, seqlist_total, data_dict, reservations, reservations_time
+
+
+def find_merges(data_dict):
+     ids = {}
+     merged = []
+     for ali in data_dict.values():
+          this = ali.id
+          try:
+               other = ids[this]
+          except KeyError: # No match for this id
+               ids[this] = ali.seq # this id is the tail of this seq
+          else: # found a match (i.e. a merge)
+               seq = ali.seq
+               if seq > other:
+                    pair = seq, other
+               else:
+                    pair = other, seq
+               merged.append(pair)
+
+     if merged:
+          Print('Found merges!')
+          for merge in merged:
+               Print('{} seems to have merged with {}'.format(*merge))
+          try:
+               email('Aliquot merge!', '\n'.join('{} seems to have merged with {}'.format(*merge) for merge in merged))
+          except Exception as e:
+               Print("alimerge email failed")
+
+          drops = [merge[0] for merge in merged]
+          _, _, seqlist_total = do_drops(drops)
+
+          return seqlist_total
+
+     else:
+          return None
+
+
+def create_stats_write_html(data_dict, reservations_time):
      # Now get all the stats (i.e. count all the instances of stuff)
+     # It's a bit long, tedious and ugly, but I don't think there's anything for it
      sizes = Counter(); lens = Counter(); guides = Counter(); progs = Counter(); cofacts = Counter()
-     totsiz = 0; totlen = 0; avginc = 0; totprog = 0; txtdata = ''
-     for ali in sorted(data, key=lambda ali: ali.seq):
+     totsiz = 0; totlen = 0; avginc = 0; totprog = 0
+     for ali in data_dict.values():
           sizes[ali.size] += 1; totsiz += ali.size
           lens[ali.index] += 1; totlen += ali.index
           guides[ali.guide] += 1; avginc += ali.index/ali.size
           progs[ali.progress] += 1
           cofacts[ali.cofact] += 1
-          txtdata += str(ali)
 
           if isinstance(ali.progress, int):
                totprog += 1
@@ -429,7 +514,7 @@ def inner_main(special=None):
      if BROKEN:
           # horizontal table: create a list of tuples containing each column (i.e. each sequence)
           entries = (('''<a href="http://factordb.com/sequences.php?se=1&aq={}&action=last20">{}</a>'''.format(BROKEN[seq][1], seq), str(BROKEN[seq][0])) for seq in sorted(BROKEN))
-          row1, row2 = zip(*entries) # zip converts column data into row order
+          row1, row2 = zip(*entries)
           r1 = ''.join('<td>{}</td>'.format(datum) for datum in row1)
           r2 = ''.join('<td>{}</td>'.format(datum) for datum in row2)
           borken_html = '<table><tr><th scope="row">Sequence</th>{}</tr><tr><th scope="row">Index offset</th>{}</tr></table>'.format(r1, r2)
@@ -438,41 +523,46 @@ def inner_main(special=None):
           borken_html = ''
           unborken_html = 'none currently.'
 
-     html = html.format(updated, unborken_html, borken_html) # Imbue the template with the reservation time and broken sequences
+     # Read in webpage templates
+     with open(TMPLT, 'r') as f:
+          html = f.read()
+     with open(STATSTMPLT, 'r') as f:
+          stats = f.read()
+
+     html = html.format(reservations_time, unborken_html, borken_html) # Imbue the template with the reservation time and broken sequences
 
      # Put stats table in json-able format
+     data_total = len(data_dict)
      lentable = []; lencount = 0
      sizetable = [ [key, value] for key, value in sizes.items() ]
      cofactable = [ [key, value] for key, value in cofacts.items() ]
      for leng, cnt in sorted(lens.items(), key=lambda tup: tup[0]):
-          lentable.append( [leng, cnt, "{:2.2f}".format(lencount/(total-cnt)*100)] )
+          lentable.append( [leng, cnt, "{:2.2f}".format(lencount/(data_total-cnt)*100)] )
           lencount += cnt
      guidetable = [ [key, value] for key, value in guides.items() ]
      progtable = [ [key, value] for key, value in progs.items() ]
-     stats = stats.format(totinc=totlen/totsiz, avginc=avginc/total, totprog=totprog, progcent=totprog/total)
+     stats = stats.format(totinc=totlen/totsiz, avginc=avginc/data_total, totprog=totprog, progcent=totprog/data_total)
 
-     # Write all the data and webpages
+     # Write the statsdata and webpages
      with open(ASHTML, 'w') as f:
           f.write(html)
-     with open(ASTXT, 'w') as f:
-          f.write(txtdata)
      with open(STATS, 'w') as f:
           f.write(stats)
-     with open(JSON, 'w') as f:
-          f.write(json.dumps({"aaData": data}).replace('],', '],\n')+'\n')
      with open(STATSON, 'w') as f:
           f.write(json.dumps({"aSizes": sizetable, "aCofacts": cofactable, "aGuides": guidetable, "aProgress": progtable, "aLens": lentable}).replace('],', '],\n')+'\n')
 
-     # Cleanup
+
+def main_finalize(special, start, count, supposed_to, seqlist_total):
+     global ERRORMSG
+
      if not special:
           start += count
-          if start >= total:
+          if start >= seqlist_total:
                start = 0
-          if count != PERHOUR and start != 0:
+          if count != supposed_to and start != 0:
                ERRORMSG += 'Something went wrong. Only {} seqs were updated.\n'.format(count)
           Print("Next start is", start)
-          with open(STATEFILE, 'w') as conf: # Save how many sequences we updated
-               conf.write(str(start)+'\n')
+          write_state(start)
 
      if ERRORMSG:
           try:
@@ -481,25 +571,64 @@ def inner_main(special=None):
                Print('Email failed:', e)
                Print('Message:\n', ERRORMSG)
 
-     Print('Written HTML and saved state.')
+
+# End main helpers
+###############################################################################
+# Begin actual mains()
+
+def inner_main(special=None):
+     global ERRORMSG
+     print('\n'+strftime(DATEFMT))
+     Print('Initializing')
+
+     seqs_todo, start, seqlist_total, data_dict, reservations, reservations_time = main_initialize(special)
+     Print('Init complete, starting FDB queries')
+
+     # Main loop
+     count = 0
+     for seq in seqs_todo:
+          ali = check(data_dict[seq], reserves=reservations, special=special)
+
+          if not ali or not ali.is_valid():
+               del data_dict[seq]
+          data_dict[seq] = ali
+
+          if QUITTING:
+               break
+
+          count += 1
+          Print('{} sequence{} complete: {}'.format(count, 's' if count > 1 else ' ', ali.seq))
+          sleep(1)
+
+     write_data(data_dict)
+     Print('Loop complete, new data saved')
+
+     tmp = find_merges(data_dict) # might call do_drops, so refresh data for stats
+     if tmp:
+          seqlist_total = tmp
+          data_dict = read_and_parse_data()
+
+     create_stats_write_html(data_dict, reservations_time)
+     Print('Written all data and HTML')
+
+     main_finalize(special, start, count, len(seqs_todo), seqlist_total)
+     Print('Saved state and finalized.')
 
 
 ################################################################################
 # Start actual code execution
 
 def main():
-     global LOOPING, SLEEPING
      if os.path.exists(LOCKFILE):
           Print("Didn't start: lockfile is present")
           sys.exit(-1)
 
-     open(LOCKFILE, 'a').close()
+     global LOOPING, SLEEPING
 
      try:
           special = [int(arg) for arg in sys.argv[1:]]
      except ValueError:
           print('Error: Args are sequences to be run')
-          os.remove(LOCKFILE)
           sys.exit(-1)
 
      if special:
@@ -507,9 +636,11 @@ def main():
      else:
           special = None
 
-     while True:
      # This means you can start it once and leave it, but by setting LOOPING = False you can make it one-and-done
      # This would be a good place for a do...while syntax
+     while True:
+          open(LOCKFILE, 'a').close()
+
           try:
                inner_main(special)
           except Exception:
