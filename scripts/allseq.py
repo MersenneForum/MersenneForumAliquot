@@ -23,7 +23,7 @@
 import sys
 
 
-dir = '../website/html/'
+dir = '/var/www/rechenkraft.net/aliquot/'
 ASHTML = dir + 'AllSeq.html'
 ASTXT = dir + 'AllSeq.txt'
 STATS = dir + 'statistics.html'
