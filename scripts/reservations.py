@@ -62,7 +62,7 @@ from time import time
 from _import_hack import add_path_relative_to_script
 add_path_relative_to_script('.')
 # this should be removed when proper pip installation is supported
-from mfaliquot.sequence import Sequence
+from mfaliquot.sequence import AliquotSequence
 from mfaliquot.myutils import linecount, Print, strftime, blogotubes, add_cookies, email
 
 # Some slight modifications of the default global variables
@@ -113,7 +113,7 @@ def read_db(file=resfile):
      with open(file, 'r') as f:
           for line in f:
                l = line.split()
-               seq = Sequence()
+               seq = AliquotSequence()
                try:
                     seq.seq = int(l[0])
                except ValueError:
@@ -167,7 +167,7 @@ def add_db(db, name, seqs):
                          Print(string)
                          email_msg += string+'\n'
                     else:
-                         db[seq] = Sequence(seq=seq, res=name, index=infos[0], size=infos[1])
+                         db[seq] = AliquotSequence(seq=seq, res=name, index=infos[0], size=infos[1])
 
 def drop_db(db, name, seqs):
      global email_msg

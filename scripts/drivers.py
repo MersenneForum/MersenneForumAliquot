@@ -32,7 +32,7 @@ add_path_relative_to_script('..')
 # this should be removed when proper pip installation is supported
 from mfaliquot import numtheory as nt
 from mfaliquot import aliquot as aq
-from mfaliquot.sequence import Sequence
+from mfaliquot.sequence import AliquotSequence
 from mfaliquot.myutils import blogotubes
 
 
@@ -59,7 +59,7 @@ def get_data():
 def read_data():
      with open(data_file, 'r') as f:
           data = json.load(f)['aaData']
-     return {seq[0]: Sequence(lst=seq) for seq in data}
+     return {seq[0]: AliquotSequence(lst=seq) for seq in data}
 
 def get_num(id):
      page = blogotubes('http://factordb.com/index.php?showid='+id)
@@ -139,8 +139,8 @@ def main():
      print('Starting examinations')
      # This and other code in this and other modules is sometimes a bit confusing
      # because I use 'seq' for both just the integer of the sequence leader *and*
-     # the corresponding Sequence object.
-     # data is a dictionary mapping the ints to the Sequence objects.
+     # the corresponding AliquotSequence object.
+     # data is a dictionary mapping the ints to the AliquotSequence objects.
      data = read_data()
      targets = []; derp = []
      for i, seq in enumerate(data.values()):

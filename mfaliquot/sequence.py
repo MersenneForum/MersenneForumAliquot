@@ -23,7 +23,7 @@
 # __getattribute__ and __setattr__, and I can certainly think of worse ways of
 # doing this
 
-class Sequence(list):
+class AliquotSequence(list):
      _map = {'seq':      (0, 0), # (list_index, default_val)
              'size':     (1, 0),
              'index':    (2, 0),
@@ -43,13 +43,13 @@ class Sequence(list):
 
      def __setattr__(self, name, value): # Attributes are secretly just a specific slot on the list
           try:
-               self[self._map[name][0]] = value
+               self[AliquotSequence._map[name][0]] = value
           except KeyError:
                super().__setattr__(name, value)
 
      def __getattribute__(self, name):
           try:
-               return self[Sequence._map[name][0]]
+               return self[AliquotSequence._map[name][0]]
           except KeyError:
                return super().__getattribute__(name)
 
@@ -58,7 +58,7 @@ class Sequence(list):
           to convert from list format (must be correct length).'''
           # Not exactly the prettiest code, but it's very general code
           # First super().__init__ as appropriate
-          if kwargs.get('lst') is not None:
+          if 'lst' in kwargs:
                l = kwargs['lst']
                a = len(l)
                b = len(self._map)
@@ -68,22 +68,23 @@ class Sequence(list):
                super().__init__(l)
           else:
                super().__init__(self._defaults)
-          # Toss unknown keys
+
           for kw, val in kwargs.items():
+               # Silently toss unknown keys
                if kw in self._map:
                     self.__setattr__(kw, val)
 
-     def well_formed(self):
-          return self.seq and self.size and self.index and self.factors
+     def is_valid(self):
+          return self.seq and self.size > 0 and self.index > 0 and self.factors
 
      def __str__(self):
-          if self.well_formed():
-               return "{:>6d} {:>5d}. sz {:>3d} {:s}\n".format(self.seq, self.index, self.size, self.factors)
+          if self.is_valid():
+               return "{:>6d} {:>5d}. sz {:>3d} {:s}".format(self.seq, self.index, self.size, self.factors)
           else:
                raise ValueError('Not fully described! Seq: '+str(self.seq))
 
      def reservation_string(self):
-          '''str(Sequence) gives the AllSeq.txt format, this gives the MF reservations post format'''
+          '''str(AliquotSequence) gives the AllSeq.txt format, this gives the MF reservations post format'''
           #   966  Paul Zimmermann   893  178
           #933436  unconnected     12448  168
           if not self.res:
