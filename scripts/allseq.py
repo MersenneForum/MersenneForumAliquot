@@ -43,7 +43,7 @@ RESPAGE = 'http://www.rechenkraft.net/aliquot/res_post.php'
 RESPOSTIDS = (1,)
 
 
-PERHOUR = 110
+BATCHSIZE = 110
 SLEEPMINUTES = 60
 LOOPING = False
 TODROP = []
@@ -422,7 +422,7 @@ def main_initialize(special=None):
      else:
           start = read_state()
           Print('Start:', start)
-          seqs_todo = seqlist[start: (start + PERHOUR)]
+          seqs_todo = seqlist[start: (start + BATCHSIZE)]
 
      if TODROP:
           drops, fails, _ = do_drops(TODROP)
