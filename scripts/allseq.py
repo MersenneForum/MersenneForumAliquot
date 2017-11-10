@@ -441,7 +441,7 @@ def main_initialize(special=None):
 
      if TODROP:
           seqlist_drops, _data_drops, _seqlist_len = do_drops(TODROP)
-          for d in seqlist_drops:
+          for d in seqlist_drops.intersection(seqs_todo):
                seqs_todo.remove(d)
           # We get seqs_todo *before* doing drops to ensure that `start` is accurate (otherwise possible that some seqs get skipped)
           seqlist = read_seqlist()
