@@ -43,7 +43,7 @@ RESPAGE = 'http://www.rechenkraft.net/aliquot/res_post.php'
 RESPOSTIDS = (1,)
 
 
-PERHOUR = 110
+BATCHSIZE = 110
 SLEEPMINUTES = 60
 LOOPING = False
 TODROP = []
@@ -149,24 +149,39 @@ def do_drops(drops):
      data_dict = read_and_parse_data()
 
      drops = set(drops)
-     faildrops = drops.difference(seqlist) # drops - seqlist
-     succdrops = drops.intersection(seqlist) # drops & seqlist
+     seqlist_set = set(seqlist)
+     data_dict_set = set(data_dict.keys())
 
-     for d in succdrops:
+     seqlist_drops = drops & seqlist_set
+     data_drops = drops & data_dict_set
+
+     for d in seqlist_drops:
           seqlist.remove(d)
+
+     for d in data_drops:
           del data_dict[d]
 
-     if faildrops:
-          for d in faildrops:
-               del data_dict[d]
-          Print("These seqs were in data but not seqlist, deleted from data: {}".format(faildrops))
-          ERRORMSG += "These seqs were in data but not seqlist, deleted from data: {}\n".format(faildrops)
+     drops -= seqlist_drops
+     drops -= data_drops
+
+     if drops:
+          Print("These seqs were in neither seqlist nor data, ignored: {}".format(drops))
+          ERRORMSG += "These seqs were in neither seqlist nor data, ignored: {}\n".format(drops)
 
      write_seqlist(seqlist)
      write_data(data_dict)
-     Print("Dropped {} seqs: {}".format(len(succdrops), succdrops))
 
-     return succdrops, faildrops, len(seqlist)
+     if seqlist_drops:
+          Print("Dropped {} seqs from seq_list: {}".format(len(seqlist_drops), seqlist_drops))
+     if data_drops:
+          Print('Dropped {} seqs from datadict: {}'.format(len(data_drops), data_drops))
+
+     extra_data = data_dict_set - seqlist_set
+     if extra_data:
+          Print("Warning: found seqs in data that aren't in seqlist; should they be automatically removed? {}".format(extra_data))
+          ERRORMSG += "Warning: found seqs in data that aren't in seqlist; should they be automatically removed? {}\n".format(extra_data)
+
+     return seqlist_drops, data_drops, len(seqlist)
 
 
 def get_reservations():
@@ -422,16 +437,16 @@ def main_initialize(special=None):
      else:
           start = read_state()
           Print('Start:', start)
-          seqs_todo = seqlist[start: (start + PERHOUR)]
+          seqs_todo = seqlist[start: (start + BATCHSIZE)]
 
      if TODROP:
-          drops, fails, _ = do_drops(TODROP)
-          for d in drops:
+          seqlist_drops, _data_drops, _seqlist_len = do_drops(TODROP)
+          for d in seqlist_drops.intersection(seqs_todo):
                seqs_todo.remove(d)
           # We get seqs_todo *before* doing drops to ensure that `start` is accurate (otherwise possible that some seqs get skipped)
+          seqlist = read_seqlist()
 
-     # After do_drops, re-get all data and also update all reservations
-     seqlist = read_seqlist()
+     # After seqlist is done, get data and update reservations
      data_dict = read_and_parse_data()
      reservations, reservations_time = get_reservations()
      for seq, res in reservations.items():
@@ -492,6 +507,7 @@ def find_merges(data_dict):
           return seqlist_total
 
      else:
+          Print("No merges found")
           return None
 
 
