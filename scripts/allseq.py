@@ -403,7 +403,7 @@ def updateseq(old, reserves):
                          ali.factors = "Reportedly terminated"
                          ali.guide, ali.clas, ali.driver = 'Terminated?', -5, True
                          ali.progress = 'Terminated?'
-                         ERRORMSG += 'Supposedly, seq {} has terminated!!!'.format(seq)
+                         ERRORMSG += 'Supposedly, seq {} has terminated!!!\n'.format(seq)
                     return ali
           else: # Reached query limit
                Print('Seq:', seq, 'the DB is refusing requests.')
