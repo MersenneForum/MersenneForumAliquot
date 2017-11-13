@@ -34,7 +34,6 @@ STATSTMPLT = dir + 'template2.html'
 SEQLIST = dir + 'SeqList.txt'
 STATEFILE = sys.argv[0] + '.conf'
 LOCKFILE = sys.argv[0] + '.lock'
-DATEFMT = '%Y-%m-%d %H:%M:%S'
 
 
 #RESPAGE = 'http://www.mersenneforum.org/showpost.php'

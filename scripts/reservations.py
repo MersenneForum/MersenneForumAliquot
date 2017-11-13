@@ -25,34 +25,7 @@ reservation_page = 'http://www.mersenneforum.org/showpost.php'
 res_posts = (165249, 397318, 397319, 397320, 397912, 416583, 416585, 416586) # Tuple to be expanded as necessary
 use_local_reservations = False
 
-dir = '.' # Set this appropriately
-resfile = dir+'/reservations'
-bup = dir+'/backup'
-pid_file = dir+'/last_pid'
-info = dir+'/AllSeq.txt'
-
-username = 'Dubslow'
-passwd = '<nope>'
-txtfiles = {'yoyo@home': 'http://yafu.myfirewall.org/yafu/download/ali/ali.txt.all'}
-template = """[B]For newcomers:[/B] Please post reservations here. There are workers that extend aliquot sequences; reservations here flag the workers off a sequence so no effort is wasted.
-
-For an archive of old reservations, click [URL="http://www.mersenneforum.org/showthread.php?t=14330"]here[/URL].
-
-For current driver/guide info, click [URL="http://rechenkraft.net/aliquot/AllSeq.html"]here[/URL].
-
-Current reservations:
-[code][B]   Seq  Who             Index  Size  [/B]
-{}
-[/code]
-"""
-
-secondary_template = """This post has been hijacked for additional reservations.
-
-[code][B]   Seq  Who             Index  Size  [/B]
-{}
-[/code]
-"""
-email_msg = ''
+PIDFILE = DIR+'/last_pid'
 
 ###############################################################################
 
