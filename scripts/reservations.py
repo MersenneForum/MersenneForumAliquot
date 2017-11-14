@@ -24,6 +24,7 @@
 reservation_page = 'http://www.mersenneforum.org/showpost.php'
 res_posts = (165249, 397318, 397319, 397320, 397912, 416583, 416585, 416586) # Tuple to be expanded as necessary
 use_local_reservations = False
+SPECIALRESERVATIONS = {'yoyo@home': 'http://yafu.myfirewall.org/yafu/download/ali/ali.txt.all'}
 
 PIDFILE = DIR+'/last_pid'
 

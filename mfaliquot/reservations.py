@@ -33,10 +33,10 @@ DIR = '../website/html' # Set this appropriately
 LOCALFILE = DIR+'/reservations'
 BACKUP = DIR+'/backup'
 INFO = DIR+'/AllSeq.txt'
-SPECIALRESERVATIONS = {'yoyo@home': 'http://yafu.myfirewall.org/yafu/download/ali/ali.txt.all'}
+
 DATEFMT = '%Y-%m-%d %H:%M:%S'
 
-EMAILMSG = ''
+SEQREGEX = re.compile(r'(?<![0-9])[0-9]{5,7}(?![0-9])') # matches only 5-7 digit numbers
 
 
 ################################################################################
@@ -47,124 +47,136 @@ class AliquotReservations:
      identical to the MF posts in format, namely just a bunch of text lines
      whose format is specified by the `AliquotSequence.reservation_string`
      method. This class merely translates between a list of reslines and a
-     Python dict. Raises ValueErrors on problems, use str(exception) to get the
-     details.'''
-     # TODO: Reconsider if the datadict should be read-only, forcing callers
-     # to duplicate new reservations onto the datadict
-     # Pros: saves the caller duplicate work, IF the caller was using datadict
-     # allseq.py uses datadict but only reads reservations, reservations.py
-     # writes reservations but doesn't use datadict
-
-     def __init__(self, seqinfo):
-          '''`seqinfo` is a reference to the overall data dictionary, to be used
-          as a read-only... well, reference. It is not modified by this class.'''
+     Python dict. Methods return a list of error/info messages.'''
+# TODO: Change all "error message" return values into programmatic return vals;
+# let the calling parent parse the suitable return vals into appropriate messages
+     def __init__(self):
           self._db = dict()
-          self._seqinfo = seqinfo #TODO: reconsider
-          self._when = None # timestamp written in file #TODO: way to set this
+          self._when = None # timestamp written in file
+
+
+     def set_timestamp(self):
+          '''Sets the timestamp written to file be "now".'''
+          self._when = gmtime()
 
 
      def _read_res_line(self, line):
           l = line.split()
-          seq = AliquotSequence()
 
           try:
-               seq.seq = int(l[0])
+               seq = int(l[0])
           except ValueError:
                try:
                     self._when = strptime(l, DATEFMT)
                except ValueError:
                     return
 
-
           try:
-               seq.index = int(l[-2])
-               seq.size = int(l[-1])
+               int(l[-2])
+               int(l[-1])
           except ValueError: # Some lines have no data, only <seq name>
-               seq.res = ' '.join(l[1:])
+               name = ' '.join(l[1:])
           else:
-               seq.res = ' '.join(l[1:-2])
+               name = ' '.join(l[1:-2])
 
-          self._db[seq.seq] = seq
+          self._db[seq] = name
 
 
      @classmethod
-     def read_file(cls, file, seqinfo):
+     def read_file(cls, file):
           '''Read a file containing a list of
           `AliquotSequence.reservation_string` entires, ignoring any malformed
-          lines. seqinfo is a read-only reference to the overall data'''
-          self = cls(seqinfo)
+          lines. Returns a tuple of (instance, logmessage)'''
+          self = cls()
           with open(file, 'r') as f:
                for line in f:
                     self._read_res_line(line)
 
-          Print("Read {} seqs".format(len(self._db)))
-          return self
+          return self, "Read {} seqs".format(len(self._db))
 
 
-     def write_to_file(self, file):
+
+     def write_to_file(self, file, seqinfo=None):
           '''Write the database to file in `AliquotSequence.reservation_string`
-          format'''
+          format. If you want the traditional size and index info to be there,
+          pass the optional seqinfo argument. Returns an info string for
+          printing.'''
           c = 0
           with open(file, 'w') as f:
                f.write(strftime(DATEFMT, self._when)+'\n')
-               for seq in sorted(db.keys()):
-                    f.write(db[seq].reservation_string())
-                    c += 1
-          Print("Wrote {} seqs".format(c))
+               if seqinfo:
+                    for seq in sorted(self._db.keys()):
+                         f.write(seqinfo[seq].reservation_string())
+                         c += 1
+               else:
+                    for seq, name in sorted(self._db.items(), key=lambda item: item[0]):
+                         f.write("{:>6d}  {:15s}\n".format(seq, name))
+                         c += 1
+          return "Wrote {} seqs".format(c)
 
 
      def reserve_seqs(self, name, seqs):
-          '''Mark the `seqs` as reserved by `name`. Raises ValueError on any of
-          the common problems with the data'''
+          '''Mark the `seqs` as reserved by `name`. Returns a list of error
+          messages. Cannot check if a given seq actually exists.'''
+          out = []
           for seq in seqs:
                if seq in self._db:
                     other = self._db[seq].res
                     if name == other:
-                         raise ValueError("Warning: {} already owns {}".format(name, seq))
+                         out.append("reserve: {} already owns {}".format(name, seq))
                     else:
-                         raise ValueError("Warning: seq {} is owned by {} but is trying to be reserved by {}!".format(seq, other, name))
+                         out.append("reserve: {} is owned by {} but is trying to be reserved by {}!".format(seq, other, name))
                else:
-                    if seq not in self._seqinfo:
-                         raise ValueError("Warning: {} cannot reserve {}: does not exist".format(name, seq))
-                    info = self._seqinfo[seq]
-                    # When we read the res db from file, we don't record the other info, so leave it off for consistency
-                    self._db[seq] = AliquotSequence(seq=seq, res=name, index=info.index, size=info.size)
+                    self._db[seq] = name
+
+          return out
 
 
      def unreserve_seqs(self, name, seqs):
-          '''Mark the `seqs` as no longer reserved. Raises ValueError on any
-          of the common problems.'''
+          '''Mark the `seqs` as no longer reserved. Returns a list of error
+          messages.'''
+          out = []
           b = c = len(seqs)
           for seq in seqs:
                try:
-                    exists = self._db[seq].res == name
+                    exists = self._db[seq] == name
                except KeyError:
-                    raise ValueError("{} is not reserved at the moment ({})".format(seq, name))
+                    out.append("unreserve: {} is not reserved at the moment ({})".format(seq, name))
                     continue
+
                if exists:
                     del self._db[seq]
                     c -= 1
                else:
-                    raise ValueError("Warning: Seq {}'s reservation {} doesn't match dropee {}".format(seq, self._db[seq].res, name))
+                    out.append("unreserve: Seq {}'s reservation {} doesn't match dropee {}".format(seq, self._db[seq].res, name))
 
           if c != 0:
-               raise ValueError("Only {} seqs were removed, {} were supposed to be dropped".format(b-c, b))
+               out.append("unreserve: Only {} seqs were removed, {} were supposed to be dropped".format(b-c, b))
+
+          return out
 
 
-     def apply_reservations_to_seqinfo(self):
-          #TODO
-
-
-
-
-
-
-
-
-
-
-
-
+     def parse_mass_reservation(self, reservee, txt):
+          out = []
+          old = {seq for seq, name in self._db.items() if name == reservee}
+          current = set()
+          for line in txt.splitlines():
+               if SEQREGEX.match(line):
+                    seq = int(line)
+                    if seq in current:
+                         out.append("Duplicate sequence? {} {}".format(seq, url))
+                    else:
+                         current.add(seq)
+               elif not re.match(r'^[0-9]+$', line):
+                    out.append("Unknown line from {}: {}".format(url, line))
+          # easy peasy lemon squeezy
+          done = old - current
+          new = current - old
+          if done or new:
+               out.append('{}: Add {}, Drop {}'.format(reservee, len(new), len(done)))
+               out.extend(self.reserve_seqs(reservee, done))
+               out.extend(self.unreserve_seqs(reservee, new))
+          return out
 
 
 
