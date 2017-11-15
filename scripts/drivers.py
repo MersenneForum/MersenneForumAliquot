@@ -156,7 +156,7 @@ def main():
      targets.sort(key=lambda tup: (not tup[0].driver, tup[0].clas, tup[0].cofact)) # Drivers first, then sort by class first, secondary sort by comp size
      for seq, ress in targets:
           for res in ress:
-               print("{:>6} with guide {} (class {}) may mutate: {}".format(seq.seq, seq.guide, seq.clas, aq.analyze_composite_tau_to_str(res, 'C'+str(seq.cofact))))
+               print("{:>6} ~ {} (class {}) maybe: {}".format(seq.seq, seq.guide, seq.clas, aq.analyze_composite_tau_to_str(res, 'C'+str(seq.cofact))))
 
 if __name__ == "__main__":
      main()
