@@ -642,7 +642,7 @@ def main():
      global LOOPING, SLEEPING
 
      try:
-          special = [int(arg) for arg in sys.argv[1:]]
+          special = {int(arg) for arg in sys.argv[1:]}
      except ValueError:
           print('Error: Args are sequences to be run')
           sys.exit(-1)
