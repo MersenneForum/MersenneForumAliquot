@@ -53,9 +53,10 @@ class AliquotReservations:
                seq = int(l[0])
           except ValueError:
                try:
-                    self._when = strptime(l, DATEFMT)
+                    self._when = strptime(line.strip(), DATEFMT)
                except ValueError:
-                    return
+                    pass
+               return
 
           try:
                int(l[-2])
@@ -85,18 +86,22 @@ class AliquotReservations:
      def write_to_file(self, file, seqinfo=None):
           '''Write the database to file in `AliquotSequence.reservation_string`
           format. If you want the traditional size and index info to be there,
-          pass the optional seqinfo argument. Returns the number of reservations
-          recorded.'''
+          pass the optional seqinfo argument. If passed, a ValueError will be
+          raised if seqinfo's reservation info doesn't match (call
+          `apply_to_seqinfo` before writing to file). Returns the number of
+          reservations recorded.'''
           c = 0
           with open(file, 'w') as f:
                f.write(strftime(DATEFMT, self._when)+'\n')
                if seqinfo:
-                    for seq in sorted(self._db.keys()):
+                    for seq, name in sorted(self._db.items(), key=lambda item: item[0]):
+                         if name != seqinfo[seq].res:
+                              raise ValueError("Seq {} has new reservation {} but old reservation '{}'".format(seq, name, seqinfo[seq].res))
                          f.write(seqinfo[seq].reservation_string())
                          c += 1
                else:
                     for seq, name in sorted(self._db.items(), key=lambda item: item[0]):
-                         f.write("{:>6d}  {:15s}\n".format(seq, name))
+                         f.write("{:>6d}  {:30s}\n".format(seq, name))
                          c += 1
           return c
 
@@ -107,7 +112,7 @@ class AliquotReservations:
           already_owns, other_owns = [], []
           for seq in seqs:
                if seq in self._db:
-                    other = self._db[seq].res
+                    other = self._db[seq]
                     if name == other:
                          already_owns.append(seq)
                     else:
@@ -134,11 +139,23 @@ class AliquotReservations:
                     del self._db[seq]
                     c += 1
                else:
-                    wrong_reserveds.append((seq, self._db[seq].res))
+                    wrong_reserveds.append((seq, self._db[seq]))
 
           return not_reserveds, wrong_reserveds, c
 
 
-
-
+     def apply_to_seqinfo(self, seqinfo):
+          '''Update the seqinfo dict so that all Sequence objects have the
+          correct reservation. Returns the count of adds and drops.'''
+          # The first one is expensive-ish, rest are cheap-ish
+          old = {seq for seq, Seq in seqinfo.items() if Seq.res}
+          cur = set(self._db.keys())
+          adds  = cur - old
+          drops = old - cur
+          print(sorted(old), sorted(cur), sorted(adds), sorted(drops))
+          for seq in adds:
+               seqinfo[seq].res = self._db[seq]
+          for seq in drops:
+               seqinfo[seq].res = ''
+          return len(adds), len(drops)
 

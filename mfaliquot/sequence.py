@@ -89,7 +89,7 @@ class AliquotSequence(list):
           #933436  unconnected     12448  168
           if not self.res:
                return ''
-          out = "{:>6d}  {:15s} {:>5d}  {:>3d}\n".format(self.seq, self.res, self.index, self.size)
+          out = "{:>6d}  {:30s} {:>5d}  {:>3d}\n".format(self.seq, self.res, self.index, self.size)
           if 'jacobs and' in self.res:
                out += '        Richard Guy\n'
           return out
