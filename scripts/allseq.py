@@ -166,7 +166,7 @@ def do_drops(drops):
 
      if drops:
           Print("These seqs were in neither seqlist nor data, ignored: {}".format(drops))
-          ERRORMSG += "These seqs were in neither seqlist nor data, ignored: {}\n".format(drops)
+          #ERRORMSG += "These seqs were in neither seqlist nor data, ignored: {}\n".format(drops)
 
      write_seqlist(seqlist)
      write_data(data_dict)
