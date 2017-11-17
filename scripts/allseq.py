@@ -55,7 +55,7 @@ BROKEN = {}
 
 from urllib import request, parse, error
 from time import strftime, gmtime, sleep, strptime
-from collections import Counter
+from collections import Counter, defaultdict
 import re, signal, json, os
 
 from _import_hack import add_path_relative_to_script
@@ -476,39 +476,40 @@ def main_initialize(special=None):
 
 
 def find_merges(data_dict):
-     ids = {}
-     merged = []
+     # Simple logic: create a reverse map of seqids -> seqs. If one seqid has
+     # multiple seq targets, celebrate!
+
+     ids = defaultdict(list)
      for ali in data_dict.values():
-          this = ali.id
-          try:
-               other = ids[this]
-          except KeyError: # No match for this id
-               ids[this] = ali.seq # this id is the tail of this seq
-          else: # found a match (i.e. a merge)
-               seq = ali.seq
-               if seq > other:
-                    pair = seq, other
-               else:
-                    pair = other, seq
-               merged.append(pair)
+          ids[ali.id].append(ali.seq)
 
-     if merged:
-          Print('Found merges!')
-          for merge in merged:
-               Print('{} seems to have merged with {}'.format(*merge))
-          try:
-               email('Aliquot merge!', '\n'.join('{} seems to have merged with {}'.format(*merge) for merge in merged))
-          except Exception as e:
-               Print("alimerge email failed")
+     merges = [list(sorted(lst)) for lst in ids.values() if len(lst) > 1]
 
-          drops = [merge[0] for merge in merged]
-          _, _, seqlist_total = do_drops(drops)
-
-          return seqlist_total
-
-     else:
+     if not merges: # Darn
           Print("No merges found")
           return None
+
+     Print('Found merges!')
+
+     merges = [(lst[0], lst[1:]) for lst in merges]
+
+
+     out, alldrops = [], []
+     for target, drops in merges:
+          tmp = ', '.join(str(d) for d in drops)
+          out.append('The seq(s) {} seem(s) to have merged with {}'.format(tmp, target))
+          alldrops.extend(drops)
+
+     for o in out:
+          print(o)
+
+     try:
+          email('Aliquot merges!', '\n'.join(out))
+     except Exception as e:
+          Print("alimerge email failed")
+
+     _, _, seqlist_total = do_drops(alldrops)
+     return seqlist_total
 
 
 def create_stats_write_html(data_dict, reservations_time):
@@ -642,7 +643,7 @@ def main():
      global LOOPING, SLEEPING
 
      try:
-          special = [int(arg) for arg in sys.argv[1:]]
+          special = {int(arg) for arg in sys.argv[1:]}
      except ValueError:
           print('Error: Args are sequences to be run')
           sys.exit(-1)
