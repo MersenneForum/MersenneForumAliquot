@@ -150,8 +150,11 @@ def opnpoly(k, b, n, c, deg, hi=None):
                print(out.format(**polys[1]))
 
 
-# Following class and decorator totally jacked from Jacob Zimmerman, with a few tweaks
+# Following class and decorator totally jacked from Jacob Zimmerman, with a few tweaks/renames
 # https://programmingideaswithjake.wordpress.com/2015/05/23/python-decorator-for-simplifying-delegate-pattern/
+#
+# I couldn't get the default copying of the entire baseclass dict to work, because that delegates __new__,
+# which chokes on the non-subclass subclass. So just remove it for now
 
 class _DelegatedAttribute:
     def __init__(self, delegator_name, attr_name, baseclass):
@@ -189,13 +192,16 @@ def custom_inherit(baseclass, delegator='delegate', include=None, exclude=None):
     and blacklist of attrs to include from baseclass.__dict__, providing the
     main customization hooks.'''
     # `autoincl` is a boolean describing whether or not to include all of baseclass.__dict__
+
     # turn include and exclude into sets, if they aren't already
     if not isinstance(include, set):
         include = set(include) if include else set()
     if not isinstance(exclude, set):
         exclude = set(exclude) if exclude else set()
-    delegated_attrs = set() #set(baseclass.__dict__.keys()) if autoincl else set()
+
+    # delegated_attrs = set(baseclass.__dict__.keys()) if autoincl else set()
     # Couldn't get the above line to work, because delegating __new__ fails miserably
+    delegated_attrs = set()
     attributes = include | delegated_attrs - exclude
 
     def wrapper(subclass):

@@ -20,16 +20,23 @@
 File.'''
 
 
-from ..myutils import custom_inherit
+from _import_hack import add_path_relative_to_script
+add_path_relative_to_script('..')
+from myutils import custom_inherit
+from sequence import AliquotSequence
+
+#from ..myutils import custom_inherit
+#from .sequence import AliquotSequence
+import json
 #from .heap import Heap
 
 
 ################################################################################
 
 
-@custom_inherit(dict, delegator='_data', include=[
-'__len__', '__getitem__', '__contains__', '__get__', 'items', 'keys', 'values'])
-class SequenceData:
+@custom_inherit(dict, delegator='_data', include=['__len__', '__getitem__',
+                   '__contains__', 'get', 'items', 'keys', 'values', '__str__'])
+class SequencesData:
      '''The class that reads and writes The Sequence Data File. The `file`
      constructor argument is immutable for the lifetime of the object. Writing
      also writes to the other two files (which are read-only).'''
@@ -84,6 +91,8 @@ class SequenceData:
      def write_to_file(self):
           '''Finalize self to the given file. Totally overwrites it with data
           from self.'''
+
+          return
 
           # Find seqs that have been dropped from heap, they're just appended
           # at the end
