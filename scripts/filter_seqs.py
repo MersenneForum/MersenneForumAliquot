@@ -1,4 +1,4 @@
-#! /usr/bin/env python3
+#!/opt/rh/python33/root/usr/bin/python
 
 #    Copyright (C) 2014-2015 Bill Winslow
 #
@@ -17,12 +17,12 @@
 
 import json
 from _import_hack import add_path_relative_to_script
-add_path_relative_to_script('..')
+add_path_relative_to_script('.')
 # this should be removed when proper pip installation is supported
 from mfaliquot.sequence import AliquotSequence
 
 
-JSON = '/home/bill/mfaliquot/website/html/AllSeq.json'
+JSON = '/var/www/rechenkraft.net/aliquot/AllSeq.json'
 
 
 def read_and_parse_data():
