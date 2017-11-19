@@ -20,23 +20,21 @@
 File.'''
 
 
-from _import_hack import add_path_relative_to_script
-add_path_relative_to_script('..')
-from myutils import custom_inherit
-from sequence import AliquotSequence
+#from _import_hack import add_path_relative_to_script
+#add_path_relative_to_script('..')
+#from myutils import custom_inherit
+#from sequence import AliquotSequence
 
-#from ..myutils import custom_inherit
-#from .sequence import AliquotSequence
+from ..myutils import custom_inherit, Heap
+from .sequence import AliquotSequence
 import json
-#from .heap import Heap
-
 
 ################################################################################
 
 
 @custom_inherit(dict, delegator='_data', include=['__len__', '__getitem__',
                    '__contains__', 'get', 'items', 'keys', 'values', '__str__'])
-class SequencesData:
+class _SequencesData:
      '''The class that reads and writes The Sequence Data File. The `file`
      constructor argument is immutable for the lifetime of the object. Writing
      also writes to the other two files (which are read-only).'''
@@ -51,7 +49,7 @@ class SequencesData:
           self._txtfile = txtfile
           self._resfile = resfile
           self._data = dict()
-          #self._heap = Heap()
+          self._heap = Heap()
      # Here's the intended dataflow design: The dict is the master list of data,
      # but the minheap/list is in charge of maintaining a (rough) heap order.
      # When written to file, the data from the dict (being the master) is
@@ -80,7 +78,7 @@ class SequencesData:
           for i, dat in enumerate(heap):
                ali = AliquotSequence(lst=dat)
                self._data[ali.seq] = ali
-               #self._heap[i] = (ali.priority, ali.time, ali.seq)
+               self._heap[i] = (ali.priority, ali.time, ali.seq)
 
 
      def get_N_todo(self, N):
@@ -91,8 +89,6 @@ class SequencesData:
      def write_to_file(self):
           '''Finalize self to the given file. Totally overwrites it with data
           from self.'''
-
-          return
 
           # Find seqs that have been dropped from heap, they're just appended
           # at the end
@@ -112,4 +108,23 @@ class SequencesData:
 
           with open(self._resfile, 'w') as f:
                f.write(res_string)
+
+
+     def drop(seqs):
+          '''Drop the given sequences from the dictionary'''
+          # TODO: determine how this interacts with the heap
+
+
+class SequencesManager(_SequencesData):
+     '''A class to do common algorithms on the seqsdata, but which should only
+     use the public methods of its parent class (i.e. no manipulation of the
+     underlying heap and dict). So separate them out here for conceptual
+     clarity.'''
+
+     def find_merges(self):
+          ...
+
+     def update_reservations(self):
+          ...
+
 
