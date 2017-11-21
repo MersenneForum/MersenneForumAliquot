@@ -183,7 +183,7 @@ def _positive(n, func):
           if out <= 0:
                raise ValueError
      except ValueError:
-          raise ValueError("{}() expects a positive integer!".format(func))
+          raise ValueError("{}() expects a positive integer (got {})!".format(func, n)) from None
      return n
 
 def quick_pow_of_two(n):
