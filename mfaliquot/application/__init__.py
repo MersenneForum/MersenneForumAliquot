@@ -41,6 +41,8 @@
 
 
 import json
+from collections import defaultdict
+import datetime
 
 
 ################################################################################
@@ -53,34 +55,40 @@ import json
 # doing this
 
 class AliquotSequence(list):
-     _map = {'seq':      (0, 0), # (list_index, default_val)
-             'size':     (1, 0),
-             'index':    (2, 0),
-             'id':       (3, 0),
-             'guide':    (4, None),
-             'factors':  (5, None),
-             'cofact':   (6, ''),
-             'clas':     (7, None),
-             'time':     (8, None),
-             'progress': (9, 'Unknown'),
-             'res':      (10, ''),
-             'driver':   (11, '')
+     _map = {'seq':      (0, None), # (list_index, default_val)
+             'size':     (1, None),
+             'index':    (2, None),
+             'guide':    (3, ''),
+             'factors':  (4, ''),
+             'cofact':   (5, ''),
+             'klass':    (6, None),
+             'res':      (7, ''),
+             'progress': (8, None),
+             'time':     (9, ''),
+             'nzilch':   (10, None), # Definitely looking for a better name
+             'priority': (11, None),
+             'id':       (12, None),
+             'driver':   (13, None)
             }
      _defaults = [None] * len(_map)
      for attr, tup in _map.items():
           _defaults[tup[0]] = tup[1]
 
-     def __setattr__(self, name, value): # Attributes are secretly just a specific slot on the list
+
+     def __setattr__(self, name, value):
           try:
+               # Attributes are secretly just a specific slot on the list
                self[AliquotSequence._map[name][0]] = value
           except KeyError:
                super().__setattr__(name, value)
+
 
      def __getattribute__(self, name):
           try:
                return self[AliquotSequence._map[name][0]]
           except KeyError:
                return super().__getattribute__(name)
+
 
      def __init__(self, **kwargs):
           '''This recognizes all valid attributes, as well as the 'lst' kwarg
@@ -102,26 +110,58 @@ class AliquotSequence(list):
                     raise TypeError("unknown keyword arugment {}".format(kw))
                self.__setattr__(kw, val)
 
+
      def is_valid(self):
-          return self.seq and self.size > 0 and self.index > 0 and self.factors
+          return self.seq and (self.size and self.size > 0) and (self.index and self.index > 0) and self.factors
+
 
      def __str__(self):
           if self.is_valid():
-               return "{:>6d} {:>5d}. sz {:>3d} {:s}".format(self.seq, self.index, self.size, self.factors)
+               return "{:>7d} {:>5d}. sz {:>3d} {:s}".format(self.seq, self.index, self.size, self.factors)
           else:
                raise ValueError('Not fully described! Seq: '+str(self.seq))
 
+
      def reservation_string(self):
           '''str(AliquotSequence) gives the AllSeq.txt format, this gives the MF reservations post format'''
-          #   966  Paul Zimmermann   893  178
-          #933436  unconnected     12448  168
+          #    966  Paul Zimmermann   893  178
+          # 933436  unconnected     12448  168
           if not self.res:
                return ''
           out = "{:>7d}  {:30s} {:>5d}  {:>3d}\n".format(self.seq, self.res, self.index, self.size)
-          #if 'jacobs and' in self.res:
-          #     out += '        Richard Guy\n'
           return out
-          # TODO: extend allowable string lengths, remove special case
+
+
+     def calculate_priority(self, max_update_period=90, begin_time_penalty=30, res_factor=1/2):
+          '''Arguments are as follows: `max_update_period` is the target maximum
+          time between updates for any sequence no matter how infrequent it is,
+          in days. `begin_time_penalty` is the age (in days) at which priority
+          is directly affected by the previous value (before that, it's just
+          how many stationary updates).'''
+
+          prio = self.nzilch
+
+          if isinstance(self.progress, str):
+               lastprog = datetime.date(*(int(x) for x in self.progress.split('-')))
+               now = datetime.datetime.utcnow().date()
+               deltadays = (now - lastprog).days
+
+               if deltadays > begin_time_penalty:
+                    # We apply a "penalty" to priority based on the seq's "progress"
+                    # from btp to mup. So when deltadays == btp, penalty factor = 0,
+                    # and when deltadays == mup, penalty factor = 1, with linear
+                    # interpolation. Then prio -= prio * penalty factor.
+                    # The idea is that prio is necessarily 0 at m_u_p.
+                    days -= begin_time_penalty
+                    max_update_period -= begin_time_penalty
+                    ratio = (deltadays - begin_time_penalty)/(max_update_period - begin_time_penalty)
+
+                    prio *= (1-ratio)
+
+          if self.res:
+               prio *= res_factor
+
+          self.priority = round(prio, 3)
 
 #
 #
@@ -291,6 +331,12 @@ class _SequencesData:
           return entry
 
 
+     @staticmethod
+     def _sabotage_heap_entry(ali):
+          # The entry must remain comparable, so e.g. no Nones allowed (HEAPENTRY)
+          ali._heap_entry[2] = 0
+
+
      def write_files(self):
           '''Finalize self to the given file. Totally overwrites it with data
           from self.'''
@@ -318,12 +364,6 @@ class _SequencesData:
                f.write(res_string)
           del res_string
           del out
-
-
-     @staticmethod
-     def _sabotage_heap_entry(ali):
-          # The entry must remain comparable, so e.g. no Nones allowed (HEAPENTRY)
-          ali._heap_entry[2] = 0
 
 
      def get_n_todo(self, n):
@@ -371,11 +411,54 @@ class SequencesManager(_SequencesData):
      basic methods.'''
 
      def find_merges(self):
-          ...
+          '''Returns a tuple of (mergee, (*mergers)) tuples (does not drop)'''
+          ids = defaultdict(list)
+          for ali in self.values():
+               ids[ali.id].append(ali.seq)
 
-     def update_reservations(self):
-          ...
+          merges = [list(sorted(lst)) for lst in ids.values() if len(lst) > 1]
 
-     def calculate_priority(self, ...):
-          ...
+          return tuple((lst[0], lst[1:]) for lst in merges)
+
+
+     def reserve_seqs(self, name, seqs):
+          '''Mark the `seqs` as reserved by `name`. Raises ValueError if a seq
+          doesn't exist. Returns (list_of_already_owns, list_of_other_owns)'''
+          already_owns, other_owns = [], []
+          for seq in seqs:
+               if seq not in self:
+                    raise ValueError("seq {} doesn't exist".format(seq))
+
+               other = self[seq].res
+
+               if not other:
+                    self[seq].res = name
+               elif name == other:
+                    already_owns.append(seq)
+               else:
+                    other_owns.append((seq, other))
+
+          return already_owns, other_owns
+
+
+     def unreserve_seqs(self, name, seqs):
+          '''Mark the `seqs` as no longer reserved. Raises ValueError if seq does
+          not exist. Returns (not_reserveds, wrong_reserveds, count_dropped) '''
+          not_reserveds, wrong_reserveds, c = [], [], 0
+          for seq in seqs:
+               if seq not in self:
+                    raise ValueError("seq {} doesn't exist".format(seq))
+
+               current = self[seq].res
+
+               if not current:
+                    not_reserveds.append(seq)
+               elif name == current
+                    self[seq].res = ''
+                    c += 1
+               else:
+                    wrong_reserveds.append((seq, current))
+
+          return not_reserveds, wrong_reserveds, c
+
 
