@@ -116,13 +116,19 @@ def write_seqlist(seqlist):
                f.write(str(seq)+'\n')
 
 
-def read_and_parse_data():
+def read_and_parse_data(reservations=None):
      with open(JSON, 'r') as f:
           olddat = json.load(f)['aaData']
      data_dict = {}
-     for dat in olddat:
-          ali = AliquotSequence(lst=dat)
-          data_dict[ali.seq] = ali
+     if reservations:
+          for dat in olddat:
+               ali = AliquotSequence(lst=dat)
+               ali.res = reservations.get(ali.seq, '')
+               data_dict[ali.seq] = ali
+     else:
+          for dat in olddat:
+               ali = AliquotSequence(lst=dat)
+               data_dict[ali.seq] = ali
      return data_dict
 
 
@@ -165,7 +171,7 @@ def do_drops(drops):
 
      if drops:
           Print("These seqs were in neither seqlist nor data, ignored: {}".format(drops))
-          ERRORMSG += "These seqs were in neither seqlist nor data, ignored: {}\n".format(drops)
+          #ERRORMSG += "These seqs were in neither seqlist nor data, ignored: {}\n".format(drops)
 
      write_seqlist(seqlist)
      write_data(data_dict)
@@ -446,11 +452,8 @@ def main_initialize(special=None):
           seqlist = read_seqlist()
 
      # After seqlist is done, get data and update reservations
-     data_dict = read_and_parse_data()
      reservations, reservations_time = get_reservations()
-     for seq, res in reservations.items():
-          if seq in data_dict: # If reservations are out of date
-               data_dict[seq].res = res
+     data_dict = read_and_parse_data(reservations)
 
      # Check for garbage and/or new sequences
      newseqs = []
@@ -622,7 +625,7 @@ def inner_main(special=None):
      tmp = find_merges(data_dict) # might call do_drops, so refresh data for stats
      if tmp:
           seqlist_total = tmp
-          data_dict = read_and_parse_data()
+          data_dict = read_and_parse_data(reservations)
 
      create_stats_write_html(data_dict, reservations_time)
      Print('Written all data and HTML')
