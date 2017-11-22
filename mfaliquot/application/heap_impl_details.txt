@@ -1,0 +1,57 @@
+# TODO: I just can't get a coherent dataflow decided on, mostly due to
+# extreme difficulty of modifying heap entries after they've been inserted.
+#
+# First problem: How should we go from "read data from file" to "here's the
+# next n seqs to update this cycle"?
+#
+# Possible solutions:
+# 1) use Heap.nsmallest
+#         pros: optimized/efficient/fast, atomic
+#         cons: does *NOT* modify the heap, leaving those n to be "read" again
+#
+# 2) use Heap.pop n times in row
+#         pros: atomic, simple, correctly removes the n entries
+#         cons: not necessarily the most efficient way to get n pops
+#
+# 3) write a coroutine that yields next seq to update and reads post-updated
+#    seqs to be reinserted into the heap
+#         pros: most efficient
+#         cons: nonatomic -> complex code, allows a class of bugs relating
+#               to re-adding sequences which are still lowest-priority even
+#               after update (or even after failed update)
+#
+# 4) nuke solution: sort() the heap when reading the file, bypassing heap
+#    semantics
+#         pros: extremely simple code, atomic, correctly removes ntodo
+#         cons: (very) inefficient, sorts a dozens-K long list (but at least
+#               the list is mostly or totally a heap?)
+#
+# Second problem: how to deal with dropping sequences? Very difficult to
+# remove stuff from the heap.
+#
+# Possible solutions:
+# 1) *somehow* track the index of each entry with which to use Heap.remove(i)
+#         pros: simple design, simple code
+#         cons: tracking the index of each entry is itself basically impossible
+#
+# 2) keep a reference to the heap entry stored on the ali object, and
+#    sabotage the entry when its seq is deleted (the priority must be left
+#    intact to maintain the heap)
+#         pros: tractible, not too difficult
+#         cons: requires heap-reading code to error check
+#
+# 3) Bypass the problem entirely by only allowing drops after heap-reading
+#         pros: simple user code
+#         cons: requires the SequencesData class to implement some sort of state
+
+
+################################################################################
+
+# Since writing this up, I've decided to choose, at least for now, A2) and B2).
+# Although A2 isn't the *most* efficient, it's still somewhat more efficient
+# than straight sorting while maintaining the code simplicity of the sorting
+# nuke.
+#
+# Picking between B2 and B3 is basically a coinflip, but at the end of the day
+# error checking heap-read code sounds easier than making SequencesData a state
+# machine

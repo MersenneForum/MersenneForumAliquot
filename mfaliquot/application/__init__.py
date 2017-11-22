@@ -1,6 +1,7 @@
 # This is written to Python 3.3 standards
 # indentation: 5 spaces (personal preference)
-
+# when making large scope switches (e.g. between def or class blocks) use two
+# blank lines for clear visual separation
 
 #    Copyright (C) 2014-2015 Bill Winslow
 #
@@ -28,12 +29,13 @@
 #
 # _SequencesData is the (private) class which is in charge of reading and writing
 # to the Master Data File, AllSeq.json. It is not intended to be exported. It
-# contains the methods which manipulate its private data structures.
+# contains the (public) methods which manipulate its private data structures.
 #
 # SequencesManager subclasses _SequencesData, and implements the common algorithms
 # which would be useful to scripts attempting to use the underlying data in the
 # file. These algorithms needn't the private data, and for these two reasons is
-# it a separate subclass, and also thus exportable.
+# it a separate subclass, and also thus exportable. (The public methods of its
+# parent are also exposed here.)
 #
 ################################################################################
 
@@ -90,16 +92,15 @@ class AliquotSequence(list):
                a = len(l)
                b = len(self._map)
                if a != b:
-                    raise ValueError('{}.__init__ received invalid size list (got {}, must be {})'.format(
-                                      self.__class__.name, a, b))
+                    raise ValueError('AliquotSequence.__init__ received invalid size list (got {}, must be {})'.format(a, b))
                super().__init__(l)
           else:
                super().__init__(self._defaults)
 
           for kw, val in kwargs.items():
-               # Silently toss unknown keys
-               if kw in self._map:
-                    self.__setattr__(kw, val)
+               if kw not in self._map:
+                    raise TypeError("unknown keyword arugment {}".format(kw))
+               self.__setattr__(kw, val)
 
      def is_valid(self):
           return self.seq and self.size > 0 and self.index > 0 and self.factors
@@ -116,12 +117,13 @@ class AliquotSequence(list):
           #933436  unconnected     12448  168
           if not self.res:
                return ''
-          out = "{:>6d}  {:30s} {:>5d}  {:>3d}\n".format(self.seq, self.res, self.index, self.size)
-          if 'jacobs and' in self.res:
-               out += '        Richard Guy\n'
+          out = "{:>7d}  {:30s} {:>5d}  {:>3d}\n".format(self.seq, self.res, self.index, self.size)
+          #if 'jacobs and' in self.res:
+          #     out += '        Richard Guy\n'
           return out
           # TODO: extend allowable string lengths, remove special case
 
+#
 #
 ################################################################################
 
@@ -202,6 +204,7 @@ def _custom_inherit(baseclass, delegator='delegate', include=None, exclude=None)
 
     return wrapper
 
+#
 ################################################################################
 # Next, the other helper for _SequencesData: class wrapper around stdlib.heapq
 
@@ -210,7 +213,7 @@ from functools import partial
 
 class _Heap(list):
 
-     def __init__(self, iterable=None):
+     def __init__(self, iterable=()):
           if iterable:
                super().__init__(iterable)
           else:
@@ -224,21 +227,12 @@ class _Heap(list):
 
           self.heapify()
 
-
-     def nsmallest(self, n, key=None):
-          # heapq.nsmallest makes a *max* heap of the first n elements,
-          # while we know that self is already a min heap, so we can
-          # make the max heap construction faster
-          self[:n] = reversed(self[:n])
-          out = _heap.nsmallest(n, self, key)
-          self[:n] = reversed(self[:n])
-          return out
-
-
+#
 ################################################################################
 # Next, _SequencesData, the private class implementing the underlying dictionary
-# and priority heap. For subclasses/external use, the dictionary is only accessible
-# in an immutable fashion.
+# and priority heap. For subclasses/external use, the dictionary is only directly
+# accessible in an immutable fashion (though the public methods mutate it as
+# necessary)
 
 
 @_custom_inherit(dict, delegator='_data', include=['__len__', '__getitem__',
@@ -259,64 +253,13 @@ class _SequencesData:
           self._jsonfile = jsonfile
           self._txtfile = txtfile
           self._resfile = resfile
-          self._data = dict()
-          self._heap = _Heap()
-     # Here's the intended dataflow design: The dict is the master list of data,
-     # but the minheap/list is in charge of maintaining a (rough) heap order.
-     # When written to file, the data from the dict (being the master) is written,
-     # but in the order specified by the heap after that cycle's updates and other
-     # modifications. We then read the lowest N seqs off the heap as this cycle's
-     # todo, and do any further updates in the cycle using the heap methods to
-     # maintain its invariant. Then write, rinse and repeat.
+          self._data = None # Will cause errors if you try and use this class
+          self._heap = None # before actually reading data
 
-
-     # TODO: I just can't get a coherent dataflow decided on, mostly due to
-     # extreme difficulty of modifying heap entries after they've been inserted.
-     #
-     # First problem: How should we go from "read data from file" to "here's the
-     # next n seqs to update this cycle"?
-     #
-     # Possible solutions:
-     # 1) use Heap.nsmallest
-     #         pros: optimized/efficient/fast, atomic
-     #         cons: does *NOT* modify the heap, leaving those n to be "read" again
-     #
-     # 2) use Heap.pop n times in row
-     #         pros: atomic, simple, correctly removes the n entries
-     #         cons: not necessarily the most efficient way to get n pops
-     #
-     # 3) write a coroutine that yields next seq to update and reads post-updated
-     #    seqs to be reinserted into the heap
-     #         pros: most efficient
-     #         cons: nonatomic -> complex code, allows a class of bugs relating
-     #               to re-adding sequences which are still lowest-priority even
-     #               after update (or even after failed update)
-     #
-     # 4) nuke solution: sort() the heap when reading the file, bypassing heap
-     #    semantics
-     #         pros: extremely simple code, atomic, correctly removes ntodo
-     #         cons: (very) inefficient, sorts a dozens-K long list (but at least
-     #               the list is mostly or totally a heap?)
-     #
-     # Second problem: how to deal with dropping sequences? Very difficult to
-     # remove stuff from the heap.
-     #
-     # Possible solutions:
-     # 1) *somehow* track the index of each entry with which to use Heap.remove(i)
-     #         pros: simple design, simple code
-     #         cons: tracking the index of each entry is itself basically impossible
-     #
-     # 2) keep a reference to the heap entry stored on the ali object, and
-     #    sabotage the entry when its seq is deleted (the priority must be left
-     #    intact to maintain the heap)
-     #         pros: tractible, not too difficult
-     #         cons: requires heap-reading code to error check
-     #
-     # 3) Bypass the problem entirely by only allowing drops after heap-reading
-     #         pros: simple user code
-     #         cons: requires the SequencesData class to implement some sort of state
-
-
+     # See heap_impl_details.txt for a detailed rationale for the heap design.
+     # The gist is we just use standard heap methods for everything; dropping
+     # seqs nukes the relevant heap entry, so heap-read methods must error check
+     # for valid entries
 
      @property
      def file(self):
@@ -327,29 +270,38 @@ class _SequencesData:
           '''Initialize self from the immutable `file` passed to the constructor.'''
           with open(self.file, 'r') as f:
                heap = json.load(f)['aaData']
-          self._heap = [None] * len(heap)
+
+          self._data = dict()
+          self._heap = _Heap([None])
+          self._heap *= len(heap)
+          # Heap/list constructors copy their input, so multiply after constructor
+
           for i, dat in enumerate(heap):
                ali = AliquotSequence(lst=dat)
+               self._heap[i] = self._make_heap_entry(ali)
                self._data[ali.seq] = ali
-               self._heap[i] = self._heap_tuple(ali)
+
 
      @staticmethod
-     def _heap_tuple(ali):
-          return (ali.priority, ali.time, ali.seq)
+     def _make_heap_entry(ali):
+          # Must be sabotage-able, i.e. mutable, can't use tuple
+          # All code that depends on the format here is tagged with HEAPENTRY
+          entry = [ali.priority, ali.time, ali.seq]
+          ali._heap_entry = entry # We need to track heap entries so we can sabotage them upon seqdrop
+          return entry
 
 
      def write_files(self):
           '''Finalize self to the given file. Totally overwrites it with data
           from self.'''
 
+          # ignore dropped seqs (HEAPENTRY)
+          out = [item[2] for item in self._heap if item[2] in self]
           # Find seqs that have been dropped from heap, they're just appended
-          # at the end
-          missing = set(self._dict.keys()) - set(item[2] for item in self._heap)
-
-          out = [item[2] for item in self._heapp] # heap ali object may be out of date
-          out = filter(lambda seq: seq in self, out) # ignore dropped seqs
-          out = [self._dict[seq] for seq in out]
-          out.extend(self._dict[seq] for seq in missing)
+          # at the end, no heapifying
+          missing = set(self.keys()).difference(out)
+          out = [self[seq] for seq in out]
+          out.extend(self[seq] for seq in missing)
 
           json_string = json.dumps({"aaData": out}).replace('],', '],\n') + '\n'
           with open(self._jsonfile, 'w') as f:
@@ -365,22 +317,58 @@ class _SequencesData:
           with open(self._resfile, 'w') as f:
                f.write(res_string)
           del res_string
+          del out
+
+
+     @staticmethod
+     def _sabotage_heap_entry(ali):
+          # The entry must remain comparable, so e.g. no Nones allowed (HEAPENTRY)
+          ali._heap_entry[2] = 0
 
 
      def get_n_todo(self, n):
-          return self._heap.nsmallest(n)
+          '''A lazy iterator yielding the n highest priority sequences'''
+          while n > 0:
+               seq = self._heap.pop()[2] # HEAPENTRY
+               if seq: # heap entries are sabotaged by setting seq==0
+                    n -= 1
+                    yield seq
 
 
-     def drop(seqs):
-          '''Drop the given sequences from the dictionary'''
-          # TODO: determine how this interacts with the heap
+     def drop(self, seqs):
+          '''Drop the given sequences from the dictionary. Raises an exception
+          if a seq doesn't exist.'''
+          for seq in seqs:
+               if seq not in self:
+                    raise KeyError("seq {} not in seqdata".format(seq))
+               ali = self[seq]
+               self._sabotage_heap_entry(ali)
+               del self[seq]
+               del ali
 
+
+     def insert_new_info(self, ali):
+          '''Call this method to insert a newly updated AliquotSequence object
+          into the underlying datastructures. Any previous such object is
+          silently overwritten.'''
+          self[ali.seq] = ali
+          self._heap.push(self._make_heap_entry(ali))
+
+#
+#
+################################################################################
+
+################################################################################
+# Finally, we get to the public class. It exposes the public methods of its
+# parent (which are those that require direct access to the underlying
+# datastructures) in addition to defining the common algorithms useful for scripts
+# operating on the data which *don't* require special access. Since there are
+# several such algorithms, they are separated out into this public class.
 
 class SequencesManager(_SequencesData):
-     '''A class to do common algorithms on the seqsdata, but which should only
-     use the public methods of its parent class (i.e. no manipulation of the
-     underlying heap and dict). So separate them out here for conceptual
-     clarity.'''
+     '''The public class which implements the basic methods to manipulate
+     aliquot sequence data, as well as several common algorithms on top of the
+     basic methods.'''
 
      def find_merges(self):
           ...
@@ -388,4 +376,6 @@ class SequencesManager(_SequencesData):
      def update_reservations(self):
           ...
 
+     def calculate_priority(self, ...):
+          ...
 
