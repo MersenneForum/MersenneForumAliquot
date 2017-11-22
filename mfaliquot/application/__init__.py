@@ -168,7 +168,7 @@ class _DelegatedAttribute:
         return ""
 
 
-def custom_inherit(baseclass, delegator='delegate', include=None, exclude=None):
+def _custom_inherit(baseclass, delegator='delegate', include=None, exclude=None):
     '''A decorator to customize inheritance of the decorated class from the
     given baseclass. `delegator` is the name of the attribute on the subclass
     through which delegation is done;  `include` and `exclude` are a whitelist
@@ -208,7 +208,7 @@ def custom_inherit(baseclass, delegator='delegate', include=None, exclude=None):
 import heapq as _heap
 from functools import partial
 
-class Heap(list):
+class _Heap(list):
 
      def __init__(self, iterable=None):
           if iterable:
@@ -230,7 +230,9 @@ class Heap(list):
           # while we know that self is already a min heap, so we can
           # make the max heap construction faster
           self[:n] = reversed(self[:n])
-          return _heap.nsmallest(n, self, key)
+          out = _heap.nsmallest(n, self, key)
+          self[:n] = reversed(self[:n])
+          return out
 
 
 ################################################################################
@@ -239,7 +241,7 @@ class Heap(list):
 # in an immutable fashion.
 
 
-@custom_inherit(dict, delegator='_data', include=['__len__', '__getitem__',
+@_custom_inherit(dict, delegator='_data', include=['__len__', '__getitem__',
                    '__contains__', 'get', 'items', 'keys', 'values', '__str__'])
 class _SequencesData:
      '''The class that reads and writes The Sequence Data File. The `file`
@@ -252,25 +254,20 @@ class _SequencesData:
           a new SequenceData object.'''
           # For priority purposes, we keep the jsonlist in minheap form ordered
           # by priority. The dict is an access convenience for most purposes.
+          if jsonfile == txtfile or jsonfile == resfile:
+               raise ValueError("file arguments must be unique!")
           self._jsonfile = jsonfile
           self._txtfile = txtfile
           self._resfile = resfile
           self._data = dict()
-          self._heap = Heap()
+          self._heap = _Heap()
      # Here's the intended dataflow design: The dict is the master list of data,
      # but the minheap/list is in charge of maintaining a (rough) heap order.
-     # When written to file, the data from the dict (being the master) is
-     # written, but in the order specified by the heap after that cycle's
-     # updates and other modifications. It doesn't even really matter if some of
-     # it isn't exactly a heap, because when reading, the data is used to
-     # initialize the dict, then the list is *sorted*. Since it was written to
-     # file in roughly a heap (and since the timsort used by Python is extremely
-     # efficient at leveraging any partial order already present in data), this
-     # initial sorting is nearly free. We then read the lowest N seqs off the
-     # list as this cycle's todo, and do any further updates in the cycle using
-     # the heap methods to maintain easy sortability with little cost. Then
-     # write, rinse and repeat.
-     # TODO: update the comment (no initial sorting)
+     # When written to file, the data from the dict (being the master) is written,
+     # but in the order specified by the heap after that cycle's updates and other
+     # modifications. We then read the lowest N seqs off the heap as this cycle's
+     # todo, and do any further updates in the cycle using the heap methods to
+     # maintain its invariant. Then write, rinse and repeat.
 
 
      @property
@@ -278,7 +275,7 @@ class _SequencesData:
           return self._jsonfile
 
 
-     def read_from_file(self):
+     def read_file_and_init(self):
           '''Initialize self from the immutable `file` passed to the constructor.'''
           with open(self.file, 'r') as f:
                heap = json.load(f)['aaData']
@@ -293,40 +290,44 @@ class _SequencesData:
           return (ali.priority, ali.time, ali.seq)
 
 
-     def get_N_todo(self, N):
-          #from heapq import nsmallest
-          # for N, reverse that sublist on the heap, beacuse nsmallest uses a maxheap
-          # while our own list is already (nearly) a minheap, so reversing first N
-          # will significantly speed up the maxheap
-          return out
-
-
-     def write_to_file(self):
+     def write_files(self):
           '''Finalize self to the given file. Totally overwrites it with data
           from self.'''
 
           # Find seqs that have been dropped from heap, they're just appended
           # at the end
-          unsorted = set(self._data.keys()) - set(item[2] for item in self._heap)
-          out = [self._data[item[2]] for item in self._heap] # heap ali object may be out of date
-          out.extend(self._data[seq] for seq in unsorted)
+          missing = set(self._dict.keys()) - set(item[2] for item in self._heap)
+
+          out = [item[2] for item in self._heapp] # heap ali object may be out of date
+          out = filter(lambda seq: seq in self, out) # ignore dropped seqs
+          out = [self._dict[seq] for seq in out]
+          out.extend(self._dict[seq] for seq in missing)
 
           json_string = json.dumps({"aaData": out}).replace('],', '],\n') + '\n'
-          txt_string = '\n'.join(str(ali) for ali in out) + '\n'
-          res_string = '\n'.join(ali.reservation_string() for ali in out) + '\n'
-
           with open(self._jsonfile, 'w') as f:
                f.write(json_string)
+          del json_string
 
+          txt_string = '\n'.join(str(ali) for ali in out) + '\n'
           with open(self._txtfile, 'w') as f:
                f.write(txt_string)
+          del txt_string
 
+          res_string = '\n'.join(ali.reservation_string() for ali in out) + '\n'
           with open(self._resfile, 'w') as f:
                f.write(res_string)
+          del res_string
 
 
+     def get_n_todo(self, n):
+          return self._heap.nsmallest(n)
+
+
+     _null_heap_entry = (float("inf"), None, None) # Always compares higher
      def drop(seqs):
           '''Drop the given sequences from the dictionary'''
+          for seq in seqs:
+
           # TODO: determine how this interacts with the heap
 
 
