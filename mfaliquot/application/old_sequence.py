@@ -61,6 +61,7 @@ class AliquotSequence(list):
                if a != b:
                     raise ValueError('AliquotSequence.__init__ received invalid size list (got {}, must be {})'.format(a, b))
                super().__init__(l)
+               del kwargs['lst']
           else:
                super().__init__(self._defaults)
 

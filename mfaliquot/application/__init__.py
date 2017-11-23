@@ -60,12 +60,12 @@ class AliquotSequence(list):
              'index':    (2, None),
              'guide':    (3, ''),
              'factors':  (4, ''),
-             'cofact':   (5, ''),
+             'cofactor': (5, ''),
              'klass':    (6, None),
              'res':      (7, ''),
              'progress': (8, None),
              'time':     (9, ''),
-             'nzilch':   (10, None), # Definitely looking for a better name
+             'nzilch':   (10, 0), # Definitely looking for a better name
              'priority': (11, None),
              'id':       (12, None),
              'driver':   (13, None)
@@ -282,7 +282,7 @@ class _SequencesData:
      constructor argument is immutable for the lifetime of the object. Writing
      also writes to the other two files (which are read-only).'''
 
-     def __init__(self, jsonfile, txtfile, resfile):
+     def __init__(self, jsonfile, txtfile='', resfile=''):
           '''Create the object with its one and only jsonfile. To switch files,
           you must finalize this object and "manually" move the file, then make
           a new SequenceData object.'''
@@ -304,6 +304,12 @@ class _SequencesData:
      @property
      def file(self):
           return self._jsonfile
+
+
+     def _init(self):
+          '''Used if starting from scratch, not reading from file'''
+          self._data = dict()
+          self._heap = _Heap()
 
 
      def read_file_and_init(self):
@@ -333,8 +339,8 @@ class _SequencesData:
 
      @staticmethod
      def _sabotage_heap_entry(ali):
-          # The entry must remain comparable, so e.g. no Nones allowed (HEAPENTRY)
-          ali._heap_entry[2] = 0
+          # HEAPENTRY
+          ali._heap_entry[2] = None
 
 
      def write_files(self):
@@ -342,28 +348,30 @@ class _SequencesData:
           from self.'''
 
           # ignore dropped seqs (HEAPENTRY)
-          out = [item[2] for item in self._heap if item[2] in self]
+          out = [item[2] for item in self._heap if item[2] in self._data]
           # Find seqs that have been dropped from heap, they're just appended
           # at the end, no heapifying
-          missing = set(self.keys()).difference(out)
-          out = [self[seq] for seq in out]
-          out.extend(self[seq] for seq in missing)
+          missing = set(self._data.keys()).difference(out)
+          out = [self._data[seq] for seq in out]
+          out.extend(self._data[seq] for seq in missing)
 
           json_string = json.dumps({"aaData": out}).replace('],', '],\n') + '\n'
           with open(self._jsonfile, 'w') as f:
                f.write(json_string)
           del json_string
 
-          txt_string = '\n'.join(str(ali) for ali in out) + '\n'
-          with open(self._txtfile, 'w') as f:
-               f.write(txt_string)
-          del txt_string
+          if self._txtfile:
+               txt_string = '\n'.join(str(ali) for ali in out) + '\n'
+               with open(self._txtfile, 'w') as f:
+                    f.write(txt_string)
+               del txt_string
 
-          res_string = '\n'.join(ali.reservation_string() for ali in out) + '\n'
-          with open(self._resfile, 'w') as f:
-               f.write(res_string)
-          del res_string
-          del out
+          if self._resfile:
+               res_string = '\n'.join(ali.reservation_string() for ali in out) + '\n'
+               with open(self._resfile, 'w') as f:
+                    f.write(res_string)
+               del res_string
+               del out
 
 
      def get_n_todo(self, n):
@@ -381,9 +389,9 @@ class _SequencesData:
           for seq in seqs:
                if seq not in self:
                     raise KeyError("seq {} not in seqdata".format(seq))
-               ali = self[seq]
+               ali = self._data[seq]
                self._sabotage_heap_entry(ali)
-               del self[seq]
+               del self._data[seq]
                del ali
 
 
@@ -391,7 +399,7 @@ class _SequencesData:
           '''Call this method to insert a newly updated AliquotSequence object
           into the underlying datastructures. Any previous such object is
           silently overwritten.'''
-          self[ali.seq] = ali
+          self._data[ali.seq] = ali
           self._heap.push(self._make_heap_entry(ali))
 
 #
@@ -453,7 +461,7 @@ class SequencesManager(_SequencesData):
 
                if not current:
                     not_reserveds.append(seq)
-               elif name == current
+               elif name == current:
                     self[seq].res = ''
                     c += 1
                else:
