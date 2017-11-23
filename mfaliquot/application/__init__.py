@@ -315,7 +315,11 @@ class _SequencesData:
      def read_file_and_init(self):
           '''Initialize self from the immutable `file` passed to the constructor.'''
           with open(self.file, 'r') as f:
-               heap = json.load(f)['aaData']
+               data = json.load(f)
+
+          heap = data['aaData']
+          if 'resdatetime' in data:
+               self.resdatetime = data['resdatetime']
 
           self._data = dict()
           self._heap = _Heap([None])
@@ -355,7 +359,12 @@ class _SequencesData:
           out = [self._data[seq] for seq in out]
           out.extend(self._data[seq] for seq in missing)
 
-          json_string = json.dumps({"aaData": out}).replace('],', '],\n') + '\n'
+          outdict = {"aaData": out}
+          try:
+               outdict['resdatetime'] = self.resdatetime
+          except Exception:
+               pass
+          json_string = json.dumps(outdict).replace('],', '],\n') + '\n'
           with open(self._jsonfile, 'w') as f:
                f.write(json_string)
           del json_string
@@ -416,7 +425,8 @@ class _SequencesData:
 class SequencesManager(_SequencesData):
      '''The public class which implements the basic methods to manipulate
      aliquot sequence data, as well as several common algorithms on top of the
-     basic methods.'''
+     basic methods. Update the resdatetime attribute when reservations are
+     spidered.'''
 
      def find_merges(self):
           '''Returns a tuple of (mergee, (*mergers)) tuples (does not drop)'''

@@ -86,7 +86,4 @@ class AliquotSequence(list):
           if not self.res:
                return ''
           out = "{:>7d}  {:30s} {:>5d}  {:>3d}\n".format(self.seq, self.res, self.index, self.size)
-          #if 'jacobs and' in self.res:
-          #     out += '        Richard Guy\n'
           return out
-          # TODO: extend allowable string lengths, remove special case
