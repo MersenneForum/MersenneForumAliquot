@@ -441,11 +441,12 @@ class SequencesManager(_SequencesData):
 
      def reserve_seqs(self, name, seqs):
           '''Mark the `seqs` as reserved by `name`. Raises ValueError if a seq
-          doesn't exist. Returns (list_of_already_owns, list_of_other_owns)'''
-          already_owns, other_owns = [], []
+          doesn't exist. Returns (DNEs, already_owns, other_owns)'''
+          DNEs, already_owns, other_owns = [], [], []
           for seq in seqs:
                if seq not in self:
-                    raise ValueError("seq {} doesn't exist".format(seq))
+                    DNEs.append(seq)
+                    continue
 
                other = self[seq].res
 
@@ -456,16 +457,17 @@ class SequencesManager(_SequencesData):
                else:
                     other_owns.append((seq, other))
 
-          return already_owns, other_owns
+          return DNEs, already_owns, other_owns
 
 
      def unreserve_seqs(self, name, seqs):
           '''Mark the `seqs` as no longer reserved. Raises ValueError if seq does
-          not exist. Returns (not_reserveds, wrong_reserveds, count_dropped) '''
-          not_reserveds, wrong_reserveds, c = [], [], 0
+          not exist. Returns (DNEs, not_reserveds, wrong_reserveds, count_dropped) '''
+          DNEs, not_reserveds, wrong_reserveds = [], [], []
           for seq in seqs:
                if seq not in self:
-                    raise ValueError("seq {} doesn't exist".format(seq))
+                   DNEs.append(seq)
+                   continue
 
                current = self[seq].res
 
@@ -473,10 +475,9 @@ class SequencesManager(_SequencesData):
                     not_reserveds.append(seq)
                elif name == current:
                     self[seq].res = ''
-                    c += 1
                else:
                     wrong_reserveds.append((seq, current))
 
-          return not_reserveds, wrong_reserveds, c
+          return DNEs, not_reserveds, wrong_reserveds
 
 

@@ -1,0 +1,5 @@
+# I'm pretty sure the lengths I go to, to avoid printing anything from inside the
+# package itself, are actually insane and that having dedicated functions just
+# to parse highly nested and dense retvals is pretty much insane. I think the
+# standard best practice is some sort of logging, but... ugh. That's a whole
+# nother level of APIs and best practices and state management to learn... blugh
