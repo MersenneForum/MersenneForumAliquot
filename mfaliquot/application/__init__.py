@@ -44,6 +44,8 @@ import json
 from collections import defaultdict
 import datetime
 
+DATETIMEFMT = '%Y-%m-%d %H:%M:%S'
+
 
 ################################################################################
 # First, the AliquotSequence class:

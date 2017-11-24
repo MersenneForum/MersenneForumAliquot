@@ -24,7 +24,9 @@
 # It delegates heavily to forum_xaction for such
 
 from .forum_xaction import spider_res_thread, SEQ_REGEX
+from . import DATETIMEFMT
 from ..myutils import blogotubes
+from time import strftime, gmtime
 
 # First the standalone func that processes mass text file reservations
 def parse_mass_reservation(reservee, url):
@@ -49,6 +51,8 @@ def update_apply_all_res(seqinfo, last_pid, mass_reses):
      '''Searches all known reservations, returning compiled reses to be applied,
      as well as various results from subordinate functions'''
 
+     now = strftime(DATEFMT, gmtime())
+
      last_pid, prev_pages, all_res = spider_res_thread(last_pid)
 
      mass_reses_out = []
@@ -72,6 +76,8 @@ def update_apply_all_res(seqinfo, last_pid, mass_reses):
           if drops:
                dropres = seqinfo.unreserve_seqs(name, drops)
           out.append((name, addres, dropres))
+
+     seqinfo.resdatetime = now
 
      return last_pid, prev_pages, out, mass_reses_out # What a mess of data
 
