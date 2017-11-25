@@ -57,7 +57,10 @@ def translate_json(file1, file2):
 
           new_data.insert_new_info(new_ali)
 
-     new_data.write_files()
+     try:
+          new_data.write_files()
+     except FileNotFoundError: # because _init() doesn't create lockfile
+          pass
 
      return new_data
 

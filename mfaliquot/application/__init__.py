@@ -43,6 +43,8 @@
 import json
 from collections import defaultdict
 import datetime
+from time import sleep
+from os import remove as rm
 
 DATETIMEFMT = '%Y-%m-%d %H:%M:%S'
 
@@ -276,6 +278,9 @@ class _Heap(list):
 # accessible in an immutable fashion (though the public methods mutate it as
 # necessary)
 
+# Error raised if the file can't be locked
+class LockError(Exception): pass
+
 
 @_custom_inherit(dict, delegator='_data', include=['__len__', '__getitem__',
                    '__contains__', 'get', 'items', 'keys', 'values', '__str__'])
@@ -303,19 +308,29 @@ class _SequencesData:
      # seqs nukes the relevant heap entry, so heap-read methods must error check
      # for valid entries
 
+     lock_suffix = '.lock'
+
      @property
      def file(self):
           return self._jsonfile
 
 
      def _init(self):
-          '''Used if starting from scratch, not reading from file'''
+          '''Used if starting from scratch, not reading from file. This bypasses
+          the locking logic, which is liable to cause errors when subsequently
+          using self.write_files()'''
           self._data = dict()
           self._heap = _Heap()
 
 
      def read_file_and_init(self):
-          '''Initialize self from the immutable `file` passed to the constructor.'''
+          '''Initialize self from the (immutable attribute) `file` passed to the constructor.'''
+          try:
+               with open(self.file + self.lock_suffix, 'x'):
+                    pass
+          except FileExistsError:
+               raise LockError("Lock file exists for {}, SeqsData uninitialized".format(self.file)) from None
+
           with open(self.file, 'r') as f:
                data = json.load(f)
 
@@ -333,26 +348,39 @@ class _SequencesData:
                self._heap[i] = self._make_heap_entry(ali)
                self._data[ali.seq] = ali
 
-
-     @staticmethod
-     def _make_heap_entry(ali):
-          # Must be sabotage-able, i.e. mutable, can't use tuple
-          # All code that depends on the format here is tagged with HEAPENTRY
-          entry = [ali.priority, ali.time, ali.seq]
-          ali._heap_entry = entry # We need to track heap entries so we can sabotage them upon seqdrop
-          return entry
+          self._heap.heapify()
 
 
-     @staticmethod
-     def _sabotage_heap_entry(ali):
-          # HEAPENTRY
-          ali._heap_entry[2] = None
+     def lock_read_init(self, block_minutes=0):
+          '''Use this to begin a `with` statement'''
+          # Dummy function for code clarity and "argument passing"
+          self._block_minutes = block_minutes
+          return self
+
+
+     def __enter__(self):
+          # Thin wrapper around read_file_and_init, only difference is artifical blocking
+          seconds = self._block_minutes*60
+          period = 2 # No idea if this is sane or not
+          count = seconds // period + 1 # Ensure at least one loop iter
+          while count:
+               try:
+                    self.read_file_and_init()
+               except LockError as e:
+                    count -= 1    # Unforunately, I couldn't find a way to get the
+                    if not count: # caught exception bound in a variable outside the
+                         raise    # loop... sigh
+                    sleep(period)
+                    count -= 1
+                    continue
+               else:
+                    return self
+          raise LockError("fell out of loop")
 
 
      def write_files(self):
-          '''Finalize self to the given file. Totally overwrites it with data
+          '''Finalize self to the given file(s). Totally overwrites it with data
           from self.'''
-
           # ignore dropped seqs (HEAPENTRY)
           out = [item[2] for item in self._heap if item[2] in self._data]
           # Find seqs that have been dropped from heap, they're just appended
@@ -382,7 +410,29 @@ class _SequencesData:
                with open(self._resfile, 'w') as f:
                     f.write(res_string)
                del res_string
-               del out
+
+          del out
+
+          rm(self.file + self.lock_suffix) # Should we test for problems or just let exceptions propgate?
+
+
+     def __exit__(self, *exc):
+          self.write_files()
+
+
+     @staticmethod
+     def _make_heap_entry(ali):
+          # Must be sabotage-able, i.e. mutable, can't use tuple
+          # All code that depends on the format here is tagged with HEAPENTRY
+          entry = [ali.priority, ali.time, ali.seq]
+          ali._heap_entry = entry # We need to track heap entries so we can sabotage them upon seqdrop
+          return entry
+
+
+     @staticmethod
+     def _sabotage_heap_entry(ali):
+          # HEAPENTRY
+          ali._heap_entry[2] = None
 
 
      def get_n_todo(self, n):
