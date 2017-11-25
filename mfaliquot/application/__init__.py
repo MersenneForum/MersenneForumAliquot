@@ -70,7 +70,7 @@ class AliquotSequence(list):
              'progress': (8, None),
              'time':     (9, ''),
              'nzilch':   (10, 0), # Definitely looking for a better name
-             'priority': (11, None),
+             'priority': (11, 0),
              'id':       (12, None),
              'driver':   (13, None)
             }
@@ -106,6 +106,7 @@ class AliquotSequence(list):
                if a != b:
                     raise ValueError('AliquotSequence.__init__ received invalid size list (got {}, must be {})'.format(a, b))
                super().__init__(l)
+               del kwargs['lst']
           else:
                super().__init__(self._defaults)
 

@@ -51,7 +51,7 @@ def update_apply_all_res(seqinfo, last_pid, mass_reses):
      '''Searches all known reservations, returning compiled reses to be applied,
      as well as various results from subordinate functions'''
 
-     now = strftime(DATEFMT, gmtime())
+     now = strftime(DATETIMEFMT, gmtime())
 
      last_pid, prev_pages, all_res = spider_res_thread(last_pid)
 
@@ -96,19 +96,19 @@ def update_apply_all_res_to_str(last_pid_changed, prev_pages, out, mass_reses_ou
           s += unreserve_seqs_to_str(name, *dres)
 
      for name, dups, unknowns, dres in mass_reses_out:
-          s += '\n'.join("Warning: mass res-er {} listed a duplicate for {}".format(name, seq) for seq in dups) + '\n' +\
-          s += '\n'.join("Warning: unknown line from {}: '{}'".format(name, line) for line in unknowns) + '\n' +\
+          s += '\n'.join("Warning: mass res-er {} listed a duplicate for {}".format(name, seq) for seq in dups) + '\n'
+          s += '\n'.join("Warning: unknown line from {}: '{}'".format(name, line) for line in unknowns) + '\n'
           s += unreserve_seqs_to_str(name, *dres)
 
 
 def reserve_seqs_to_str(name, DNEs, already_owns, other_owns):
      return '\n'.join("Warning: {} doesn't exist ({})".format(seq, name) for seq in DNEs) + '\n' + \
-            '\n'.join("Warning: {} already owns {}".format(name, seq) for seq in already_owns) + '\n' +\
+            '\n'.join("Warning: {} already owns {}".format(name, seq) for seq in already_owns) + '\n' + \
             '\n'.join("Warning: {} is owned by {} but is trying to be reserved by {}!".format(seq, other, name) for seq, other in other_owns) + '\n'
 
 def unreserve_seqs_to_str(name, DNEs, not_reserveds, wrong_reserveds):
      return '\n'.join("Warning: {} doesn't exist ({})".format(seq, name) for seq in DNEs) + '\n' + \
-            '\n'.join("Warning: {} is not currently reserved ({})".format(seq, name) for seq in not_reserveds) + '\n' +\
+            '\n'.join("Warning: {} is not currently reserved ({})".format(seq, name) for seq in not_reserveds) + '\n' + \
             '\n'.join("Warning: {} is reserved by {}, not dropee {}!".format(seq, other, name) for seeq, other in wrong_reserveds) + '\n'
 
 
