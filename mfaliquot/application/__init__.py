@@ -362,21 +362,18 @@ class _SequencesData:
      def __enter__(self):
           # Thin wrapper around read_file_and_init, only difference is artifical blocking
           seconds = self._block_minutes*60
-          period = 2 # No idea if this is sane or not
-          count = seconds // period + 1 # Ensure at least one loop iter
-          while count:
+          period = 1 # No idea if this is sane or not
+          count = seconds // period
+          for i in range(count + 1): # Ensure at least one loop per iter
                try:
                     self.read_file_and_init()
                except LockError as e:
-                    count -= 1    # Unforunately, I couldn't find a way to get the
-                    if not count: # caught exception bound in a variable outside the
-                         raise    # loop... sigh
+                    f = e
                     sleep(period)
-                    count -= 1
                     continue
                else:
                     return self
-          raise LockError("fell out of loop")
+          raise f
 
 
      def write_files(self):
