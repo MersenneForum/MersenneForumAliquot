@@ -24,7 +24,7 @@ import sys
 sys.path.insert(0, realpath(join(dirname(sys.argv[0]), '..')))
 
 from mfaliquot.application import reservations as R
-from mfaliquot.application import SequencesManager
+from mfaliquot.application import SequencesManager, LockError
 from os import remove as rm
 from shutil import copy2 as cp
 from os.path import exists, realpath, join, dirname
@@ -83,6 +83,13 @@ class TestSequencesManager(unittest.TestCase):
           self.assertFilesEqual(seqinfo.file, self.snapshot)
           self.assertFilesEqual(self.txtfile, self.txtsnapshot)
 
+
+     def test_already_locked(self):
+          open(self.lockfile, 'w').close()
+
+          seqinfo = SequencesManager(self.file)
+
+          self.assertRaises(LockError, seqinfo.lock_read_init)
 
 
      def assertFilesEqual(self, f1, f2):
