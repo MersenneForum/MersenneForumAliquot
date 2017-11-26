@@ -41,7 +41,7 @@
 
 
 import json
-from collections import defaultdict
+from collections import defaultdict, Counter
 import datetime
 from time import sleep
 from os import remove as rm
@@ -143,6 +143,10 @@ class AliquotSequence(list):
           in days. `begin_time_penalty` is the age (in days) at which priority
           is directly affected by the previous value (before that, it's just
           how many stationary updates).'''
+          # The biggest problem with this prio algo is that I had only planned that
+          # `allseq.py` runs it for newly-updated seqs -- so the old seqs will
+          # never get their prio actually updated towards 0, even if they should be
+          # Solution: add a third script run once a day to update *all* prios?
 
           prio = self.nzilch
 
@@ -433,7 +437,7 @@ class _SequencesData:
           ali._heap_entry[2] = None
 
 
-     def get_n_todo(self, n):
+     def pop_n_todo(self, n):
           '''A lazy iterator yielding the n highest priority sequences'''
           while n > 0:
                seq = self._heap.pop()[2] # HEAPENTRY
@@ -454,7 +458,7 @@ class _SequencesData:
                del ali
 
 
-     def insert_new_info(self, ali):
+     def push_new_info(self, ali):
           '''Call this method to insert a newly updated AliquotSequence object
           into the underlying datastructures. Any previous such object is
           silently overwritten.'''
@@ -529,5 +533,35 @@ class SequencesManager(_SequencesData):
                     wrong_reserveds.append((seq, current))
 
           return DNEs, not_reserveds, wrong_reserveds
+
+
+     def calc_common_stats(self):
+
+          sizes = Counter(); lens = Counter(); guides = Counter(); progs = Counter(); cofacts = Counter()
+          totsiz = 0; totlen = 0; avginc = 0; totprog = 0
+          for ali in self.values():
+               sizes[ali.size] += 1; totsiz += ali.size
+               lens[ali.index] += 1; totlen += ali.index
+               guides[ali.guide] += 1; avginc += ali.index/ali.size
+               progs[ali.progress] += 1
+               cofacts[ali.cofactor] += 1
+
+               if isinstance(ali.progress, int):
+                    totprog += 1
+
+          # Put stats table in json-able format
+          data_total = len(self)
+          lentable = []; lencount = 0
+          sizetable = [ [key, value] for key, value in sizes.items() ]
+          cofactable = [ [key, value] for key, value in cofacts.items() ]
+          for leng, cnt in sorted(lens.items(), key=lambda tup: tup[0]):
+               lentable.append( [leng, cnt, "{:2.2f}".format(lencount/(data_total-cnt)*100)] )
+               lencount += cnt
+          guidetable = [ [key, value] for key, value in guides.items() ]
+          progtable = [ [key, value] for key, value in progs.items() ]
+
+          # see allseq.py for use
+          return sizetable, cofactable, guidetable, progtable, lentable, totlen/totsiz, avginc/data_total, totprog, totprog/data_total
+
 
 
