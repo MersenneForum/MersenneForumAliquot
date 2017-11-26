@@ -61,14 +61,12 @@ def spider_res_thread(last_pid):
                adds, drops = _read_msg(msg)
                all_res.append((name, adds, drops))
           last_pid = all_posts[-1][0] # Highest PID processed
-     else:
-          Print("No new posts!")
 
      return last_pid, prev_pages, all_res
 
 
 # This processes the parsed HTML and its add/drop commands
-def _read_msg(name, msg):
+def _read_msg(msg):
      '''This processes the parsed HTML and its add/drop commands. Returns the two
      such list of sequences.'''
      add = []; addkws = ('Reserv', 'reserv', 'Add', 'add', 'Tak', 'tak')

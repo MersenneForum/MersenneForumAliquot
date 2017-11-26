@@ -294,17 +294,18 @@ class _SequencesData:
      constructor argument is immutable for the lifetime of the object. Writing
      also writes to the other two files (which are read-only).'''
 
-     def __init__(self, jsonfile, txtfile='', resfile=''):
+     def __init__(self, jsonfile, txtfile=''):
           '''Create the object with its one and only jsonfile. To switch files,
           you must finalize this object and "manually" move the file, then make
           a new SequenceData object.'''
           # For priority purposes, we keep the jsonlist in minheap form ordered
           # by priority. The dict is an access convenience for most purposes.
-          if jsonfile == txtfile or jsonfile == resfile:
+          if jsonfile == txtfile:
                raise ValueError("file arguments must be unique!")
           self._jsonfile = jsonfile
+          if not txtfile:
+               txtfile = jsonfile.replace('.json', '.txt')
           self._txtfile = txtfile
-          self._resfile = resfile
           self._data = None # Will cause errors if you try and use this class
           self._heap = None # before actually reading data
 
@@ -328,7 +329,7 @@ class _SequencesData:
           self._heap = _Heap()
 
 
-     def read_file_and_init(self):
+     def lock_read_init(self):
           '''Initialize self from the (immutable attribute) `file` passed to the constructor.'''
           try:
                with open(self.file + self.lock_suffix, 'x'):
@@ -356,7 +357,7 @@ class _SequencesData:
           self._heap.heapify()
 
 
-     def lock_read_init(self, block_minutes=0):
+     def acquire_lock(self, *, block_minutes=0):
           '''Use this to begin a `with` statement'''
           # Dummy function for code clarity and "argument passing"
           self._block_minutes = block_minutes
@@ -364,23 +365,23 @@ class _SequencesData:
 
 
      def __enter__(self):
-          # Thin wrapper around read_file_and_init, only difference is artifical blocking
+          # Thin wrapper around lock_read_init, only difference is artifical blocking
           seconds = self._block_minutes*60
           period = 1 # No idea if this is sane or not
           count = seconds // period
           for i in range(count + 1): # Ensure at least one loop per iter
+               # only problem: even "non blocking" one iter sleeps for one period
                try:
-                    self.read_file_and_init()
+                    self.lock_read_init()
                except LockError as e:
                     f = e
-                    sleep(period)
-                    continue
                else:
                     return self
+               sleep(period)
           raise f
 
 
-     def write_files(self):
+     def unlock_write(self):
           '''Finalize self to the given file(s). Totally overwrites it with data
           from self.'''
           # ignore dropped seqs (HEAPENTRY)
@@ -402,16 +403,10 @@ class _SequencesData:
           del json_string
 
           if self._txtfile:
-               txt_string = '\n'.join(str(ali) for ali in out) + '\n'
+               txt_string = '\n'.join(str(ali) for ali in sorted(out, key=lambda ali: ali.seq)) + '\n'
                with open(self._txtfile, 'w') as f:
                     f.write(txt_string)
                del txt_string
-
-          if self._resfile:
-               res_string = '\n'.join(ali.reservation_string() for ali in out) + '\n'
-               with open(self._resfile, 'w') as f:
-                    f.write(res_string)
-               del res_string
 
           del out
 
@@ -419,7 +414,7 @@ class _SequencesData:
 
 
      def __exit__(self, *exc):
-          self.write_files()
+          self.unlock_write()
 
 
      @staticmethod

@@ -3,8 +3,7 @@ numtheory/__pycache__/
 scripts/AllSeq.txt
 scripts/__pycache__/
 scripts/allseq.py.conf
-scripts/backup
-scripts/last_pid
+scripts/reservations.py.last_pid
 scripts/reservations
 website/html/AllSeq.html
 website/html/statistics.html

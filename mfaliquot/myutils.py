@@ -180,10 +180,10 @@ def blogotubes(url, encoding='utf-8', hdrs=None, data=None):
      else:
           return page
 
-host ='smtp.gmail.com'
+host = '' #'smtp.gmail.com'
 port = 587
 mode = 'tls'
-acc = '<sthg>@gmail.com'
+acc = '' #'<sthg>@gmail.com'
 pw = ''
 
 def email(*args): # HTML, attachments, cc?

@@ -56,25 +56,19 @@ def update_apply_all_res(seqinfo, last_pid, mass_reses):
      last_pid, prev_pages, all_res = spider_res_thread(last_pid)
 
      mass_reses_out = []
-     for reservee, url in mass_reses:
+     for reservee, url in mass_reses.items():
           current, dups, unknowns = parse_mass_reservation(reservee, url)
           old = set(ali.seq for ali in seqinfo.values() if ali.res == reservee)
           drops = old - current
           adds = current - old
-          if drops:
-               dropres = seqinfo.unreserve_seqs(reservee, drops)
-          else:
-               dropres = ()
-          all_res.append(reservee, adds, ())
+          dropres = seqinfo.unreserve_seqs(reservee, drops)
+          all_res.append((reservee, adds, ()))
           mass_reses_out.append((reservee, dups, unknowns, dropres))
 
      out = []
      for name, adds, drops in all_res:
-          addres, dropres = (), ()
-          if adds:
-               addres = seqinfo.reserve_seqs(name, adds)
-          if drops:
-               dropres = seqinfo.unreserve_seqs(name, drops)
+          addres = seqinfo.reserve_seqs(name, adds)
+          dropres = seqinfo.unreserve_seqs(name, drops)
           out.append((name, addres, dropres))
 
      seqinfo.resdatetime = now
@@ -86,7 +80,7 @@ def update_apply_all_res_to_str(last_pid_changed, prev_pages, out, mass_reses_ou
      '''As much for simply reference as for actual use. This entire "return
      enormously nested tuples of retvals to be parsed by scripts into strings"
      thing is, I'm pretty sure, totally crazy'''
-     s = 'No new posts!' if last_pid_changed else ''
+     s = '' if last_pid_changed else 'No new posts!\n'
      if not last_pid_changed and prev_pages:
           raise RuntimeError("No posts but checked previous page???")
      s += '\n'.join("Looks like posts were missed, checking page {}".format(pg) for pg in prev_pages)
@@ -96,19 +90,21 @@ def update_apply_all_res_to_str(last_pid_changed, prev_pages, out, mass_reses_ou
           s += unreserve_seqs_to_str(name, *dres)
 
      for name, dups, unknowns, dres in mass_reses_out:
-          s += '\n'.join("Warning: mass res-er {} listed a duplicate for {}".format(name, seq) for seq in dups) + '\n'
-          s += '\n'.join("Warning: unknown line from {}: '{}'".format(name, line) for line in unknowns) + '\n'
+          s += ''.join("Warning: mass res-er {} listed a duplicate for {}\n".format(name, seq) for seq in dups)
+          s += ''.join("Warning: unknown line from {}: '{}'\n".format(name, line) for line in unknowns)
           s += unreserve_seqs_to_str(name, *dres)
+
+     return s
 
 
 def reserve_seqs_to_str(name, DNEs, already_owns, other_owns):
-     return '\n'.join("Warning: {} doesn't exist ({})".format(seq, name) for seq in DNEs) + '\n' + \
-            '\n'.join("Warning: {} already owns {}".format(name, seq) for seq in already_owns) + '\n' + \
-            '\n'.join("Warning: {} is owned by {} but is trying to be reserved by {}!".format(seq, other, name) for seq, other in other_owns) + '\n'
+     return ''.join("Warning: {} doesn't exist ({})\n".format(seq, name) for seq in DNEs) + \
+            ''.join("Warning: {} already owns {}\n".format(name, seq) for seq in already_owns) + \
+            ''.join("Warning: {} is owned by {} but is trying to be reserved by {}!\n".format(seq, other, name) for seq, other in other_owns)
 
 def unreserve_seqs_to_str(name, DNEs, not_reserveds, wrong_reserveds):
-     return '\n'.join("Warning: {} doesn't exist ({})".format(seq, name) for seq in DNEs) + '\n' + \
-            '\n'.join("Warning: {} is not currently reserved ({})".format(seq, name) for seq in not_reserveds) + '\n' + \
-            '\n'.join("Warning: {} is reserved by {}, not dropee {}!".format(seq, other, name) for seeq, other in wrong_reserveds) + '\n'
+     return ''.join("Warning: {} doesn't exist ({})\n".format(seq, name) for seq in DNEs) + \
+            ''.join("Warning: {} is not currently reserved ({})\n".format(seq, name) for seq in not_reserveds) + \
+            ''.join("Warning: {} is reserved by {}, not dropee {}!\n".format(seq, other, name) for seq, other in wrong_reserveds)
 
 
