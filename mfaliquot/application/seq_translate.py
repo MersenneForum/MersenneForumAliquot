@@ -2,7 +2,7 @@
 # This is written to Python 3.3 standards
 # indentation: 5 spaces (personal preference)
 # when making large scope switches (e.g. between def or class blocks) use two
-# blank lines for clear visual separation
+# blank lines for clearer visual separation
 
 #    Copyright (C) 2014-2015 Bill Winslow
 #
