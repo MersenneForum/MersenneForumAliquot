@@ -47,7 +47,7 @@ def translate_json(file1, file2):
      old_data = read_and_parse_data(file1)
 
      new_data = SequencesManager(file2)
-     new_data._init()
+     new_data._lock_init_empty()
 
      for a in old_data.values():
           new_ali = AliquotSequence(seq=a.seq, size=a.size, index=a.index, guide=a.guide,
@@ -55,12 +55,9 @@ def translate_json(file1, file2):
                                     res=a.res, progress=a.progress, time=a.time, id=a.id,
                                     driver=a.driver)
 
-          new_data.insert_new_info(new_ali)
+          new_data.push_new_info(new_ali)
 
-     try:
-          new_data.write_files()
-     except FileNotFoundError: # because _init() doesn't create lockfile
-          pass
+     new_data.unlock_write()
 
      return new_data
 

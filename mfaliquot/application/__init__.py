@@ -303,6 +303,7 @@ class _SequencesData:
           if jsonfile == txtfile:
                raise ValueError("file arguments must be unique!")
           self._jsonfile = jsonfile
+          self._lockfile = self._jsonfile + '.lock'
           if not txtfile:
                txtfile = jsonfile.replace('.json', '.txt')
           self._txtfile = txtfile
@@ -314,28 +315,32 @@ class _SequencesData:
      # seqs nukes the relevant heap entry, so heap-read methods must error check
      # for valid entries
 
-     lock_suffix = '.lock'
-
      @property
      def file(self):
           return self._jsonfile
 
 
-     def _init(self):
-          '''Used if starting from scratch, not reading from file. This bypasses
-          the locking logic, which is liable to cause errors when subsequently
-          using self.write_files()'''
+     def _lock(self):
+          try:
+               open(self._lockfile, 'x').close()
+          except FileExistsError:
+               raise LockError("Lock file {} exists, _SequencesData uninitialized".format(self._lockfile)) from None
+
+
+     def _unlock(self):
+          rm(self._lockfile) # Should we test for problems or just let exceptions propgate?
+
+
+     def _lock_init_empty(self):
+          '''Use if starting from scratch, not reading from file'''
+          self._lock()
           self._data = dict()
           self._heap = _Heap()
 
 
      def lock_read_init(self):
           '''Initialize self from the (immutable attribute) `file` passed to the constructor.'''
-          try:
-               with open(self.file + self.lock_suffix, 'x'):
-                    pass
-          except FileExistsError:
-               raise LockError("Lock file exists for {}, SeqsData uninitialized".format(self.file)) from None
+          self._lock()
 
           with open(self.file, 'r') as f:
                data = json.load(f)
@@ -410,7 +415,7 @@ class _SequencesData:
 
           del out
 
-          rm(self.file + self.lock_suffix) # Should we test for problems or just let exceptions propgate?
+          self._unlock()
 
 
      def __exit__(self, *exc):

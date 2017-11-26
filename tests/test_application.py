@@ -37,7 +37,7 @@ class TestSequencesManager(unittest.TestCase):
      txtsnapshot = 'txt_snapshot'
      file = 'test_AllSeq.json'
      txtfile = 'test_AllSeq.txt'
-     lockfile = file + SequencesManager.lock_suffix
+     lockfile = file + '.lock'
 
 
      def setUp(self):
