@@ -141,35 +141,29 @@ class AliquotSequence(list):
           return out
 
 
-     def calculate_priority(self, max_update_period=90, begin_time_penalty=30, res_factor=1/2):
+     def calculate_priority(self, max_update_period=90, res_factor=1/2):
           '''Arguments are as follows: `max_update_period` is the target maximum
           time between updates for any sequence no matter how infrequent it is,
-          in days. `begin_time_penalty` is the age (in days) at which priority
-          is directly affected by the previous value (before that, it's just
-          how many stationary updates).'''
+          in days. `res_factor` is a "discount" factor applied to all reserved
+          sequences.'''
           # The biggest problem with this prio algo is that I had only planned that
           # `allseq.py` runs it for newly-updated seqs -- so the old seqs will
           # never get their prio actually updated towards 0, even if they should be
-          # Solution: add a third script run once a day to update *all* prios?
+          # Solution: add a third script run once a day to update *all* prios? TODO
 
           prio = self.nzilch
 
-          if isinstance(self.progress, str):
-               lastprog = datetime.date(*(int(x) for x in self.progress.split('-')))
-               now = datetime.datetime.utcnow().date()
-               deltadays = (now - lastprog).days
+          lastupdate = datetime.datetime.strptime(self.time, DATETIMEFMT)
+          now = datetime.datetime.utcnow()
+          updatedelta = now - lastupdate # result is a timedelta object
+          maxdelta = datetime.timedelta(days=max_update_period)
 
-               if deltadays > begin_time_penalty:
-                    # We apply a "penalty" to priority based on the seq's "progress"
-                    # from btp to mup. So when deltadays == btp, penalty factor = 0,
-                    # and when deltadays == mup, penalty factor = 1, with linear
-                    # interpolation. Then prio -= prio * penalty factor.
-                    # The idea is that prio is necessarily 0 at m_u_p.
-                    days -= begin_time_penalty
-                    max_update_period -= begin_time_penalty
-                    ratio = (deltadays - begin_time_penalty)/(max_update_period - begin_time_penalty)
+          ratio = 1 - updatedelta/maxdelta # returns a float
+          # instead of a straight line from 1 to 0 (as the seq goes longer without
+          # updating), apply a power > 1 to emphasize the first few days after update.
+          ratio **= 3 # use odd power to maintain sign
 
-                    prio *= (1-ratio)
+          prio *= ratio
 
           if self.res:
                prio *= res_factor
@@ -342,30 +336,36 @@ class _SequencesData:
           self._heap = _Heap()
 
 
+     def _read_init(self):
+
+          with open(self.file, 'r') as f:
+               data = json.load(f)
+
+          tmpheap = data['aaData']
+          if 'resdatetime' in data:
+               self.resdatetime = data['resdatetime']
+
+          self._data = dict()
+          self._heap = _Heap([None])
+          self._heap *= len(tmpheap)
+          # Heap/list constructors copy their input, so multiply after constructor
+
+          for i, dat in enumerate(tmpheap):
+               ali = AliquotSequence(lst=dat)
+               # ali.calculate_priority() # this causes a nearly 4x performance penalty for _read_init()
+               self._heap[i] = self._make_heap_entry(ali)
+               self._data[ali.seq] = ali
+
+          self._heap.heapify()
+
+
      def lock_read_init(self):
           '''Initialize self from the (immutable attribute) `file` passed to the constructor.'''
           self._lock()
 
           _logger.info("Lock acquired, reading {}".format(self.file))
 
-          with open(self.file, 'r') as f:
-               data = json.load(f)
-
-          heap = data['aaData']
-          if 'resdatetime' in data:
-               self.resdatetime = data['resdatetime']
-
-          self._data = dict()
-          self._heap = _Heap([None])
-          self._heap *= len(heap)
-          # Heap/list constructors copy their input, so multiply after constructor
-
-          for i, dat in enumerate(heap):
-               ali = AliquotSequence(lst=dat)
-               self._heap[i] = self._make_heap_entry(ali)
-               self._data[ali.seq] = ali
-
-          self._heap.heapify()
+          self._read_init()
 
 
      def acquire_lock(self, *, block_minutes=0):
