@@ -40,13 +40,15 @@
 ################################################################################
 
 
-import json
+import json, datetime, logging
 from collections import defaultdict, Counter
-import datetime
 from time import sleep
 from os import remove as rm
 
+################################################################################
+
 DATETIMEFMT = '%Y-%m-%d %H:%M:%S'
+_logger = logging.getLogger(__name__)
 
 
 ################################################################################
@@ -342,6 +344,8 @@ class _SequencesData:
           '''Initialize self from the (immutable attribute) `file` passed to the constructor.'''
           self._lock()
 
+          _logger.info("Lock acquired, reading {}".format(self.file))
+
           with open(self.file, 'r') as f:
                data = json.load(f)
 
@@ -372,17 +376,26 @@ class _SequencesData:
      def __enter__(self):
           # Thin wrapper around lock_read_init, only difference is artifical blocking
           seconds = self._block_minutes*60
-          period = 1 # No idea if this is sane or not
+          period = 5 # No idea if this is sane or not
           count = seconds // period
-          for i in range(count + 1): # Ensure at least one loop per iter
-               # only problem: even "non blocking" one iter sleeps for one period
+
+          try:
+               self.lock_read_init()
+          except LockError as e:
+               f = e
+               _logger.warning("Failed to acquire lock for {}, retrying in {} seconds".format(self.file, period))
+          else:
+               return self
+          # I've yet to see a good alternative to the missing do...while syntax that Python lacks
+          for i in range(count):
+               sleep(period)
                try:
                     self.lock_read_init()
                except LockError as e:
                     f = e
+                    _logger.warning("Failed to acquire lock for {}, retrying in {} seconds".format(self.file, period))
                else:
                     return self
-               sleep(period)
           raise f
 
 
@@ -416,9 +429,10 @@ class _SequencesData:
           del out
 
           self._unlock()
+          _logger.info("{} instance written and finalized".format(self.__class__.__name__))
 
 
-     def __exit__(self, *exc):
+     def __exit__(self, *exception):
           self.unlock_write()
 
 
@@ -449,6 +463,7 @@ class _SequencesData:
      def drop(self, seqs):
           '''Drop the given sequences from the dictionary. Raises an exception
           if a seq doesn't exist.'''
+          _logger.info("Dropping seqs {}".format(', '.join(str(s) for s in seqs)))
           for seq in seqs:
                if seq not in self:
                     raise KeyError("seq {} not in seqdata".format(seq))
@@ -490,7 +505,25 @@ class SequencesManager(_SequencesData):
 
           merges = [list(sorted(lst)) for lst in ids.values() if len(lst) > 1]
 
+          merges = tuple((lst[0], lst[1:]) for lst in merges)
+
+          if merges:
+               # not really a warning, but noteworthy enough to trigger e.g. an email
+               _logger.warning("Found merges!")
+               for target, drops in merges:
+                    _logger.warning('The seq(s) {} seem(s) to have merged with {}'.format(', '.join(str(d) for d in drops), target))
+          else:
+               _logger.info("No merges found")
+
           return tuple((lst[0], lst[1:]) for lst in merges)
+
+
+     def find_and_drop_merges(self):
+          '''A convenience method wrapped around `find_merges` and `drop`.
+          Literally 3 lines long.'''
+          merges = self.find_merges()
+          for target, drops in merges:
+               self.drop(drops)
 
 
      def reserve_seqs(self, name, seqs):
@@ -499,6 +532,7 @@ class SequencesManager(_SequencesData):
           DNEs, already_owns, other_owns = [], [], []
           for seq in seqs:
                if seq not in self:
+                    _logger.warning("reserve_seqs: {} doesn't exist ({})\n".format(seq, name))
                     DNEs.append(seq)
                     continue
 
@@ -507,8 +541,10 @@ class SequencesManager(_SequencesData):
                if not other:
                     self[seq].res = name
                elif name == other:
+                    _logger.warning("reserve_seqs: {} already owns {}\n".format(name, seq))
                     already_owns.append(seq)
                else:
+                    _logger.warning("reserve_seqs: {} is owned by {} but is trying to be reserved by {}!\n".format(seq, other, name))
                     other_owns.append((seq, other))
 
           return DNEs, already_owns, other_owns
@@ -520,16 +556,19 @@ class SequencesManager(_SequencesData):
           DNEs, not_reserveds, wrong_reserveds = [], [], []
           for seq in seqs:
                if seq not in self:
-                   DNEs.append(seq)
-                   continue
+                    _logger.warning("unreserve_seqs: {} doesn't exist ({})\n".format(seq, name))
+                    DNEs.append(seq)
+                    continue
 
                current = self[seq].res
 
                if not current:
+                    _logger.warning("unreserve_seqs: {} is not currently reserved ({})\n".format(seq, name))
                     not_reserveds.append(seq)
                elif name == current:
                     self[seq].res = ''
                else:
+                    _logger.warning("unreserve_seqs: {} is reserved by {}, not dropee {}!\n".format(seq, other, name))
                     wrong_reserveds.append((seq, current))
 
           return DNEs, not_reserveds, wrong_reserveds
