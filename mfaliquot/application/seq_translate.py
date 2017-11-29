@@ -57,7 +57,7 @@ def translate_json(file1, file2):
 
           new_data.push_new_info(new_ali)
 
-     new_data.unlock_write()
+     new_data.write_unlock()
 
      return new_data
 

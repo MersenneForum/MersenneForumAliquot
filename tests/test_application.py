@@ -60,7 +60,7 @@ class TestSequencesManager(unittest.TestCase):
           self.assertTrue(exists(self.lockfile))
           self.assertFalse(exists(self.txtfile))
 
-          seqinfo.unlock_write()
+          seqinfo.write_unlock()
 
           self.assertFalse(exists(self.lockfile))
           self.assertTrue(exists(self.txtfile))

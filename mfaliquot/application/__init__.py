@@ -352,7 +352,7 @@ class _SequencesData:
 
           for i, dat in enumerate(tmpheap):
                ali = AliquotSequence(lst=dat)
-               # ali.calculate_priority() # this causes a nearly 4x performance penalty for _read_init()
+               #ali.calculate_priority() # this causes a nearly 4x performance penalty for _read_init()
                self._heap[i] = self._make_heap_entry(ali)
                self._data[ali.seq] = ali
 
@@ -401,7 +401,7 @@ class _SequencesData:
           raise f
 
 
-     def unlock_write(self):
+     def write_unlock(self):
           '''Finalize self to the given file(s). Totally overwrites it with data
           from self.'''
           # ignore dropped seqs (HEAPENTRY)
@@ -435,7 +435,7 @@ class _SequencesData:
 
 
      def __exit__(self, *exception):
-          self.unlock_write()
+          self.write_unlock()
 
 
      @staticmethod
