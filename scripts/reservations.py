@@ -32,21 +32,20 @@ MASS_RESERVATIONS = {'yafu@home': 'http://yafu.myfirewall.org/yafu/download/ali/
 
 
 ################################################################################
+#
+################################################################################
+
 
 from _import_hack import add_path_relative_to_script
 add_path_relative_to_script('..')
 # this should be removed when proper pip installation is supported
 
-from mfaliquot.application import reservations as R
+from mfaliquot.application.reservations import ReservationsSpider
 from mfaliquot.application import SequencesManager
-from mfaliquot.myutils import email, Print
 
-email_msg = ''
-
-def Print_and_email(s):
-     global email_msg
-     email_msg += s + '\n'
-     Print(s)
+import logging
+_logger = logging.getLogger()
+logging.basicConfig(level=logging.INFO) # TODO: add configuration for this (create default config in scripts/)
 
 
 # Can confirm that the package really should be using a logger, not this adhoc,
@@ -56,40 +55,23 @@ def inner_main(seqinfo, err):
      if argv[1] == 'add':
 
           if len(argv[2:]) < 2:
-               Print("Error: {} add <name> <seq> [<seq>...]".format(argv[0]))
+               print("Error: {} add <name> <seq> [<seq>...]".format(argv[0]))
           else:
-               Print("Add {} seqs".format(len(argv[3:])))
+               _logger.info("Add {} seqs".format(len(argv[3:])))
                out = seqinfo.reserve_seqs(argv[2], [int(seq.replace(',','')) for seq in argv[3:]])
-               for line in R.reserve_seqs_to_str(argv[2], *out).splitlines():
-                    Print_and_email(line)
 
      elif argv[1] == 'drop':
 
           if len(argv[2:]) < 2:
-               Print("Error: {} drop <name> <seq> [<seq>...]".format(argv[0]))
+               print("Error: {} drop <name> <seq> [<seq>...]".format(argv[0]))
           else:
-               Print("Drop {} seqs".format(len(argv[3:])))
+               _logger.info("Drop {} seqs".format(len(argv[3:])))
                out = seqinfo.unreserve_seqs(argv[2], [int(seq.replace(',','')) for seq in argv[3:]])
-               for line in R.unreserve_seqs_to_str(argv[2], *out).splitlines():
-                    Print_and_email(line)
 
      elif argv[1] == 'spider':
-          try:
-               with open(PIDFILE, 'r') as f:
-                    last_pid = int(f.read())
-          except FileNotFoundError:
-               last_pid = None
 
-          # This shit is crazy, definitely using logging next time
-          out = list(R.update_apply_all_res(seqinfo, last_pid, MASS_RESERVATIONS))
-          last_pid_changed = (out[0] != last_pid)
-          last_pid = out[0]
-          out[0] = last_pid_changed
-          for line in R.update_apply_all_res_to_str(*out).splitlines():
-               Print_and_email(line)
-
-          with open(PIDFILE, 'w') as f:
-               f.write(str(last_pid) + '\n')
+          spider = ReservationsSpider(seqinfo, PIDFILE)
+          spider.spider_all_apply_all(MASS_RESERVATIONS)
 
      else:
           print(err)
@@ -104,15 +86,8 @@ def main():
 
      s = SequencesManager(INFOFILE)
 
-     with s.acquire_lock(block_minutes=5): # reads and inits
+     with s.acquire_lock(block_minutes=3): # reads and inits
           inner_main(s, err)
-
-     if email_msg:
-          try:
-               email('Reservations script warnings', email_msg)
-          except Exception as e:
-               Print('Email failed:', e)
-               Print('Message:\n', email_msg)
 
 
 if __name__ == '__main__':

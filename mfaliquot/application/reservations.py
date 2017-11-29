@@ -27,6 +27,37 @@ from .forum_xaction import spider_res_thread, SEQ_REGEX
 from . import DATETIMEFMT
 from ..myutils import blogotubes
 from time import strftime, gmtime
+import logging
+
+_logger = logging.getLogger(__name__)
+
+
+class ReservationsSpider: # name is of debatable good-ness
+     '''A class to manage the statefulness of spidering the MersenneForum res
+     thread. Delegates the primary spidering logic to the module level functions.'''
+
+     def __init__(self, seqinfo, pidfile):
+          '''`seqinfo` should be a SequencesManager instance. It is assumed to
+          already have acquired its lock.'''
+          self.seqinfo = seqinfo
+          self.pidfile = pidfile
+
+
+     def spider_all_apply_all(self, mass_reses):
+          try:
+               with open(self.pidfile, 'r') as f:
+                    last_pid = int(f.read())
+          except FileNotFoundError:
+               last_pid = None
+
+          last_pid, *_ = update_apply_all_res(self.seqinfo, last_pid, mass_reses)
+
+          with open(self.pidfile, 'w') as f:
+               f.write(str(last_pid) + '\n')
+
+
+################################################################################
+
 
 # First the standalone func that processes mass text file reservations
 def parse_mass_reservation(reservee, url):
@@ -39,10 +70,12 @@ def parse_mass_reservation(reservee, url):
           if SEQ_REGEX.match(line):
                seq = int(line)
                if seq in current:
+                    _logger.warning("mass reservation: mass res-er {} listed a duplicate for {}".format(name, seq))
                     dups.append(seq)
                else:
                     current.add(seq)
-          elif not re.match(r'^[0-9]+$', line):
+          elif not re.match(r'^[0-9]+$', line): # don't remember what purpose this line serves, ignoring any number-shaped thing that isn't a 5-7 digit sequence
+               _logger.warning("mass reservation: unknown line from {}: '{}'".format(name, line))
                unknowns.append(line)
      return current, dups, unknowns
 
@@ -76,35 +109,37 @@ def update_apply_all_res(seqinfo, last_pid, mass_reses):
      return last_pid, prev_pages, out, mass_reses_out # What a mess of data
 
 
-def update_apply_all_res_to_str(last_pid_changed, prev_pages, out, mass_reses_out):
-     '''As much for simply reference as for actual use. This entire "return
-     enormously nested tuples of retvals to be parsed by scripts into strings"
-     thing is, I'm pretty sure, totally crazy'''
-     s = '' if last_pid_changed else 'No new posts!\n'
-     if not last_pid_changed and prev_pages:
-          raise RuntimeError("No posts but checked previous page???")
-     s += '\n'.join("Looks like posts were missed, checking page {}".format(pg) for pg in prev_pages)
-
-     for name, ares, dres in out:
-          s += reserve_seqs_to_str(name, *ares)
-          s += unreserve_seqs_to_str(name, *dres)
-
-     for name, dups, unknowns, dres in mass_reses_out:
-          s += ''.join("Warning: mass res-er {} listed a duplicate for {}\n".format(name, seq) for seq in dups)
-          s += ''.join("Warning: unknown line from {}: '{}'\n".format(name, line) for line in unknowns)
-          s += unreserve_seqs_to_str(name, *dres)
-
-     return s
-
-
-def reserve_seqs_to_str(name, DNEs, already_owns, other_owns):
-     return ''.join("Warning: {} doesn't exist ({})\n".format(seq, name) for seq in DNEs) + \
-            ''.join("Warning: {} already owns {}\n".format(name, seq) for seq in already_owns) + \
-            ''.join("Warning: {} is owned by {} but is trying to be reserved by {}!\n".format(seq, other, name) for seq, other in other_owns)
-
-def unreserve_seqs_to_str(name, DNEs, not_reserveds, wrong_reserveds):
-     return ''.join("Warning: {} doesn't exist ({})\n".format(seq, name) for seq in DNEs) + \
-            ''.join("Warning: {} is not currently reserved ({})\n".format(seq, name) for seq in not_reserveds) + \
-            ''.join("Warning: {} is reserved by {}, not dropee {}!\n".format(seq, other, name) for seq, other in wrong_reserveds)
-
+################################################################################
+# Keep these clusterfscks for posterity/explanation of how to use the retvals
+#
+#def update_apply_all_res_to_str(last_pid_changed, prev_pages, out, mass_reses_out):
+#     '''As much for simply reference as for actual use. This entire "return
+#     enormously nested tuples of retvals to be parsed by scripts into strings"
+#     thing is, I'm pretty sure, totally crazy'''
+#     s = '' if last_pid_changed else 'No new posts!\n'
+#     if not last_pid_changed and prev_pages:
+#          raise RuntimeError("No posts but checked previous page???")
+#     s += '\n'.join("Looks like posts were missed, checking page {}".format(pg) for pg in prev_pages)
+#
+#     for name, ares, dres in out:
+#          s += reserve_seqs_to_str(name, *ares)
+#          s += unreserve_seqs_to_str(name, *dres)
+#
+#     for name, dups, unknowns, dres in mass_reses_out:
+#          s += ''.join("Warning: mass res-er {} listed a duplicate for {}\n".format(name, seq) for seq in dups)
+#          s += ''.join("Warning: unknown line from {}: '{}'\n".format(name, line) for line in unknowns)
+#          s += unreserve_seqs_to_str(name, *dres)
+#
+#     return s
+#
+#
+#def reserve_seqs_to_str(name, DNEs, already_owns, other_owns):
+#     return ''.join("Warning: {} doesn't exist ({})\n".format(seq, name) for seq in DNEs) + \
+#            ''.join("Warning: {} already owns {}\n".format(name, seq) for seq in already_owns) + \
+#            ''.join("Warning: {} is owned by {} but is trying to be reserved by {}!\n".format(seq, other, name) for seq, other in other_owns)
+#
+#def unreserve_seqs_to_str(name, DNEs, not_reserveds, wrong_reserveds):
+#     return ''.join("Warning: {} doesn't exist ({})\n".format(seq, name) for seq in DNEs) + \
+#            ''.join("Warning: {} is not currently reserved ({})\n".format(seq, name) for seq in not_reserveds) + \
+#            ''.join("Warning: {} is reserved by {}, not dropee {}!\n".format(seq, other, name) for seq, other in wrong_reserveds)
 

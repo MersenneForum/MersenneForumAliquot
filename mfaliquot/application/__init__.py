@@ -45,7 +45,9 @@ from collections import defaultdict, Counter
 from time import sleep
 from os import remove as rm
 
+
 ################################################################################
+
 
 DATETIMEFMT = '%Y-%m-%d %H:%M:%S'
 _logger = logging.getLogger(__name__)
@@ -135,7 +137,7 @@ class AliquotSequence(list):
           # 933436  unconnected     12448  168
           if not self.res:
                return ''
-          out = "{:>7d}  {:30s} {:>5d}  {:>3d}\n".format(self.seq, self.res, self.index, self.size)
+          out = "{:>7d}  {:30s} {:>5d}  {:>3d}".format(self.seq, self.res, self.index, self.size)
           return out
 
 
@@ -532,7 +534,7 @@ class SequencesManager(_SequencesData):
           DNEs, already_owns, other_owns = [], [], []
           for seq in seqs:
                if seq not in self:
-                    _logger.warning("reserve_seqs: {} doesn't exist ({})\n".format(seq, name))
+                    _logger.warning("reserve_seqs: {} doesn't exist ({})".format(seq, name))
                     DNEs.append(seq)
                     continue
 
@@ -541,10 +543,10 @@ class SequencesManager(_SequencesData):
                if not other:
                     self[seq].res = name
                elif name == other:
-                    _logger.warning("reserve_seqs: {} already owns {}\n".format(name, seq))
+                    _logger.warning("reserve_seqs: {} already owns {}".format(name, seq))
                     already_owns.append(seq)
                else:
-                    _logger.warning("reserve_seqs: {} is owned by {} but is trying to be reserved by {}!\n".format(seq, other, name))
+                    _logger.warning("reserve_seqs: {} is owned by {} but is trying to be reserved by {}!".format(seq, other, name))
                     other_owns.append((seq, other))
 
           return DNEs, already_owns, other_owns
@@ -556,19 +558,19 @@ class SequencesManager(_SequencesData):
           DNEs, not_reserveds, wrong_reserveds = [], [], []
           for seq in seqs:
                if seq not in self:
-                    _logger.warning("unreserve_seqs: {} doesn't exist ({})\n".format(seq, name))
+                    _logger.warning("unreserve_seqs: {} doesn't exist ({})".format(seq, name))
                     DNEs.append(seq)
                     continue
 
                current = self[seq].res
 
                if not current:
-                    _logger.warning("unreserve_seqs: {} is not currently reserved ({})\n".format(seq, name))
+                    _logger.warning("unreserve_seqs: {} is not currently reserved ({})".format(seq, name))
                     not_reserveds.append(seq)
                elif name == current:
                     self[seq].res = ''
                else:
-                    _logger.warning("unreserve_seqs: {} is reserved by {}, not dropee {}!\n".format(seq, other, name))
+                    _logger.warning("unreserve_seqs: {} is reserved by {}, not dropee {}!".format(seq, other, name))
                     wrong_reserveds.append((seq, current))
 
           return DNEs, not_reserveds, wrong_reserveds

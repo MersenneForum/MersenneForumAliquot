@@ -23,10 +23,11 @@
 # code is not maintained.
 
 
-import re
+import re, logging
 from ..myutils import blogotubes
 
 
+_logger = logging.getLogger(__name__)
 SEQ_REGEX = re.compile(r'(?<![0-9])[0-9]{5,7}(?![0-9])') # matches only 5-7 digit numbers
 
 ################################################################################
@@ -48,6 +49,7 @@ def spider_res_thread(last_pid):
      while lowest_pid > last_pid: # It's probable that we missed some posts on previous page
           page_num = re.search('<td class="vbmenu_control" style="font-weight:normal">Page ([0-9]+)', html).group(1)
           page_num = str(int(page_num)-1)
+          _logger.info("forum_spider: looks like posts were missed, checking page {}".format(page_num))
           prev_pages.append(page_num)
           html = blogotubes(wobsite+page_num)
           all_pages.insert(0, _parse_page(html))
@@ -59,8 +61,12 @@ def spider_res_thread(last_pid):
           _order_posts(all_posts) # Assert order, ignore lowest pid retval
           for pid, name, msg in all_posts:
                adds, drops = _read_msg(msg)
+               if adds or drops:
+                    _logger.info('forum_spider: {}: {} adding {}, dropping {}'.format(pid, name, repr(adds), repr(drops)))
                all_res.append((name, adds, drops))
           last_pid = all_posts[-1][0] # Highest PID processed
+     else:
+          _logger.info("forum_spider: no new posts!")
 
      return last_pid, prev_pages, all_res
 
