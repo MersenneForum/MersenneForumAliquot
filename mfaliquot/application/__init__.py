@@ -174,6 +174,7 @@ class AliquotSequence(list):
 #
 ################################################################################
 
+
 ################################################################################
 # Next would be _SequenceData, but first two helper pieces: custom_inherit, used
 # by _SequencesData to delegate some methods from itself to its underlying
@@ -398,11 +399,10 @@ class _SequencesData:
           raise f
 
 
-     def write_unlock(self):
-          '''Finalize self to the given file(s). Totally overwrites it with data
-          from self.'''
+     def write(self):
+          '''Finalize self to file. Totally overwrites old data with current data.'''
           # ignore dropped seqs (HEAPENTRY)
-          out = [item[2] for item in self._heap if item[2] in self._data]
+          out = [item[2] for item in self._heap if (item[2] and item[2] in self._data)]
           # Find seqs that have been dropped from heap, they're just appended
           # at the end, no heapifying
           missing = set(self._data.keys()).difference(out)
@@ -427,8 +427,10 @@ class _SequencesData:
 
           del out
 
+
+     def write_unlock(self):
+          self.write()
           self._unlock()
-          _logger.info("{} instance written and finalized".format(self.__class__.__name__))
 
 
      def __exit__(self, *exception):
@@ -460,12 +462,13 @@ class _SequencesData:
 
 
      def drop(self, seqs):
-          '''Drop the given sequences from the dictionary. Raises an exception
-          if a seq doesn't exist.'''
+          '''Drop the given sequences from the dictionary.'''
           _logger.info("Dropping seqs {}".format(', '.join(str(s) for s in seqs)))
+          # ^ I can't decide if this should be in the actual package or at clients' discretion
           for seq in seqs:
-               if seq not in self:
-                    raise KeyError("seq {} not in seqdata".format(seq))
+               if seq not in self._data:
+                    _logger.warning("seq {} not in seqdata".format(seq))
+                    continue
                ali = self._data[seq]
                self._sabotage_heap_entry(ali)
                del self._data[seq]
@@ -482,6 +485,7 @@ class _SequencesData:
 #
 #
 ################################################################################
+
 
 ################################################################################
 # Finally, we get to the public class. It exposes the public methods of its
@@ -504,16 +508,6 @@ class SequencesManager(_SequencesData):
 
           merges = [list(sorted(lst)) for lst in ids.values() if len(lst) > 1]
 
-          merges = tuple((lst[0], lst[1:]) for lst in merges)
-
-          if merges:
-               # not really a warning, but noteworthy enough to trigger e.g. an email
-               _logger.warning("Found merges!")
-               for target, drops in merges:
-                    _logger.warning('The seq(s) {} seem(s) to have merged with {}'.format(', '.join(str(d) for d in drops), target))
-          else:
-               _logger.info("No merges found")
-
           return tuple((lst[0], lst[1:]) for lst in merges)
 
 
@@ -521,8 +515,10 @@ class SequencesManager(_SequencesData):
           '''A convenience method wrapped around `find_merges` and `drop`.
           Literally 3 lines long.'''
           merges = self.find_merges()
-          for target, drops in merges:
-               self.drop(drops)
+          drops = [drop for target, drops in merges for drop in drops]
+          # I still say that "they" got the loop order wrong in comprehensions
+          self.drop(drops)
+          return merges
 
 
      def reserve_seqs(self, name, seqs):

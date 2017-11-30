@@ -44,7 +44,7 @@ from mfaliquot.application.reservations import ReservationsSpider
 from mfaliquot.application import SequencesManager
 
 import logging
-_logger = logging.getLogger()
+LOGGER = logging.getLogger()
 logging.basicConfig(level=logging.INFO) # TODO: add configuration for this (create default config in scripts/)
 
 
@@ -57,7 +57,7 @@ def inner_main(seqinfo, err):
           if len(argv[2:]) < 2:
                print("Error: {} add <name> <seq> [<seq>...]".format(argv[0]))
           else:
-               _logger.info("Add {} seqs".format(len(argv[3:])))
+               LOGGER.info("Add {} seqs".format(len(argv[3:])))
                out = seqinfo.reserve_seqs(argv[2], [int(seq.replace(',','')) for seq in argv[3:]])
 
      elif argv[1] == 'drop':
@@ -65,7 +65,7 @@ def inner_main(seqinfo, err):
           if len(argv[2:]) < 2:
                print("Error: {} drop <name> <seq> [<seq>...]".format(argv[0]))
           else:
-               _logger.info("Drop {} seqs".format(len(argv[3:])))
+               LOGGER.info("Drop {} seqs".format(len(argv[3:])))
                out = seqinfo.unreserve_seqs(argv[2], [int(seq.replace(',','')) for seq in argv[3:]])
 
      elif argv[1] == 'spider':
