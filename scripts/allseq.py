@@ -60,7 +60,7 @@ BROKEN = {}
 #
 
 
-import sys, logging
+import sys, logging, signal
 from time import sleep
 
 from _import_hack import add_path_relative_to_script
@@ -70,10 +70,18 @@ from mfaliquot.application import SequencesManager, DATETIMEFMT, fdb
 from mfaliquot.application.reservations import ReservationsSpider
 
 LOGGER = logging.getLogger()
-logging.basicConfig() # TODO make default log config file in scripts/
+logging.basicConfig(level=logging.INFO) # TODO make default log config file in scripts/
+
 
 SLEEPING = QUITTING = False
-
+def handler(sig, frame):
+     LOGGER.error("Recieved signal {}, now quitting".format(sig))
+     global QUITTING
+     QUITTING = True
+     if SLEEPING:
+          sys.exit()
+signal.signal(signal.SIGTERM, handler)
+signal.signal(signal.SIGINT, handler)
 
 #
 ################################################################################
@@ -82,7 +90,7 @@ SLEEPING = QUITTING = False
 ################################################################################
 #
 
-def read_drop_file():
+def read_dropfile():
      try:
           with open(DROPFILE) as f:
                _drops = f.read().split() # split() counts newlines as whitespace too
@@ -173,7 +181,7 @@ def inner_main(seqinfo, special=None):
 
      with seqinfo.acquire_lock(block_minutes=block):
 
-          drops = read_drop_file()
+          drops = read_dropfile()
           if drops:
                seqinfo.drop(drops)
                seqinfo.write() # "Atomic"
@@ -185,7 +193,6 @@ def inner_main(seqinfo, special=None):
           main_update_loop(seqinfo, seqs_todo)
 
           LOGGER.info('Update loop complete. Searching for merges...')
-
           merges = seqinfo.find_and_drop_merges()
           if merges:
                # not really a warning, but noteworthy enough e.g. to trigger an email
@@ -220,10 +227,7 @@ def main():
      # This means you can start it once and leave it, but by setting LOOPING = False you can make it one-and-done
      # This would be a good place for a do...while syntax
      while True:
-          try:
-               inner_main(seqinfo, special)
-          except Exception:
-               raise # Errors are unhandled except to interrupt a sleeping loop, and to cleanup via finally
+          inner_main(seqinfo, special)
 
           if LOOPING and not QUITTING:
                LOGGER.info('Sleeping.')
@@ -235,4 +239,7 @@ def main():
 
 
 if __name__ == '__main__':
-     main()
+     try:
+          main()
+     except BaseException as e:
+          LOGGER.exception("allseq.py interrupted: {}".format(e), exc_info=e)
