@@ -352,7 +352,6 @@ class _SequencesData:
 
           for i, dat in enumerate(tmpheap):
                ali = AliquotSequence(lst=dat)
-               #ali.calculate_priority() # this causes a nearly 4x performance penalty for _read_init()
                self._heap[i] = self._make_heap_entry(ali)
                self._data[ali.seq] = ali
 
@@ -362,9 +361,7 @@ class _SequencesData:
      def lock_read_init(self):
           '''Initialize self from the (immutable attribute) `file` passed to the constructor.'''
           self._lock()
-
           _logger.info("Lock acquired, reading {}".format(self.file))
-
           self._read_init()
 
 
