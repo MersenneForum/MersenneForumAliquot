@@ -47,6 +47,27 @@ CREATEDREGEX = re.compile('([JFMASOND][a-z]{2,8}) ([0-9]{1,2}), ([0-9]{4})') # s
 
 class FDBDataError(Exception): pass
 
+class FDBResourceLimitReached(FDBDataError):
+     def __init__(self, msg, fdbpage=None):
+          if fdbpage:
+               try:
+                # pages = re.search(r'>Page requests</td>\n<td[^>]*?>([0-9,]+)</td>', page).group(1)
+                # ^ avoid repeating the entire regex 5 times with slight variations. very typo prone.
+                retmpl = r'>{}</td>\n<td[^>]*?>{}</td>'
+                pages, ids, queries, cputime, when = [
+                    re.search(retmpl.format(name, valgroup), page).group(1)
+                    for name, valgroup in (
+                    (r'Page requests',           r'([0-9,]+)'),
+                    (r'IDs created',             r'([0-9,]+)'),
+                    (r'Database queries',        r'([0-9,]+)'),
+                    (r'CPU \(Wall clock time\)', r'([0-9,.]+) seconds'),
+                    (r'Counting since',          r'(.*?)')                  )]
+                super().__init__(f"{pages} page reqs, {ids} new ids, {queries} db queries, {cputime}s cpu time since {when}")
+               except AttributeError: # some re.search() failed
+                    _logger.error('Not only is it refusing requests, but its formatting has changed!')
+          super().__init__()
+
+
 ################################################################################
 
 def id_created(i):
@@ -70,9 +91,9 @@ class FDBStatus(Enum):
      Unknown = 0
      Prime = auto()
      ProbablyPrime = auto()
-     Composite = auto()
-     CompositeWithFactors = auto()
-     FullyFactored = auto()
+     CompositeNoFactors = auto()
+     CompositePartiallyFactored = auto()
+     CompositeFullyFactored = auto()
 
 
 def query_id_status(fdb_id, tries=5):
@@ -81,6 +102,10 @@ def query_id_status(fdb_id, tries=5):
           page = blogotubes('http://factordb.com/index.php?id='+str(fdb_id))
           if page is None:
                return None
+          if 'Resources used by your IP' in page:
+               _logger.error('the FDB is refusing requests')
+               raise FDBResourceLimitReached(fdbpage=page)
+
           for s, e in (('PRP', FDBStatus.ProbablyPrime), ('FF', FDBStatus.FullyFactored),
                        ('CF', FDBStatus.CompositeWithFactors), ('C', FDBStats.Composite),
                        ('P', FDBStatus.Prime), ('U', FDBStatus.Unknown)):
@@ -92,16 +117,6 @@ def query_id_status(fdb_id, tries=5):
 
 
 ################################################################################
-
-# these aren't really all that different from an enum
-class NoBasicInfoError       (FDBDataError): pass
-class NoSmallFactorsError    (FDBDataError): pass
-class NoTwoError             (FDBDataError): pass
-class NoCofactorError        (FDBDataError): pass
-class InsufficientSizeError  (FDBDataError): pass
-class SmallCofactorError     (FDBDataError): pass # less of an error more of just an un-updated downdriver run
-class FDBResourceLimitReached(FDBDataError): pass
-# TODO: is all this specialization even necessary? is the descriptive string for logging good enough?
 
 
 def query_parse_seq_status(seq, tries=5):
@@ -117,22 +132,7 @@ def query_parse_seq_status(seq, tries=5):
 
           if 'Resources used by your IP' in page: # This is a "permanent"-for-rest-of-script condition, only absolute raises here
                _logger.error(f'Seq {seq}: the FDB is refusing requests')
-               try:
-                # pages = re.search(r'>Page requests</td>\n<td[^>]*?>([0-9,]+)</td>', page).group(1)
-                # ^ avoid repeating the entire regex 5 times with slight variations. very typo prone.
-                retmpl = r'>{}</td>\n<td[^>]*?>{}</td>'
-                pages, ids, queries, cputime, when = [re.search(retmpl.format(name, valgroup), page).group(1)
-                                                      for name, valgroup in (
-                                                      (r'Page requests',           r'([0-9,]+)'),
-                                                      (r'IDs created',             r'([0-9,]+)'),
-                                                      (r'Database queries',        r'([0-9,]+)'),
-                                                      (r'CPU \(Wall clock time\)', r'([0-9,.]+) seconds'),
-                                                      (r'Counting since',          r'(.*?)')               )]
-                raise FDBResourceLimitReached(f"{pages} page reqs, {ids} new ids, {queries} db queries, {cputime}s cpu time since {when}")
-               except AttributeError: # some re.search() failed
-                    _logger.error('Not only is it refusing requests, but its formatting has changed!')
-                    raise FDBResourceLimitReached
-
+               raise FDBResourceLimitReached(fdbpage=page)
           # not past the resources limit, temporary data errors:
           try:
                ali = _process_ali_data(seq, page)
@@ -166,7 +166,7 @@ def _process_ali_data(seq, page):
      bigs = LARGEFACTREGEX.findall(page)
 
      if not info:
-          raise NoBasicInfoError(f"Seq {seq}: no basic information!")
+          raise FDBDataError(f"Seq {seq}: no basic information!")
 
      ali = AliquotSequence(seq=seq, size=int(info.group('size')), index=int(info.group('index')), id=int(info.group('id')))
      ali.time = strftime(DATETIMEFMT, gmtime())
@@ -179,10 +179,10 @@ def _process_ali_data(seq, page):
           return ali
 
      if not smalls:
-          raise NoSmallFactorsError(f'Seq {seq}: no smalls match')
+          raise FDBDataError(f'Seq {seq}: no smalls match')
 
      if '2 *' not in smalls[0] and '2^' not in smalls[0]:
-          raise NoTwoError(f'Seq {seq}: no 2 in the smalls!')
+          raise FDBDataError(f'Seq {seq}: no 2 in the smalls!')
 
      factors = ''; size = 2
      factors += smalls[0]
@@ -196,7 +196,7 @@ def _process_ali_data(seq, page):
                size += int(big)
 
      if not comps:
-          raise NoCofactorError(f'Seq {seq}: no comps match')
+          raise FDBDataError(f'Seq {seq}: no comps match')
 
      for comp in comps:
           factors += ' * C'+comp
@@ -204,11 +204,12 @@ def _process_ali_data(seq, page):
           size += cofactor
 
      if size < 0.9 * ali.size:
-          raise InsufficientSizeError(f'Seq {seq}: index: {ali.index}, size: {ali.size}, '
+          raise FDBDataError(f'Seq {seq}: index: {ali.index}, size: {ali.size}, '
                                       f'garbage factors found: {factors}, cofactor: {cofactor}')
 
      if cofactor < 65: # FDB will autofactor it (is it 70 digits???)
-          raise SmallCofactorError(f'Seq {seq}: small cofactor')
+          # less of an error more of just an un-updated downdriver run
+          raise FDBDataError(f'Seq {seq}: small cofactor')
 
      ali.factors = factors
      ali.cofactor = cofactor

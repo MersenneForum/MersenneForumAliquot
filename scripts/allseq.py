@@ -152,7 +152,51 @@ def create_stats_write_html(seqinfo):
 ################################################################################
 #
 
+def check_update(old, special):
+     global QUITTING
 
+     if special or not old or not old.is_valid() or not old.id:
+          return do_update(old)
+
+     try:
+      status = fdb.query_id_status(old.id)
+     except fdb.FDBResourceLimitReached as e:
+          _logger.exception(str(e), exc_info=e)
+          _logger.info("Skipping sequence {old.seq}")
+          QUITTING = True
+          return old
+     except fdb.FDBDataError as e: # wish these fell through like C switch() statements
+          _logger.exception(str(e), exc_info=e)
+          _logger.info("Skipping sequence {old.seq}")
+          return old
+     if status is None:
+          QUITTING = True
+          return old
+
+
+     if status is fdb.FDBStatus.CompositeFullyFactored:
+          return do_update(old)
+
+     elif status is fdb.FDBStatus.CompositePartiallyFactored: # no progress since last
+          post_nonupdate(old)
+
+     elif status is fdb.FDBStatus.Prime:
+          _logger.warning("got a prime id value?? termination?")
+
+          post_nonupdate(old)
+
+     else:
+          _logger.error("problem: crazy status for most recent id of {seq} ({status})")
+
+
+     return old
+
+
+def do_update(old):
+
+def post_nonupdate(old):
+
+def post_update(ali, old):
 
 #
 ################################################################################
@@ -161,7 +205,7 @@ def create_stats_write_html(seqinfo):
 ################################################################################
 #
 
-def preloop_initialize(seqinfo):
+def preloop_initialize(seqinfo, special=None):
 
      drops = read_dropfile()
      if drops:
@@ -191,11 +235,13 @@ def preloop_initialize(seqinfo):
      return seqs_todo
 
 
-def primary_update_loop(seqinfo, seqs_todo):
+def primary_update_loop(seqinfo, seqs_todo, special=None):
 
      count = 0
      for seq in seqs_todo:
-          ali = seqinfo[seq]
+          old = seqinfo[seq]
+
+          ali = check_update(old, special)
 
           #ali = check(seq, seqinfo) # TODO
 
@@ -241,11 +287,11 @@ def inner_main(seqinfo, special=None):
 
      with seqinfo.acquire_lock(block_minutes=block):
 
-          seqs_todo = preloop_initialize(seqinfo)
+          seqs_todo = preloop_initialize(seqinfo, special)
 
           LOGGER.info('Init complete, starting FDB queries')
 
-          primary_update_loop(seqinfo, seqs_todo)
+          primary_update_loop(seqinfo, seqs_todo, special)
 
           LOGGER.info('Primary loop complete, finalizing...')
 
