@@ -408,6 +408,8 @@ class _SequencesData:
           missing = set(self._data.keys()).difference(out)
           out = [self._data[seq] for seq in out]
           out.extend(self._data[seq] for seq in missing)
+          # TODO: This is effectively cleaning the heap. Should we actually save the cleaned heap?
+          # self._heap = _Heap(out) #(copies entire list)
 
           outdict = {"aaData": out}
           try:
@@ -417,7 +419,7 @@ class _SequencesData:
           json_string = json.dumps(outdict).replace('],', '],\n') + '\n'
           with open(self._jsonfile, 'w') as f:
                f.write(json_string)
-          del json_string
+          del json_string # Both outstrings generated here can be multiple megabytes each
 
           if self._txtfile:
                txt_string = '\n'.join(str(ali) for ali in sorted(out, key=lambda ali: ali.seq)) + '\n'
@@ -461,6 +463,12 @@ class _SequencesData:
                     yield seq
 
 
+     def pop_seqs(self, seqs):
+          '''Instead of popping the n most important seqs, instead pop the specified seqs'''
+          for seq in seqs:
+               self._sabotage_heap_entry(self._data[seq])
+
+
      def drop(self, seqs):
           '''Drop the given sequences from the dictionary.'''
           _logger.info("Dropping seqs {}".format(', '.join(str(s) for s in seqs)))
@@ -479,6 +487,8 @@ class _SequencesData:
           '''Call this method to insert a newly updated AliquotSequence object
           into the underlying datastructures. Any previous such object is
           silently overwritten.'''
+          if ali.seq in self._data:
+               self._sabotage_heap_entry(self._data[ali.seq])
           self._data[ali.seq] = ali
           self._heap.push(self._make_heap_entry(ali))
 
@@ -523,8 +533,8 @@ class SequencesManager(_SequencesData):
 
      def reserve_seqs(self, name, seqs):
           '''Mark the `seqs` as reserved by `name`. Raises ValueError if a seq
-          doesn't exist. Returns (DNEs, already_owns, other_owns)'''
-          DNEs, already_owns, other_owns = [], [], []
+          doesn't exist. Returns (successes, DNEs, already_owns, other_owns)'''
+          success, DNEs, already_owns, other_owns = [], [], [], []
           for seq in seqs:
                if seq not in self:
                     _logger.warning("reserve_seqs: {} doesn't exist ({})".format(seq, name))
@@ -535,6 +545,7 @@ class SequencesManager(_SequencesData):
 
                if not other:
                     self[seq].res = name
+                    success.append(seq)
                elif name == other:
                     _logger.warning("reserve_seqs: {} already owns {}".format(name, seq))
                     already_owns.append(seq)
@@ -542,13 +553,13 @@ class SequencesManager(_SequencesData):
                     _logger.warning("reserve_seqs: {} is owned by {} but is trying to be reserved by {}!".format(seq, other, name))
                     other_owns.append((seq, other))
 
-          return DNEs, already_owns, other_owns
+          return success, DNEs, already_owns, other_owns
 
 
      def unreserve_seqs(self, name, seqs):
           '''Mark the `seqs` as no longer reserved. Raises ValueError if seq does
-          not exist. Returns (DNEs, not_reserveds, wrong_reserveds, count_dropped) '''
-          DNEs, not_reserveds, wrong_reserveds = [], [], []
+          not exist. Returns (successes, DNEs, not_reserveds, wrong_reserveds) '''
+          success, DNEs, not_reserveds, wrong_reserveds = [], [], [], []
           for seq in seqs:
                if seq not in self:
                     _logger.warning("unreserve_seqs: {} doesn't exist ({})".format(seq, name))
@@ -562,11 +573,12 @@ class SequencesManager(_SequencesData):
                     not_reserveds.append(seq)
                elif name == current:
                     self[seq].res = ''
+                    success.append(seq)
                else:
-                    _logger.warning("unreserve_seqs: {} is reserved by {}, not dropee {}!".format(seq, other, name))
+                    _logger.warning("unreserve_seqs: {} is reserved by {}, not dropee {}!".format(seq, current, name))
                     wrong_reserveds.append((seq, current))
 
-          return DNEs, not_reserveds, wrong_reserveds
+          return success, DNEs, not_reserveds, wrong_reserveds
 
 
      def calc_common_stats(self):

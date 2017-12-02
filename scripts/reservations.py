@@ -71,7 +71,9 @@ def inner_main(seqinfo, err):
      elif argv[1] == 'spider':
 
           spider = ReservationsSpider(seqinfo, PIDFILE)
-          spider.spider_all_apply_all(MASS_RESERVATIONS)
+          thread_out, mass_out = spider.spider_all_apply_all(MASS_RESERVATIONS)
+          for name, addres, dropres in thread_out:
+               LOGGER.info(f"{name} successfully added {addres[0]}, dropped {dropres[0]}")
 
      else:
           print(err)

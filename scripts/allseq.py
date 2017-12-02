@@ -187,10 +187,32 @@ def inner_main(seqinfo, special=None):
                seqinfo.write() # "Atomic"
                open(DROPFILE, 'w').close() # leave blank file on filesystem for forgetful humans :)
 
-          seqs_todo = special if special else seqinfo.pop_n_todo(BATCHSIZE)
+          ######################################################################
+
+          if special:
+               seqs_todo = special
+          else:
+               n = BATCHSIZE
+               from reservations import PIDFILE, MASS_RESERVATIONS # from the sibling script
+               thread_out, mass_out = ReservationsSpider(seqinfo, PIDFILE).spider_all_apply_all(MASS_RESERVATIONS)
+               seqinfo.write() # "Atomic"
+               seqs_todo = [seq for name, addres, dropres in thread_out for seq in addres[0]+dropres[0]]
+               if seqs_todo:
+                    seqinfo.pop_seqs(seqs_todo)
+                    n -= len(seqs_todo)
+               if n > 0:
+                    seqs_todo.extend(seqinfo.pop_n_todo(n))
+
+               if not seqs_todo:
+                    raise RuntimeError("Somehow got no seqs todo")
+
+          ######################################################################
+
           LOGGER.info('Init complete, starting FDB queries')
 
           main_update_loop(seqinfo, seqs_todo)
+
+          ######################################################################
 
           LOGGER.info('Update loop complete. Searching for merges...')
           merges = seqinfo.find_and_drop_merges()
@@ -204,6 +226,9 @@ def inner_main(seqinfo, special=None):
 
           LOGGER.info('Creating statistics...')
           create_stats_write_html(seqinfo)
+
+          ######################################################################
+
 
      LOGGER.info('Written all data and HTML, saved state and finalized')
 

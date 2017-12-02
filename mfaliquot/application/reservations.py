@@ -50,10 +50,12 @@ class ReservationsSpider: # name is of debatable good-ness
           except FileNotFoundError:
                last_pid = None
 
-          last_pid, *_ = update_apply_all_res(self.seqinfo, last_pid, mass_reses)
+          last_pid, *other = update_apply_all_res(self.seqinfo, last_pid, mass_reses)
 
           with open(self.pidfile, 'w') as f:
                f.write(str(last_pid) + '\n')
+
+          return other[1:] # other[0] == prev_pages
 
 
 ################################################################################
@@ -86,8 +88,9 @@ def update_apply_all_res(seqinfo, last_pid, mass_reses):
 
      now = strftime(DATETIMEFMT, gmtime())
 
-     last_pid, prev_pages, all_res = spider_res_thread(last_pid)
+     last_pid, prev_pages, thread_res = spider_res_thread(last_pid)
 
+     mass_adds = []
      mass_reses_out = []
      for reservee, url in mass_reses.items():
           current, dups, unknowns = parse_mass_reservation(reservee, url)
@@ -95,51 +98,19 @@ def update_apply_all_res(seqinfo, last_pid, mass_reses):
           drops = old - current
           adds = current - old
           dropres = seqinfo.unreserve_seqs(reservee, drops)
-          all_res.append((reservee, adds, ()))
-          mass_reses_out.append((reservee, dups, unknowns, dropres))
+          mass_adds.append((reservee, adds))
+          mass_reses_out.append([reservee, dups, unknowns, dropres])
 
      out = []
-     for name, adds, drops in all_res:
+     for name, adds, drops in thread_res:
           addres = seqinfo.reserve_seqs(name, adds)
           dropres = seqinfo.unreserve_seqs(name, drops)
           out.append((name, addres, dropres))
 
+     for name_adds, lst in zip(mass_adds, mass_reses_out):
+          lst.append(seqinfo.reserve_seqs(*name_adds))
+
      seqinfo.resdatetime = now
 
      return last_pid, prev_pages, out, mass_reses_out # What a mess of data
-
-
-################################################################################
-# Keep these clusterfscks for posterity/explanation of how to use the retvals
-#
-#def update_apply_all_res_to_str(last_pid_changed, prev_pages, out, mass_reses_out):
-#     '''As much for simply reference as for actual use. This entire "return
-#     enormously nested tuples of retvals to be parsed by scripts into strings"
-#     thing is, I'm pretty sure, totally crazy'''
-#     s = '' if last_pid_changed else 'No new posts!\n'
-#     if not last_pid_changed and prev_pages:
-#          raise RuntimeError("No posts but checked previous page???")
-#     s += '\n'.join("Looks like posts were missed, checking page {}".format(pg) for pg in prev_pages)
-#
-#     for name, ares, dres in out:
-#          s += reserve_seqs_to_str(name, *ares)
-#          s += unreserve_seqs_to_str(name, *dres)
-#
-#     for name, dups, unknowns, dres in mass_reses_out:
-#          s += ''.join("Warning: mass res-er {} listed a duplicate for {}\n".format(name, seq) for seq in dups)
-#          s += ''.join("Warning: unknown line from {}: '{}'\n".format(name, line) for line in unknowns)
-#          s += unreserve_seqs_to_str(name, *dres)
-#
-#     return s
-#
-#
-#def reserve_seqs_to_str(name, DNEs, already_owns, other_owns):
-#     return ''.join("Warning: {} doesn't exist ({})\n".format(seq, name) for seq in DNEs) + \
-#            ''.join("Warning: {} already owns {}\n".format(name, seq) for seq in already_owns) + \
-#            ''.join("Warning: {} is owned by {} but is trying to be reserved by {}!\n".format(seq, other, name) for seq, other in other_owns)
-#
-#def unreserve_seqs_to_str(name, DNEs, not_reserveds, wrong_reserveds):
-#     return ''.join("Warning: {} doesn't exist ({})\n".format(seq, name) for seq in DNEs) + \
-#            ''.join("Warning: {} is not currently reserved ({})\n".format(seq, name) for seq in not_reserveds) + \
-#            ''.join("Warning: {} is reserved by {}, not dropee {}!\n".format(seq, other, name) for seq, other in wrong_reserveds)
 
