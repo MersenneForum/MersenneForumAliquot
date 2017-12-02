@@ -59,7 +59,6 @@ BROKEN = {}
 ################################################################################
 #
 
-
 import sys, logging, signal
 from time import sleep
 
@@ -146,6 +145,14 @@ def create_stats_write_html(seqinfo):
      with open(STATSJSON, 'w') as f:
           f.write(json.dumps({"aSizes": sizetable, "aCofacts": cofactable, "aGuides": guidetable, "aProgress": progtable, "aLens": lentable}).replace('],', '],\n')+'\n')
 
+#
+################################################################################
+
+
+################################################################################
+#
+
+
 
 #
 ################################################################################
@@ -154,11 +161,42 @@ def create_stats_write_html(seqinfo):
 ################################################################################
 #
 
-def main_update_loop(seqinfo, seqs_todo):
+def preloop_initialize(seqinfo):
 
-     # Main loop
+     drops = read_dropfile()
+     if drops:
+          seqinfo.drop(drops)
+          seqinfo.write() # "Atomic"
+          open(DROPFILE, 'w').close() # leave blank file on filesystem for forgetful humans :)
+
+     ##########
+
+     if special:
+          seqs_todo = special
+     else:
+          n = BATCHSIZE
+          from reservations import PIDFILE, MASS_RESERVATIONS # from the sibling script
+          thread_out, mass_out = ReservationsSpider(seqinfo, PIDFILE).spider_all_apply_all(MASS_RESERVATIONS)
+          seqinfo.write() # "Atomic"
+          seqs_todo = [seq for name, addres, dropres in thread_out for seq in addres[0]+dropres[0]]
+          if seqs_todo:
+               seqinfo.pop_seqs(seqs_todo)
+               n -= len(seqs_todo)
+          if n > 0:
+               seqs_todo.extend(seqinfo.pop_n_todo(n))
+
+          if not seqs_todo:
+               raise RuntimeError("Somehow got no seqs todo")
+
+     return seqs_todo
+
+
+def primary_update_loop(seqinfo, seqs_todo):
+
      count = 0
      for seq in seqs_todo:
+          ali = seqinfo[seq]
+
           #ali = check(seq, seqinfo) # TODO
 
           #if not ali or not ali.is_valid():
@@ -173,6 +211,28 @@ def main_update_loop(seqinfo, seqs_todo):
           sleep(0.5) # Different from previous version!
 
 
+def postloop_finalize(seqinfo):
+
+     LOGGER.info("Searching for merges...")
+     merges = seqinfo.find_and_drop_merges()
+     if merges:
+          # not really a warning, but noteworthy enough e.g. to trigger an email
+          LOGGER.warning("Found merges!")
+          for target, drops in merges:
+               LOGGER.warning('The seq(s) {} seem(s) to have merged with {}'.format(', '.join(str(d) for d in drops), target))
+     else:
+          LOGGER.info("No merges found")
+
+     LOGGER.info('Creating statistics...')
+     create_stats_write_html(seqinfo)
+
+#
+################################################################################
+
+
+################################################################################
+#
+
 def inner_main(seqinfo, special=None):
      LOGGER.info('\n'+strftime(DATETIMEFMT))
 
@@ -181,53 +241,15 @@ def inner_main(seqinfo, special=None):
 
      with seqinfo.acquire_lock(block_minutes=block):
 
-          drops = read_dropfile()
-          if drops:
-               seqinfo.drop(drops)
-               seqinfo.write() # "Atomic"
-               open(DROPFILE, 'w').close() # leave blank file on filesystem for forgetful humans :)
-
-          ######################################################################
-
-          if special:
-               seqs_todo = special
-          else:
-               n = BATCHSIZE
-               from reservations import PIDFILE, MASS_RESERVATIONS # from the sibling script
-               thread_out, mass_out = ReservationsSpider(seqinfo, PIDFILE).spider_all_apply_all(MASS_RESERVATIONS)
-               seqinfo.write() # "Atomic"
-               seqs_todo = [seq for name, addres, dropres in thread_out for seq in addres[0]+dropres[0]]
-               if seqs_todo:
-                    seqinfo.pop_seqs(seqs_todo)
-                    n -= len(seqs_todo)
-               if n > 0:
-                    seqs_todo.extend(seqinfo.pop_n_todo(n))
-
-               if not seqs_todo:
-                    raise RuntimeError("Somehow got no seqs todo")
-
-          ######################################################################
+          seqs_todo = preloop_initialize(seqinfo)
 
           LOGGER.info('Init complete, starting FDB queries')
 
-          main_update_loop(seqinfo, seqs_todo)
+          primary_update_loop(seqinfo, seqs_todo)
 
-          ######################################################################
+          LOGGER.info('Primary loop complete, finalizing...')
 
-          LOGGER.info('Update loop complete. Searching for merges...')
-          merges = seqinfo.find_and_drop_merges()
-          if merges:
-               # not really a warning, but noteworthy enough e.g. to trigger an email
-               LOGGER.warning("Found merges!")
-               for target, drops in merges:
-                    LOGGER.warning('The seq(s) {} seem(s) to have merged with {}'.format(', '.join(str(d) for d in drops), target))
-          else:
-               LOGGER.info("No merges found")
-
-          LOGGER.info('Creating statistics...')
-          create_stats_write_html(seqinfo)
-
-          ######################################################################
+          postloop_finalize(seqinfo)
 
 
      LOGGER.info('Written all data and HTML, saved state and finalized')
