@@ -1,6 +1,5 @@
 #! /usr/bin/env python3
 
-# This is written to Python 3.3 standards (may use 3.4 features, I haven't kept track)
 # Note: tab depth is 5, as a personal preference
 
 
@@ -30,11 +29,12 @@ import json, re
 from _import_hack import add_path_relative_to_script
 add_path_relative_to_script('..')
 # this should be removed when proper pip installation is supported
-from mfaliquot import numtheory as nt
-from mfaliquot import aliquot as aq
-from mfaliquot.sequence import AliquotSequence
-from mfaliquot.myutils import blogotubes
+from mfaliquot.theory import numtheory as nt
+from mfaliquot.theory import aliquot as aq
+from mfaliquot.application import AliquotSequence, SequencesManager
+from mfaliquot import blogotubes
 
+# TODO: clean up this mess, ideally move some of it to mfaliquot.application.fdb
 
 smallfact = re.compile(r' <a href="index.php\?id=[0-9]+?"><font color="#000000">([0-9^]+?)</font></a>')
 largenums = r' <a href="index.php\?id=([0-9]+?)"><font color="{}">[0-9]+?[.]{{3}}[0-9]{{2}}(\^[0-9]*)?</font></a><sub>&lt;'
@@ -56,10 +56,6 @@ def get_data():
                with open(data_file, 'w') as f:
                     f.write(txt)
 
-def read_data():
-     with open(data_file, 'r') as f:
-          data = json.load(f)['aaData']
-     return {seq[0]: AliquotSequence(lst=seq) for seq in data}
 
 def get_num(id):
      page = blogotubes('http://factordb.com/index.php?showid='+id)
@@ -134,14 +130,14 @@ def filter_seq(seq):
 
 # The main function
 def main():
-     print('Getting data')
-     get_data()
+     #print('Getting data')
+     #get_data()
      print('Starting examinations')
      # This and other code in this and other modules is sometimes a bit confusing
      # because I use 'seq' for both just the integer of the sequence leader *and*
      # the corresponding AliquotSequence object.
      # data is a dictionary mapping the ints to the AliquotSequence objects.
-     data = read_data()
+     data = SequencesManager.as_read_only_dict('AllSeq.json')
      targets = []; derp = []
      for i, seq in enumerate(data.values()):
           #print('looking at seq {}'.format(i))
@@ -153,10 +149,10 @@ def main():
           res = examine_seq(seq.id, None, *ress, seq)
           if res:
                targets.append((seq, res))
-     targets.sort(key=lambda tup: (not tup[0].driver, tup[0].clas, tup[0].cofact)) # Drivers first, then sort by class first, secondary sort by comp size
+     targets.sort(key=lambda tup: (not tup[0].driver, tup[0].klass, tup[0].cofactor)) # Drivers first, then sort by class first, secondary sort by comp size
      for seq, ress in targets:
           for res in ress:
-               print("{:>6} ~ {} (class {}) maybe: {}".format(seq.seq, seq.guide, seq.clas, aq.analyze_composite_tau_to_str(res, 'C'+str(seq.cofact))))
+               print("{:>6} ~ {} (class {}) maybe: {}".format(seq.seq, seq.guide, seq.klass, aq.analyze_composite_tau_to_str(res, 'C'+str(seq.cofactor))))
 
 if __name__ == "__main__":
      main()

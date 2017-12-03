@@ -1,7 +1,5 @@
 Run this from cron to automagically check the MersenneForum Aliquot reservation thread for new
 reservations.
-Like the website scripts, I would redirect stdout and stderr to a log file and check up on it from
-time to time.
 
 Currently, any line with any of these keywords:
 'Reserv', 'reserv', 'Add', 'add', 'Tak', 'tak'

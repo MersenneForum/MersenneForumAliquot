@@ -417,6 +417,13 @@ class _SequencesData:
           raise f
 
 
+     @staticmethod
+     def as_read_only_dict(file):
+          with open(file, 'r') as f:
+               data = json.load(f)['aaData']
+          return {seq[0]: AliquotSequence(lst=seq) for seq in data}
+
+
      def write(self):
           '''Finalize self to file. Totally overwrites old data with current data.'''
           # ignore dropped seqs (HEAPENTRY)
