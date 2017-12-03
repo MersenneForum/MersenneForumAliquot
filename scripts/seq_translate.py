@@ -21,9 +21,11 @@
 
 import json
 
-from old_sequence import AliquotSequence as OldSequence
-
-from __init__ import AliquotSequence, SequencesManager
+from _import_hack import add_path_relative_to_script
+add_path_relative_to_script('..')
+# this should be removed when proper pip installation is supported
+from mfaliquot.application.old_sequence import AliquotSequence as OldSequence
+from mfaliquot.application import AliquotSequence, SequencesManager
 
 
 def read_and_parse_data(file1, reservations=None):
