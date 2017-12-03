@@ -73,10 +73,9 @@ class AliquotSequence(list):
              'res':      (7, ''),
              'progress': (8, None),
              'time':     (9, ''),
-             'nzilch':   (10, 0), # Definitely looking for a better name
-             'priority': (11, 0),
-             'id':       (12, None),
-             'driver':   (13, None)
+             'priority': (10, 0),
+             'id':       (11, None),
+             'driver':   (12, None)
             }
      _defaults = [None] * len(_map)
      for attr, tup in _map.items():
@@ -141,52 +140,40 @@ class AliquotSequence(list):
           return out
 
 
-     @staticmethod
-     def timedelta_since_update(time1, time2=None):
-          '''Return a datetime.timedelta object between now and `time1` (str in DATETIMEFMT),
-          or else between `time1` and `time2`'''
-          time1 = datetime.datetime.strptime(time1, DATETIMEFMT)
-          if not time2:
-               time2, time1 = time1, datetime.datetime.utcnow()
-          else:
-               time2 = datetime.datetime.strptime(time2, DATETIMEFMT)
-          return time1 - time2
-
-
-     def update_nzilch(self, oldtime):
-          updatedelta = self.timedelta_since_update(self.time, oldtime)
-          if updatedelta > datetime.timedelta(hours=12):
-          # re-updates within 12 hours don't affect priority (allows carefree manual intervention)
-               self.nzilch += 1 # again: better name for this would be much appreciated
-
-
      def calculate_priority(self, max_update_period=90, res_factor=1/2):
           '''Arguments are as follows: `max_update_period` is the target maximum
-          time between updates for any sequence no matter how infrequent it is,
+          time between updates for any sequence no matter how little it moves,
           in days. `res_factor` is a "discount" factor applied to all reserved
-          sequences.'''
+          sequences priorities.'''
           # The biggest problem with this prio algo is that I had only planned that
           # `allseq.py` runs it for newly-updated seqs -- so the old seqs will
           # never get their prio actually updated towards 0, even if they should be
           # Solution: add a third script run once a day to update *all* prios? TODO
 
-          prio = self.nzilch
+          last_update_datetime = datetime.datetime.strptime(self.time, DATETIMEFMT)
+          updatedelta = (datetime.datetime.utcnow() - last_update_datetime)
+          updatedeltadays = updatedelta/datetime.timedelta(days=1)
+          # timedelta objects have a .days attribute, but that truncates the seconds
+          # "dividing" instead by a unit of days leaves the fractional part on the float
 
-          updatedelta = self.timedelta_since_update(self.time) # result is a timedelta object
+          days_without_movement = 0
+          if isinstance(self.progress, str):
+               days_without_movement = (  last_update_datetime.date()
+                                        - datetime.date(*[int(s) for s in self.progress.split('-')])).days
+
+          base_prio = max(0, days_without_movement - updatedeltadays)
+          # Maybe discount updatedeltadays by some fraction?
+          # e.g. days_without_movement - updatedeltadays/2 or something, idk
+
           maxdelta = datetime.timedelta(days=max_update_period)
-
           ratio = 1 - updatedelta/maxdelta # returns a float
-          # instead of a straight line from 1 to 0 (as the seq goes longer without
-          # updating), apply a power > 1 to emphasize the first few days after update.
-          #ratio **= 3 # use odd power to maintain sign
-          ## TEST without the early emphasis first
 
-          prio *= ratio
+          base_prio *= ratio
 
           if self.res:
-               prio *= res_factor
+               base_prio *= res_factor
 
-          self.priority = round(prio, 3)
+          self.priority = round(base_prio, 2)
 
 #
 #
@@ -342,9 +329,11 @@ class _SequencesData:
                open(self._lockfile, 'x').close()
           except FileExistsError:
                raise LockError("Lock file {} exists, _SequencesData uninitialized".format(self._lockfile)) from None
+          self._have_lock = True
 
 
      def _unlock(self):
+          self._have_lock = False
           rm(self._lockfile) # Should we test for problems or just let exceptions propgate?
 
 
@@ -426,6 +415,8 @@ class _SequencesData:
 
      def write(self):
           '''Finalize self to file. Totally overwrites old data with current data.'''
+          if not self._have_lock:
+               raise LockError("Can't use SequencesManager.write() without lock!")
           # ignore dropped seqs (HEAPENTRY)
           out = [item[2] for item in self._heap if (item[2] and item[2] in self._data)]
           # Find seqs that have been dropped from heap, they're just appended

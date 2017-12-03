@@ -52,7 +52,7 @@
              return false;
            }}
          }}
-         if( document.getElementById('driver').checked && aData[13] ) {{
+         if( document.getElementById('driver').checked && aData[12] ) {{
            return false;
          }}
          if( document.getElementById('reserve').checked && aData[7] ) {{
@@ -105,11 +105,12 @@
 		//"bAutoWidth": false,
 		"aoColumnDefs": [
 		     {{ "sClass": "factorcol", "aTargets": [3, 4] }}, // left justified
-		     {{ "bSearchable": false, "bVisible": false, "aTargets": [12, 13] }}, // id and is_driver are totally invisible
+		     {{ "bSearchable": false, "bVisible": false, "aTargets": [11, 12] }}, // id and is_driver are totally invisible
 		     // ~~three~~ two columns are rendered as links
 		     {{ "fnRender": function (o, val) {{return '<a target="_blank" class="lol" href="http://factordb.com/sequences.php?se=1&aq='+val+'&action=last20">'+val+'</a>'}}, "bUseRendered": false, "aTargets": [0] }},
 		     {{ "fnRender": function (o, val) {{return '<a target="_blank" class="lol" href="http://factordb.com/aliquot.php?type=1&aq='+o.aData[0]+'&big=1">'+val+'</a>'}}, "bUseRendered": false, "aTargets": [2] }},
-		     //{{ "fnRender": function (o, val) {{return '<a target="_blank" class="lol" href="http://factordb.com/index.php?id='+o.aData[12]+'">'+val+'</a>'}}, "bUseRendered": false, "aTargets": [5] }},
+		     {{ "fnRender": function (o, val) {{return val.toFixed(2)}}, "aTargets": [10] }},
+		     //{{ "fnRender": function (o, val) {{return '<a target="_blank" class="lol" href="http://factordb.com/index.php?id='+o.aData[11]+'">'+val+'</a>'}}, "bUseRendered": false, "aTargets": [5] }},
 		     {{ "sType": "special", "aTargets": [8] }} // special sort for progress column
 		]
        }});
@@ -211,7 +212,6 @@
           <th>Reservation</th>
           <th>Progress</th>
           <th>Last Updated</th>
-          <th>NZilch</th>
           <th>Prio</th>
           <th>Hidden ID</th>
           <th>Hidden Driver Bool</th>

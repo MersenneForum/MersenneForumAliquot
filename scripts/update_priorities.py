@@ -30,7 +30,7 @@ add_path_relative_to_script('..')
 
 from mfaliquot.application import SequencesManager
 
-seqinfo = SequencesManager("../mfaliquot/application/AllSeq.json")
+seqinfo = SequencesManager("../website/html/AllSeq.json")
 
 with seqinfo.acquire_lock(block_minutes=5):
      for ali in seqinfo.values():

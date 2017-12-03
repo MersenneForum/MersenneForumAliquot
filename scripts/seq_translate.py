@@ -57,6 +57,7 @@ def translate_json(file1, file2):
                                     res=a.res, progress=a.progress, time=a.time, id=a.id,
                                     driver=a.driver)
 
+          new_ali.calculate_priority()
           new_data.push_new_info(new_ali)
 
      new_data.write_unlock()

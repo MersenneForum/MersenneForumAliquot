@@ -72,7 +72,7 @@ from mfaliquot.application.reservations import ReservationsSpider
 import mfaliquot.theory.aliquot as alq
 
 LOGGER = logging.getLogger()
-logging.basicConfig(level=logging.DEBUG) # TODO make default log config file in scripts/
+logging.basicConfig(level=logging.INFO) # TODO make default log config file in scripts/
 
 
 SLEEPING = QUITTING = False
@@ -232,9 +232,7 @@ def do_update(old):
 # TODO: if this whole script is later factored out into mfaliquot.application,
 # also factor out these two into AliquotSequence
 def process_no_progress(old):
-     oldtime = old.time
      old.time = strftime(DATETIMEFMT, gmtime())
-     old.update_nzilch(oldtime)
 
      if isinstance(old.progress, int):
           old.progress = fdb.id_created(old.id)
@@ -245,7 +243,6 @@ def process_no_progress(old):
 def process_progress(ali, old):
 
      ali.res = old.res
-     ali.nzilch = old.nzilch
      ali.progress = ali.index - old.index
      ali.guide, ali.klass, ali.driver = guide_description(ali.factors)
 
@@ -257,9 +254,6 @@ def process_progress(ali, old):
      if ali.progress <= 0:
           LOGGER.info(f"fresh sequence query of {ali.seq} revealed no progress")
           ali.progress = fdb.id_created(ali.id)
-          ali.update_nzilch(old.time)
-     else:
-          ali.nzilch = 0
 
      ali.calculate_priority()
 
