@@ -296,6 +296,8 @@ def preloop_initialize(seqinfo, special=None):
 
 def primary_update_loop(seqinfo, seqs_todo, special=None):
 
+     terminated = []
+
      count = 0
      for seq in seqs_todo:
           old = seqinfo[seq]
@@ -303,6 +305,9 @@ def primary_update_loop(seqinfo, seqs_todo, special=None):
           ali, update_successful = check_update(old, special)
 
           seqinfo.push_new_info(ali)
+
+          if 'terminated' in ali.factors:
+               terminated.append(ali.seq)
 
           if QUITTING:
                break
@@ -313,20 +318,25 @@ def primary_update_loop(seqinfo, seqs_todo, special=None):
 
           sleep(1)
 
-     return count
+     return count, terminated
 
 
-def postloop_finalize(seqinfo):
+def postloop_finalize(seqinfo, terminated):
 
      LOGGER.info("Searching for merges...")
      merges = seqinfo.find_and_drop_merges()
      if merges:
           # not really a warning, but noteworthy enough e.g. to trigger an email
-          LOGGER.warning("Found merges!")
+          LOGGER.warning("Found merges!") # LOGGER.notable()
           for target, drops in merges:
-               LOGGER.warning('The seq(s) {} seem(s) to have merged with {}'.format(', '.join(str(d) for d in drops), target))
+               LOGGER.warning('The seq(s) {} seem(s) to have merged with {}'.format(', '.join(str(d) for d in drops), target)) # LOGGER.notable()
      else:
           LOGGER.info("No merges found")
+
+     if terminated:
+          LOGGER.warning("Found some 'terminated' sequences: {str(seq) for seq in terminated}") # LOGGER.notable()
+          with open(TERMFILE, 'a') as f:
+               f.write(''.join(f'{seq}\n'))
 
      LOGGER.info('Creating statistics...')
      create_stats_write_html(seqinfo)
@@ -352,7 +362,7 @@ def inner_main(seqinfo, special=None):
 
           LOGGER.info('Init complete, starting FDB queries on {n} sequences')
 
-          count = primary_update_loop(seqinfo, seqs_todo, special)
+          count, terminated = primary_update_loop(seqinfo, seqs_todo, special)
 
           msg = f'Primary loop {{}}, successfully updated {count} of {n} sequences, finalizing...'
           if QUITTING:
@@ -360,7 +370,7 @@ def inner_main(seqinfo, special=None):
           else:
                LOGGER.info(msg.format('complete'))
 
-          postloop_finalize(seqinfo)
+          postloop_finalize(seqinfo, terminated)
 
 
      LOGGER.info('Written all data and HTML, saved state and finalized')
