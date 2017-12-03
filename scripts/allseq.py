@@ -57,10 +57,11 @@ BROKEN = {}
 
 
 ################################################################################
-#
+# imports and global initialization
 
 import sys, logging, signal
-from time import sleep
+from time import sleep, gmtime
+from datetime import timedelta
 
 from _import_hack import add_path_relative_to_script
 add_path_relative_to_script('..')
@@ -87,7 +88,7 @@ signal.signal(signal.SIGINT, handler)
 
 
 ################################################################################
-#
+# utility functions
 
 def read_dropfile():
      try:
@@ -145,65 +146,123 @@ def create_stats_write_html(seqinfo):
      with open(STATSJSON, 'w') as f:
           f.write(json.dumps({"aSizes": sizetable, "aCofacts": cofactable, "aGuides": guidetable, "aProgress": progtable, "aLens": lentable}).replace('],', '],\n')+'\n')
 
+
+def guide_description(string):
+     """Returns a tuple of (str_of_guide, class_with_powers, is_driver)"""
+     guide = get_guide(string, powers=False) # dr is an instance of "Factors"
+     guidestring = str(dr) # str specified by "Factors" class
+     if guidestring == '2':
+          return "Downdriver!", 1, False
+     else:
+          return guidestring, get_class(string), is_driver(guide=guide)
+
 #
 ################################################################################
 
 
 ################################################################################
-#
+# primary update logic
 
 def check_update(old, special):
-     global QUITTING
+     '''Returns (old-or-new ali object, successful_update)'''
 
-     if special or not old or not old.is_valid() or not old.id:
+     if special or not old or not old.is_minimally_valid() or not old.id:
           return do_update(old)
 
-     try:
-      status = fdb.query_id_status(old.id)
-     except fdb.FDBResourceLimitReached as e:
-          _logger.exception(str(e), exc_info=e)
-          _logger.info("Skipping sequence {old.seq}")
-          QUITTING = True
-          return old
-     except fdb.FDBDataError as e: # wish these fell through like C switch() statements
-          _logger.exception(str(e), exc_info=e)
-          _logger.info("Skipping sequence {old.seq}")
-          return old
-     if status is None:
-          QUITTING = True
-          return old
-
+     status = _fdb_error_handler_wrapper(fdb.query_id_status, old.seq, old.id)
+     if not status:
+          return old, False
 
      if status is fdb.FDBStatus.CompositeFullyFactored:
           return do_update(old)
-
      elif status is fdb.FDBStatus.CompositePartiallyFactored: # no progress since last
-          post_nonupdate(old)
-
+          process_no_progress(old)
      elif status is fdb.FDBStatus.Prime:
-          _logger.warning("got a prime id value?? termination?")
-
-          post_nonupdate(old)
-
+          LOGGER.warning("got a prime id value?? termination?")
+          process_no_progress(old)
      else:
-          _logger.error("problem: crazy status for most recent id of {seq} ({status})")
+          LOGGER.error("problem: crazy status for most recent id of {seq} ({status})")
+          return old, False
 
-
-     return old
+     return old, True
 
 
 def do_update(old):
 
-def post_nonupdate(old):
+     if old.seq in BROKEN:
+          seq = BROKEN[old.seq][1]
+     else:
+          seq = old.seq
 
-def post_update(ali, old):
+     ali = _fdb_error_handler_wrapper(fdb.query_parse_seq_status, seq, seq)
+     if not ali: # the wrapper has logged it and set QUITTING as necessary
+          return old, False
+
+     process_progress(ali, old)
+
+     return ali, True
+
+
+# TODO: if this whole script is later factored out into mfaliquot.application,
+# also factor out these two into AliquotSequence
+def process_no_progress(old):
+     updatedelta = old.timedelta_since_update()
+     if updatedelta > timedelta(hours=12):
+          # re-updates within 12 hours don't affect priority (allows carefree manual intervention)
+          old.nzilch += 1 # again: better name for this would be much appreciated
+
+     old.time = strftime(DATETIMEFMT, gmtime())
+     old.calculate_priority()
+
+     if isinstance(old.progress, int):
+               old.progress = fdb.id_created(old.id)
+
+
+def process_progress(ali, old):
+
+     ali.nzilch = 0
+     ali.res = old.res
+     ali.progress = ali.index - old.index
+     ali.guide, ali.klass, ali.driver = guide_description(ali.factors)
+
+     if old.seq in BROKEN:
+          ali.seq = old.seq
+          ali.index += BROKEN[old.seq][0]
+          ali.progress += BROKEN[old.seq][0]
+
+     if ali.progress <= 0:
+          LOGGER.warning("fresh update of {ali.seq} revealed no progress")
+          ali.progress = fdb.id_created(ali.id)
+
+     ali.calculate_priority()
+
+
+def _fdb_error_handler_wrapper(func, seq, *args, **kwargs):
+     '''Calling the functions in the `fdb` module basically always looks the same:
+     catch errors, log them, and return (aliobj, False). Factor that out here.'''
+     global QUITTING
+     try:
+          out = func(*args, **kwargs)
+     except fdb.FDBResourceLimitReached as e:
+          LOGGER.exception(str(e), exc_info=e)
+          QUITTING = True
+          return None
+     except fdb.FDBDataError as e: # wish these fell through like C switch() statements
+          LOGGER.exception(str(e), exc_info=e)
+          LOGGER.info("Skipping sequence {seq}")
+          return None
+     if status is None:
+          QUITTING = True
+          return None
+
+     return out
 
 #
 ################################################################################
 
 
 ################################################################################
-#
+# primary loop logic
 
 def preloop_initialize(seqinfo, special=None):
 
@@ -241,20 +300,20 @@ def primary_update_loop(seqinfo, seqs_todo, special=None):
      for seq in seqs_todo:
           old = seqinfo[seq]
 
-          ali = check_update(old, special)
+          ali, update_successful = check_update(old, special)
 
-          #ali = check(seq, seqinfo) # TODO
-
-          #if not ali or not ali.is_valid():
-          #     del data_dict[seq]
-          #data_dict[seq] = ali
+          seqinfo.push_new_info(ali)
 
           if QUITTING:
                break
 
-          count += 1
-          LOGGER.info('{} sequence{} complete: {}'.format(count, 's' if count > 1 else ' ', ali.seq))
-          sleep(0.5) # Different from previous version!
+          if update_successful:
+               count += 1
+               LOGGER.info(f'{count} sequence{'s' if count > 1 else ' '} complete: {ali.seq}')
+
+          sleep(1)
+
+     return count
 
 
 def postloop_finalize(seqinfo):
@@ -277,7 +336,8 @@ def postloop_finalize(seqinfo):
 
 
 ################################################################################
-#
+# TODO: Maybe this inner_main should also be factored out into mfaliquot.application
+# I mean, really
 
 def inner_main(seqinfo, special=None):
      LOGGER.info('\n'+strftime(DATETIMEFMT))
@@ -288,12 +348,17 @@ def inner_main(seqinfo, special=None):
      with seqinfo.acquire_lock(block_minutes=block):
 
           seqs_todo = preloop_initialize(seqinfo, special)
+          n = len(seqs_todo)
 
-          LOGGER.info('Init complete, starting FDB queries')
+          LOGGER.info('Init complete, starting FDB queries on {n} sequences')
 
-          primary_update_loop(seqinfo, seqs_todo, special)
+          count = primary_update_loop(seqinfo, seqs_todo, special)
 
-          LOGGER.info('Primary loop complete, finalizing...')
+          msg = f'Primary loop {{}}, successfully updated {count} of {n} sequences, finalizing...'
+          if QUITTING:
+               LOGGER.warning(msg.format('aborted'))
+          else:
+               LOGGER.info(msg.format('complete'))
 
           postloop_finalize(seqinfo)
 

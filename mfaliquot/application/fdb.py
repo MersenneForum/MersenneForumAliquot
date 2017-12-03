@@ -122,8 +122,6 @@ def query_id_status(fdb_id, tries=5):
 def query_parse_seq_status(seq, tries=5):
      '''Returns None on network error, raises FDBDataError if `tries` consecutive bad data,
      or a new AliquotSequence object if successful'''
-     # TODO: This is still much more spaghetti than I'd like. Is there any way to reduce it,
-     # or does it necessarily follow from all the error checking required?
 
      for i in reversed(range(tries)):
           page = blogotubes('http://factordb.com/sequences.php?se=1&action=last&aq='+str(seq))
@@ -143,7 +141,7 @@ def query_parse_seq_status(seq, tries=5):
                else:
                     _logger.warning(str(e))
                     _logger.info(f'Seq {seq}: retrying query ({i} tries left)')
-                    sleep(2) # How reasonable is a 2s delay vs the old 5?
+                    sleep(2) # TODO: How reasonable is a 2s delay vs the old 5?
                     continue
 
           if i < tries-1:

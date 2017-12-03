@@ -120,12 +120,12 @@ class AliquotSequence(list):
                self.__setattr__(kw, val)
 
 
-     def is_valid(self):
+     def is_minimally_valid(self):
           return self.seq and (self.size and self.size > 0) and (self.index and self.index > 0) and self.factors
 
 
      def __str__(self):
-          if self.is_valid():
+          if self.is_minimally_valid():
                return "{:>7d} {:>5d}. sz {:>3d} {:s}".format(self.seq, self.index, self.size, self.factors)
           else:
                raise ValueError('Not fully described! Seq: '+str(self.seq))
@@ -141,6 +141,11 @@ class AliquotSequence(list):
           return out
 
 
+     def timedelta_since_update(self):
+          '''Return a datetime.timedelta object between "now" and self.time'''
+          return datetime.datetime.utcnow() - datetime.datetime.strptime(self.time, DATETIMEFMT)
+
+
      def calculate_priority(self, max_update_period=90, res_factor=1/2):
           '''Arguments are as follows: `max_update_period` is the target maximum
           time between updates for any sequence no matter how infrequent it is,
@@ -153,15 +158,14 @@ class AliquotSequence(list):
 
           prio = self.nzilch
 
-          lastupdate = datetime.datetime.strptime(self.time, DATETIMEFMT)
-          now = datetime.datetime.utcnow()
-          updatedelta = now - lastupdate # result is a timedelta object
+          updatedelta = self.timedelta_since_update() # result is a timedelta object
           maxdelta = datetime.timedelta(days=max_update_period)
 
           ratio = 1 - updatedelta/maxdelta # returns a float
           # instead of a straight line from 1 to 0 (as the seq goes longer without
           # updating), apply a power > 1 to emphasize the first few days after update.
-          ratio **= 3 # use odd power to maintain sign
+          #ratio **= 3 # use odd power to maintain sign
+          ## TEST without the early emphasis first
 
           prio *= ratio
 
