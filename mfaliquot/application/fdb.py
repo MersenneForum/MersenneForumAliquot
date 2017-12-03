@@ -28,11 +28,14 @@ network error of some sort, or raise an FDBDataError for bad data.'''
 
 
 import logging, re
-from ..myutils import blogotubes
-from .application import AliquotSequence, DATETIMEFMT
+from .. import blogotubes
+from . import AliquotSequence, DATETIMEFMT
 from enum import Enum, auto
 from time import gmtime, sleep
 
+def _blogotubes_with_fdb_useragent(*args, **kwargs):
+     kwargs['hdrs'].update({'User-Agent': 'MersenneForum/Dubslow/AliquotSequences'})
+     return blogotubes(*args, **kwargs)
 
 _logger = logging.getLogger(__name__)
 
@@ -73,7 +76,7 @@ class FDBResourceLimitReached(FDBDataError):
 def id_created(i):
      i = str(i)
      #Print('Querying id', i)
-     page = blogotubes('http://factordb.com/frame_moreinfo.php?id='+i)
+     page = _blogotubes_with_fdb_useragent('http://factordb.com/frame_moreinfo.php?id='+i)
      if page is None:
           return None
      date = CREATEDREGEX.search(page)
@@ -99,7 +102,7 @@ class FDBStatus(Enum):
 def query_id_status(fdb_id, tries=5):
      '''Returns None on network error, raises FDBDataError on bad data, or an FDBStatus otherwise.'''
      for i in range(tries):
-          page = blogotubes('http://factordb.com/index.php?id='+str(fdb_id))
+          page = _blogotubes_with_fdb_useragent('http://factordb.com/index.php?id='+str(fdb_id))
           if page is None:
                return None
           if 'Resources used by your IP' in page:
@@ -124,7 +127,7 @@ def query_parse_seq_status(seq, tries=5):
      or a new AliquotSequence object if successful'''
 
      for i in reversed(range(tries)):
-          page = blogotubes('http://factordb.com/sequences.php?se=1&action=last&aq='+str(seq))
+          page = _blogotubes_with_fdb_useragent('http://factordb.com/sequences.php?se=1&action=last&aq='+str(seq))
           if page is None:
                return None
 

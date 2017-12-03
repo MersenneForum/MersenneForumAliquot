@@ -25,7 +25,7 @@
 
 from .forum_xaction import spider_res_thread, SEQ_REGEX
 from . import DATETIMEFMT
-from ..myutils import blogotubes
+from .. import blogotubes
 from time import strftime, gmtime
 import logging
 

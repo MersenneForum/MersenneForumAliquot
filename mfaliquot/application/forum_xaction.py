@@ -24,7 +24,7 @@
 
 
 import re, logging
-from ..myutils import blogotubes
+from .. import blogotubes
 
 
 _logger = logging.getLogger(__name__)
