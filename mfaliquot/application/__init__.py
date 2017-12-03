@@ -141,9 +141,23 @@ class AliquotSequence(list):
           return out
 
 
-     def timedelta_since_update(self):
-          '''Return a datetime.timedelta object between "now" and self.time'''
-          return datetime.datetime.utcnow() - datetime.datetime.strptime(self.time, DATETIMEFMT)
+     @staticmethod
+     def timedelta_since_update(time1, time2=None):
+          '''Return a datetime.timedelta object between now and `time1` (str in DATETIMEFMT),
+          or else between `time1` and `time2`'''
+          time1 = datetime.datetime.strptime(time1, DATETIMEFMT)
+          if not time2:
+               time2, time1 = time1, datetime.datetime.utcnow()
+          else:
+               time2 = datetime.datetime.strptime(time2, DATETIMEFMT)
+          return time1 - time2
+
+
+     def update_nzilch(self, oldtime):
+          updatedelta = self.timedelta_since_update(self.time, oldtime)
+          if updatedelta > datetime.timedelta(hours=12):
+          # re-updates within 12 hours don't affect priority (allows carefree manual intervention)
+               self.nzilch += 1 # again: better name for this would be much appreciated
 
 
      def calculate_priority(self, max_update_period=90, res_factor=1/2):
@@ -158,7 +172,7 @@ class AliquotSequence(list):
 
           prio = self.nzilch
 
-          updatedelta = self.timedelta_since_update() # result is a timedelta object
+          updatedelta = self.timedelta_since_update(self.time) # result is a timedelta object
           maxdelta = datetime.timedelta(days=max_update_period)
 
           ratio = 1 - updatedelta/maxdelta # returns a float
@@ -468,7 +482,7 @@ class _SequencesData:
 
 
      def pop_seqs(self, seqs):
-          '''Instead of popping the n most important seqs, instead pop the specified seqs'''
+          '''Rather than popping the n most important seqs, instead pop the specified seqs'''
           for seq in seqs:
                self._sabotage_heap_entry(self._data[seq])
 
@@ -521,8 +535,13 @@ class SequencesManager(_SequencesData):
                ids[ali.id].append(ali.seq)
 
           merges = [list(sorted(lst)) for lst in ids.values() if len(lst) > 1]
-
-          return tuple((lst[0], lst[1:]) for lst in merges)
+          merges = tuple((lst[0], lst[1:]) for lst in merges)
+          if merges:
+               # not really a warning, but noteworthy enough e.g. to trigger an email
+               _logger.warning("Found merges!") # LOGGER.notable()
+               for target, drops in merges:
+                    _logger.warning('The seq(s) {} seem(s) to have merged with {}'.format(', '.join(str(d) for d in drops), target)) # LOGGER.notable()
+          return merges
 
 
      def find_and_drop_merges(self):
@@ -531,7 +550,8 @@ class SequencesManager(_SequencesData):
           merges = self.find_merges()
           drops = [drop for target, drops in merges for drop in drops]
           # I still say that "they" got the loop order wrong in comprehensions
-          self.drop(drops)
+          if drops:
+               self.drop(drops)
           return merges
 
 

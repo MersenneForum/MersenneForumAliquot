@@ -67,6 +67,9 @@ def parse_mass_reservation(reservee, url):
      name. Returns (current_entries, duplicate_seqs, unknown_lines)'''
      #global email_msg
      txt = blogotubes(url)
+     if not txt:
+          _logger.error(f"unable to get mass reservation file for {reservee}")
+          return set(), [], []
      current, dups, unknowns = set(), [], []
      for line in txt.splitlines():
           if SEQ_REGEX.match(line):

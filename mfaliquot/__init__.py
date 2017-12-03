@@ -17,6 +17,9 @@
 #
 #    See the LICENSE file for more details.
 
+import logging
+_logger = logging.getLogger(__name__)
+
 from urllib import request, parse, error
 #from http.cookiejar import CookieJar
 #def add_cookies():
@@ -34,10 +37,10 @@ def blogotubes(url, encoding='utf-8', hdrs=None, data=None):
      try:
           page = request.urlopen(req, data).read().decode(encoding)
      except error.HTTPError as e:
-          Print('HTTPError:', e)
+          _logger.exception(f'{type(e).__name__}: {str(e)}', exc_info=e)
           return None
      except Exception as e:
-          Print('{}!'.format(type(e)), e)
+          _logger.exception(f'{type(e).__name__}: {str(e)}', exc_info=e)
           return None
      else:
           return page

@@ -28,22 +28,24 @@
 # globals/configuration
 
 
-JSONFILE = #'../website/html/AllSeq.json'
-TXTFILE  = #'../website/html/AllSeq.txt'
+JSONFILE = '../website/html/AllSeq.json'
+TXTFILE  = '../website/html/AllSeq.txt'
 
-MAINTEMPLATE  = #'../website/html/template.html'
-STATSTEMPLATE = #'../website/html/template2.html'
+MAINTEMPLATE  = '../website/html/template.html'
+STATSTEMPLATE = '../website/html/template2.html'
 
-MAINHTML  = #'../website/html/AllSeq.html'
-STATSHTML = #'../website/html/statistics.html'
-STATSJSON = #'../website/html/statistics.json'
+MAINHTML  = '../website/html/AllSeq.html'
+STATSHTML = '../website/html/statistics.html'
+STATSJSON = '../website/html/statistics.json'
 
 
-DROPFILE = ''
-TERMFILE = ''
+DROPFILE = 'allseq.drops.txt'
+TERMFILE = 'allseq.terms.txt'
 
-BATCHSIZE = 10 # 110
+BATCHSIZE = 100
 BLOCKMINUTES = 3
+CHECK_RESERVATIONS = True
+
 SLEEPMINUTES = 30
 LOOPING = False
 
@@ -59,18 +61,18 @@ BROKEN = {}
 ################################################################################
 # imports and global initialization
 
-import sys, logging, signal
-from time import sleep, gmtime
-from datetime import timedelta
+import sys, logging, signal, json
+from time import sleep, gmtime, strftime
 
 from _import_hack import add_path_relative_to_script
 add_path_relative_to_script('..')
 # this should be removed when proper pip installation is supported
-from mfaliquot.application import SequencesManager, DATETIMEFMT, fdb
+from mfaliquot.application import SequencesManager, AliquotSequence, DATETIMEFMT, fdb
 from mfaliquot.application.reservations import ReservationsSpider
+import mfaliquot.theory.aliquot as alq
 
 LOGGER = logging.getLogger()
-logging.basicConfig(level=logging.INFO) # TODO make default log config file in scripts/
+logging.basicConfig(level=logging.DEBUG) # TODO make default log config file in scripts/
 
 
 SLEEPING = QUITTING = False
@@ -91,6 +93,7 @@ signal.signal(signal.SIGINT, handler)
 # utility functions
 
 def read_dropfile():
+     LOGGER.info(f'Checking {DROPFILE} for seqs to drop')
      try:
           with open(DROPFILE) as f:
                _drops = f.read().split() # split() counts newlines as whitespace too
@@ -107,6 +110,29 @@ def read_dropfile():
                LOGGER.warning("Ignoring unknown 'drop' entry {}".format(drop))
 
      return drops
+
+
+def check_special_for_new_seqs(seqinfo, special):
+     news = []
+     for seq in special:
+          if seq not in seqinfo:
+               if seq <= 276 or seq >= 10**7 or not seq & 1 == 0:
+                    raise ValueError(f"new seq {seq} is invalid")
+               news.append(seq)
+               seqinfo.push_new_info(AliquotSequence(seq=seq, index=-1))
+     return news
+
+
+def check_reservations(seqinfo):
+     # Returns a list of seqs that were manually [un]reservered
+     LOGGER.info("Checking reservations...")
+     from reservations import PIDFILE, MASS_RESERVATIONS # from the sibling script TODO: MAJOR HACK
+     thread_out, mass_out = ReservationsSpider(seqinfo, PIDFILE).spider_all_apply_all(MASS_RESERVATIONS)
+     seqinfo.write() # "Atomic"
+     seqs = [seq for name, addres, dropres in thread_out for seq in addres[0]+dropres[0]]
+     if seqs:
+          LOGGER.info(f"These seqs were manually [un]reserved: {' '.join(str(s) for s in seqs)}")
+     return seqs
 
 
 def create_stats_write_html(seqinfo):
@@ -136,7 +162,7 @@ def create_stats_write_html(seqinfo):
 
      sizetable, cofactable, guidetable, progtable, lentable, totinc, avginc, totprog, progcent = seqinfo.calc_common_stats()
 
-     stats = stats.format(totinc=totlen/totsiz, avginc=avginc, totprog=totprog, progcent=progcent)
+     stats = stats.format(totinc=totinc, avginc=avginc, totprog=totprog, progcent=progcent)
 
      # Write the statsdata and webpages
      with open(MAINHTML, 'w') as f:
@@ -149,12 +175,12 @@ def create_stats_write_html(seqinfo):
 
 def guide_description(string):
      """Returns a tuple of (str_of_guide, class_with_powers, is_driver)"""
-     guide = get_guide(string, powers=False) # dr is an instance of "Factors"
-     guidestring = str(dr) # str specified by "Factors" class
+     guide = alq.get_guide(string, powers=False) # dr is an instance of "Factors"
+     guidestring = str(guide) # str specified by "Factors" class
      if guidestring == '2':
           return "Downdriver!", 1, False
      else:
-          return guidestring, get_class(string), is_driver(guide=guide)
+          return guidestring, alq.get_class(string), alq.is_driver(guide=guide)
 
 #
 ################################################################################
@@ -206,22 +232,20 @@ def do_update(old):
 # TODO: if this whole script is later factored out into mfaliquot.application,
 # also factor out these two into AliquotSequence
 def process_no_progress(old):
-     updatedelta = old.timedelta_since_update()
-     if updatedelta > timedelta(hours=12):
-          # re-updates within 12 hours don't affect priority (allows carefree manual intervention)
-          old.nzilch += 1 # again: better name for this would be much appreciated
-
+     oldtime = old.time
      old.time = strftime(DATETIMEFMT, gmtime())
-     old.calculate_priority()
+     old.update_nzilch(oldtime)
 
      if isinstance(old.progress, int):
-               old.progress = fdb.id_created(old.id)
+          old.progress = fdb.id_created(old.id)
+
+     old.calculate_priority()
 
 
 def process_progress(ali, old):
 
-     ali.nzilch = 0
      ali.res = old.res
+     ali.nzilch = old.nzilch
      ali.progress = ali.index - old.index
      ali.guide, ali.klass, ali.driver = guide_description(ali.factors)
 
@@ -231,8 +255,11 @@ def process_progress(ali, old):
           ali.progress += BROKEN[old.seq][0]
 
      if ali.progress <= 0:
-          LOGGER.warning("fresh update of {ali.seq} revealed no progress")
+          LOGGER.info(f"fresh sequence query of {ali.seq} revealed no progress")
           ali.progress = fdb.id_created(ali.id)
+          ali.update_nzilch(old.time)
+     else:
+          ali.nzilch = 0
 
      ali.calculate_priority()
 
@@ -251,7 +278,7 @@ def _fdb_error_handler_wrapper(func, seq, *args, **kwargs):
           LOGGER.exception(str(e), exc_info=e)
           LOGGER.info("Skipping sequence {seq}")
           return None
-     if status is None:
+     if out is None:
           QUITTING = True
           return None
 
@@ -268,6 +295,7 @@ def preloop_initialize(seqinfo, special=None):
 
      drops = read_dropfile()
      if drops:
+          LOGGER.info(f"Read seqs to drop from file: {' '.join(str(s) for s in drops)}")
           seqinfo.drop(drops)
           seqinfo.write() # "Atomic"
           open(DROPFILE, 'w').close() # leave blank file on filesystem for forgetful humans :)
@@ -275,21 +303,26 @@ def preloop_initialize(seqinfo, special=None):
      ##########
 
      if special:
+          news = check_special_for_new_seqs(seqinfo, special)
+          if news:
+               LOGGER.info(f"Adding {len(news)} new seqs: {' '.join(str(s) for s in news)}")
           seqs_todo = special
-     else:
+
+     elif CHECK_RESERVATIONS:
+          seqs_todo = check_reservations(seqinfo)
           n = BATCHSIZE
-          from reservations import PIDFILE, MASS_RESERVATIONS # from the sibling script
-          thread_out, mass_out = ReservationsSpider(seqinfo, PIDFILE).spider_all_apply_all(MASS_RESERVATIONS)
-          seqinfo.write() # "Atomic"
-          seqs_todo = [seq for name, addres, dropres in thread_out for seq in addres[0]+dropres[0]]
           if seqs_todo:
                seqinfo.pop_seqs(seqs_todo)
                n -= len(seqs_todo)
           if n > 0:
                seqs_todo.extend(seqinfo.pop_n_todo(n))
-
           if not seqs_todo:
                raise RuntimeError("Somehow got no seqs todo")
+          LOGGER.debug(f"got {len(seqs_todo)} sequences: {' '.join(str(s) for s in seqs_todo)}")
+
+     else: # this case can be logically handled with the code above, but I think it's clearer/cleaner this way
+          seqs_todo = seqinfo.pop_n_todo(BATCHSIZE)
+          LOGGER.debug(f"got {len(seqs_todo)} sequences: {' '.join(str(s) for s in seqs_todo)}")
 
      return seqs_todo
 
@@ -301,20 +334,16 @@ def primary_update_loop(seqinfo, seqs_todo, special=None):
      count = 0
      for seq in seqs_todo:
           old = seqinfo[seq]
-
           ali, update_successful = check_update(old, special)
-
           seqinfo.push_new_info(ali)
-
+          if update_successful:
+               count += 1
+               LOGGER.info(f'{count} sequence{"s" if count > 1 else " "} complete: {ali.seq}')
           if 'terminated' in ali.factors:
                terminated.append(ali.seq)
 
           if QUITTING:
                break
-
-          if update_successful:
-               count += 1
-               LOGGER.info(f'{count} sequence{'s' if count > 1 else ' '} complete: {ali.seq}')
 
           sleep(1)
 
@@ -325,19 +354,15 @@ def postloop_finalize(seqinfo, terminated):
 
      LOGGER.info("Searching for merges...")
      merges = seqinfo.find_and_drop_merges()
-     if merges:
-          # not really a warning, but noteworthy enough e.g. to trigger an email
-          LOGGER.warning("Found merges!") # LOGGER.notable()
-          for target, drops in merges:
-               LOGGER.warning('The seq(s) {} seem(s) to have merged with {}'.format(', '.join(str(d) for d in drops), target)) # LOGGER.notable()
-     else:
+     if not merges:
           LOGGER.info("No merges found")
 
      if terminated:
-          LOGGER.warning("Found some 'terminated' sequences: {str(seq) for seq in terminated}") # LOGGER.notable()
+          LOGGER.info(f"Writing terminations to {TERMFILE}: {' '.join(str(seq) for seq in terminated)}")
           with open(TERMFILE, 'a') as f:
-               f.write(''.join(f'{seq}\n'))
+               f.write(''.join(f'{seq}\n' for seq in terminated))
 
+     LOGGER.info(f'Currently have {len(seqinfo)} sequences on file.')
      LOGGER.info('Creating statistics...')
      create_stats_write_html(seqinfo)
 
@@ -360,7 +385,7 @@ def inner_main(seqinfo, special=None):
           seqs_todo = preloop_initialize(seqinfo, special)
           n = len(seqs_todo)
 
-          LOGGER.info('Init complete, starting FDB queries on {n} sequences')
+          LOGGER.info(f'Init complete, starting FDB queries on {n} sequences')
 
           count, terminated = primary_update_loop(seqinfo, seqs_todo, special)
 
@@ -410,4 +435,4 @@ if __name__ == '__main__':
      try:
           main()
      except BaseException as e:
-          LOGGER.exception("allseq.py interrupted: {}".format(e), exc_info=e)
+          LOGGER.exception(f"allseq.py interrupted by {type(e).__name__}: {str(e)}", exc_info=e)

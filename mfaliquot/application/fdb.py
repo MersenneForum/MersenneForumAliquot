@@ -31,10 +31,10 @@ import logging, re
 from .. import blogotubes
 from . import AliquotSequence, DATETIMEFMT
 from enum import Enum, auto
-from time import gmtime, sleep
+from time import gmtime, sleep, strftime, strptime
 
 def _blogotubes_with_fdb_useragent(*args, **kwargs):
-     kwargs['hdrs'].update({'User-Agent': 'MersenneForum/Dubslow/AliquotSequences'})
+     kwargs.setdefault('hdrs', {}).update({'User-Agent': 'MersenneForum/Dubslow/AliquotSequences'})
      return blogotubes(*args, **kwargs)
 
 _logger = logging.getLogger(__name__)
@@ -109,8 +109,8 @@ def query_id_status(fdb_id, tries=5):
                _logger.error('the FDB is refusing requests')
                raise FDBResourceLimitReached(fdbpage=page)
 
-          for s, e in (('PRP', FDBStatus.ProbablyPrime), ('FF', FDBStatus.FullyFactored),
-                       ('CF', FDBStatus.CompositeWithFactors), ('C', FDBStats.Composite),
+          for s, e in (('PRP', FDBStatus.ProbablyPrime), ('FF', FDBStatus.CompositeFullyFactored),
+                       ('CF', FDBStatus.CompositePartiallyFactored), ('C', FDBStatus.CompositeNoFactors),
                        ('P', FDBStatus.Prime), ('U', FDBStatus.Unknown)):
 
                if f"<td>{s}</td>" in page:
@@ -182,7 +182,7 @@ def _process_ali_data(seq, page):
      if not smalls:
           raise FDBDataError(f'Seq {seq}: no smalls match')
 
-     if '2 *' not in smalls[0] and '2^' not in smalls[0]:
+     if smalls[0][0] != '2':
           raise FDBDataError(f'Seq {seq}: no 2 in the smalls!')
 
      factors = ''; size = 2
