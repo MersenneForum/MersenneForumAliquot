@@ -196,7 +196,7 @@ def check_update(old, special):
           return do_update(old)
 
      status = _fdb_error_handler_wrapper(fdb.query_id_status, old.seq, old.id)
-     if not status:
+     if not status: # the wrapper has logged it and set QUITTING as necessary
           return old, False
 
      if status is fdb.FDBStatus.CompositeFullyFactored:
@@ -207,7 +207,7 @@ def check_update(old, special):
           LOGGER.warning("got a prime id value?? termination?")
           process_no_progress(old)
      else:
-          LOGGER.error("problem: crazy status for most recent id of {seq} ({status})")
+          LOGGER.error(f"problem: crazy status for most recent id of {seq} ({status})")
           return old, False
 
      return old, True
@@ -270,7 +270,7 @@ def _fdb_error_handler_wrapper(func, seq, *args, **kwargs):
           return None
      except fdb.FDBDataError as e: # wish these fell through like C switch() statements
           LOGGER.exception(str(e), exc_info=e)
-          LOGGER.info("Skipping sequence {seq}")
+          LOGGER.info(f"Skipping sequence {seq}")
           return None
      if out is None:
           QUITTING = True
@@ -323,9 +323,8 @@ def preloop_initialize(seqinfo, special=None):
 
 def primary_update_loop(seqinfo, seqs_todo, special=None):
 
-     terminated = []
+     count, terminated = 0, []
 
-     count = 0
      for seq in seqs_todo:
           old = seqinfo[seq]
           ali, update_successful = check_update(old, special)

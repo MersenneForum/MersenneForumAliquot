@@ -142,9 +142,9 @@ def query_parse_seq_status(seq, tries=5):
                     _logger.exception(f"Seq {seq}: bad data after {tries} tries: {str(e)}", exc_info=e)
                     raise
                else:
-                    _logger.warning(str(e))
+                    _logger.info(str(e))
                     _logger.info(f'Seq {seq}: retrying query ({i} tries left)')
-                    sleep(2) # TODO: How reasonable is a 2s delay vs the old 5?
+                    sleep(5)
                     continue
 
           if i < tries-1:
@@ -204,13 +204,13 @@ def _process_ali_data(seq, page):
           cofactor = int(comp)
           size += cofactor
 
-     if size < 0.9 * ali.size:
+     if size < 0.95 * ali.size:
           raise FDBDataError(f'Seq {seq}: index: {ali.index}, size: {ali.size}, '
                                       f'garbage factors found: {factors}, cofactor: {cofactor}')
 
-     if cofactor < 65: # FDB will autofactor it (is it 70 digits???)
+     if cofactor < 70: # FDB will autofactor it
           # less of an error more of just an un-updated downdriver run
-          raise FDBDataError(f'Seq {seq}: small cofactor')
+          raise FDBDataError(f'Seq {seq} (index {ali.index}): small cofactor')
 
      ali.factors = factors
      ali.cofactor = cofactor

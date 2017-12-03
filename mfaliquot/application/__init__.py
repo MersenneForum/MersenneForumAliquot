@@ -170,6 +170,10 @@ class AliquotSequence(list):
 
           base_prio *= ratio
 
+          if self.cofactor < 100:
+               base_prio *= (self.cofactor)/50 - 1
+               # Somewhat arbitrary: ratio(100) = 1, and ratio(50) = 0 (slope = 1/50, y-intercept = -1)
+
           if self.res:
                base_prio *= res_factor
 
