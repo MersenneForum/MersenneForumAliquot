@@ -163,20 +163,23 @@ class AliquotSequence(list):
                days_without_movement = (last_update_datetime.date() - progress_date).days
 
           base_prio = max(0, days_without_movement - updatedeltadays)
-          # Maybe discount updatedeltadays by some fraction?
-          # e.g. days_without_movement - updatedeltadays/2 or something, idk
-
-          maxdelta = timedelta(days=max_update_period)
-          ratio = 1 - updatedelta/maxdelta # returns a float
-
-          base_prio *= ratio
 
           if self.cofactor < 100:
-               base_prio *= (self.cofactor)/50 - 1
-               # Somewhat arbitrary: ratio(100) = 1, and ratio(50) = 0 (slope = 1/50, y-intercept = -1)
+               base_prio *= (self.cofactor)/100
 
           if self.res:
                base_prio *= res_factor
+
+          if 'Downdriver' in self.guide:
+               base_prio /= 2
+
+          ratio = updatedelta/timedelta(days=max_update_period)
+          if ratio > 0.5: # If max_update_period is at least half over
+               # f(0.5) = 1, f(1) = 0 --> f(x) = 2 - 2x
+               base_prio *= 2*(1-ratio)
+          elif updatedeltadays < 1: # Ad hoc/reactionary, but whatever
+               # f(0) = 2, f(1) = 0, actually the same exact function lol
+               base_prio += 2*(1-updatedeltadays)
 
           self.priority = round(base_prio, 2)
 
