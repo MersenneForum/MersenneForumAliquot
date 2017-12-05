@@ -40,9 +40,10 @@
 ################################################################################
 
 
-import json, datetime, logging
+import json, logging
 from collections import defaultdict, Counter
 from time import sleep
+from datetime import datetime, timedelta, date
 from os import remove as rm
 
 
@@ -150,22 +151,22 @@ class AliquotSequence(list):
           # never get their prio actually updated towards 0, even if they should be
           # Solution: add a third script run once a day to update *all* prios? TODO
 
-          last_update_datetime = datetime.datetime.strptime(self.time, DATETIMEFMT)
-          updatedelta = (datetime.datetime.utcnow() - last_update_datetime)
-          updatedeltadays = updatedelta/datetime.timedelta(days=1)
+          last_update_datetime = datetime.strptime(self.time, DATETIMEFMT)
+          updatedelta = (datetime.utcnow() - last_update_datetime)
+          updatedeltadays = updatedelta/timedelta(days=1)
           # timedelta objects have a .days attribute, but that truncates the seconds
           # "dividing" instead by a unit of days leaves the fractional part on the float
 
-          days_without_movement = 0
+          days_without_movement = 1
           if isinstance(self.progress, str):
-               days_without_movement = (  last_update_datetime.date()
-                                        - datetime.date(*[int(s) for s in self.progress.split('-')])).days
+               progress_date = date(*[int(s) for s in self.progress.split('-')])
+               days_without_movement = (last_update_datetime.date() - progress_date).days
 
           base_prio = max(0, days_without_movement - updatedeltadays)
           # Maybe discount updatedeltadays by some fraction?
           # e.g. days_without_movement - updatedeltadays/2 or something, idk
 
-          maxdelta = datetime.timedelta(days=max_update_period)
+          maxdelta = timedelta(days=max_update_period)
           ratio = 1 - updatedelta/maxdelta # returns a float
 
           base_prio *= ratio
