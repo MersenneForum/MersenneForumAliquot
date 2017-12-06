@@ -69,7 +69,6 @@ add_path_relative_to_script('..')
 # this should be removed when proper pip installation is supported
 from mfaliquot.application import SequencesManager, AliquotSequence, DATETIMEFMT, fdb
 from mfaliquot.application.reservations import ReservationsSpider
-import mfaliquot.theory.aliquot as alq
 
 LOGGER = logging.getLogger()
 logging.basicConfig(level=logging.INFO) # TODO make default log config file in scripts/
@@ -173,15 +172,6 @@ def create_stats_write_html(seqinfo):
           f.write(json.dumps({"aSizes": sizetable, "aCofacts": cofactable, "aGuides": guidetable, "aProgress": progtable, "aLens": lentable}).replace('],', '],\n')+'\n')
 
 
-def guide_description(string):
-     """Returns a tuple of (str_of_guide, class_with_powers, is_driver)"""
-     guide = alq.get_guide(string, powers=False) # dr is an instance of "Factors"
-     guidestring = str(guide) # str specified by "Factors" class
-     if guidestring == '2':
-          return "Downdriver!", 1, False
-     else:
-          return guidestring, alq.get_class(string), alq.is_driver(guide=guide)
-
 #
 ################################################################################
 
@@ -202,10 +192,10 @@ def check_update(old, special):
      if status is fdb.FDBStatus.CompositeFullyFactored:
           return do_update(old)
      elif status is fdb.FDBStatus.CompositePartiallyFactored: # no progress since last
-          process_no_progress(old)
+          old.process_no_progress()
      elif status is fdb.FDBStatus.Prime:
           LOGGER.warning("got a prime id value?? termination?")
-          process_no_progress(old)
+          old.process_no_progress()
      else:
           LOGGER.error(f"problem: crazy status for most recent id of {seq} ({status})")
           return old, False
@@ -224,38 +214,12 @@ def do_update(old):
      if not ali: # the wrapper has logged it and set QUITTING as necessary
           return old, False
 
-     process_progress(ali, old)
+     if old.seq in BROKEN:
+          ali.process_progress(old, BROKEN[old.seq][0])
+     else:
+          ali.process_progress(old)
 
      return ali, True
-
-
-# TODO: if this whole script is later factored out into mfaliquot.application,
-# also factor out these two into AliquotSequence
-def process_no_progress(old):
-     old.time = strftime(DATETIMEFMT, gmtime())
-
-     if isinstance(old.progress, int):
-          old.progress = fdb.id_created(old.id)
-
-     old.calculate_priority()
-
-
-def process_progress(ali, old):
-
-     ali.res = old.res
-     ali.progress = ali.index - old.index
-     ali.guide, ali.klass, ali.driver = guide_description(ali.factors)
-
-     if old.seq in BROKEN:
-          ali.seq = old.seq
-          ali.index += BROKEN[old.seq][0]
-          ali.progress += BROKEN[old.seq][0]
-
-     if ali.progress <= 0:
-          LOGGER.info(f"fresh sequence query of {ali.seq} revealed no progress")
-          ali.progress = fdb.id_created(ali.id)
-
-     ali.calculate_priority()
 
 
 def _fdb_error_handler_wrapper(func, seq, *args, **kwargs):

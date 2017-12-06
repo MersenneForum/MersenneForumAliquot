@@ -41,8 +41,9 @@
 
 
 import json, logging
+from ..theory import aliquot as alq
 from collections import defaultdict, Counter
-from time import sleep
+from time import sleep, strftime, gmtime
 from datetime import datetime, timedelta, date
 from os import remove as rm
 
@@ -177,11 +178,48 @@ class AliquotSequence(list):
           if ratio > 0.5: # If max_update_period is at least half over
                # f(0.5) = 1, f(1) = 0 --> f(x) = 2 - 2x
                base_prio *= 2*(1-ratio)
-          elif updatedeltadays < 1: # Ad hoc/reactionary, but whatever
+          elif updatedeltadays < 1: # Prevent getting overzealous on a single seq in too short a time
                # f(0) = 2, f(1) = 0, actually the same exact function lol
                base_prio += 2*(1-updatedeltadays)
 
           self.priority = round(base_prio, 2)
+
+
+     def process_no_progress(self):
+          self.time = strftime(DATETIMEFMT, gmtime())
+
+          if isinstance(self.progress, int):
+               self.progress = fdb.id_created(self.id)
+
+          self.calculate_priority()
+
+
+     def process_progress(self, old, broken_offset=None):
+
+          self.res = old.res
+          self.progress = self.index - old.index
+          self.guide, self.klass, self.driver = self.guide_description()
+
+          if broken_offset:
+               self.seq = old.seq
+               self.index += broken_offset
+               self.progress += broken_offset
+
+          if self.progress <= 0:
+               LOGGER.info(f"fresh sequence query of {self.seq} revealed no progress")
+               self.progress = fdb.id_created(self.id)
+
+          self.calculate_priority()
+
+
+     def guide_description(self):
+          """Returns a tuple of (str_of_guide, class_with_powers, is_driver)"""
+          guide = alq.get_guide(self.factors, powers=False) # dr is an instance of "Factors"
+          guidestring = str(guide) # str specified by "Factors" class
+          if guidestring == '2':
+               return "Downdriver!", 1, False
+          else:
+               return guidestring, alq.get_class(self.factors), alq.is_driver(guide=guide)
 
 #
 #
