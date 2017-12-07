@@ -214,10 +214,8 @@ def do_update(old):
      if not ali: # the wrapper has logged it and set QUITTING as necessary
           return old, False
 
-     if old.seq in BROKEN:
-          ali.process_progress(old, BROKEN[old.seq][0])
-     else:
-          ali.process_progress(old)
+     broken_index = BROKEN[old.seq][0] if old.seq in BROKEN else None
+     ali.process_progress(old, broken_index)
 
      return ali, True
 

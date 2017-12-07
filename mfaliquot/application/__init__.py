@@ -206,7 +206,7 @@ class AliquotSequence(list):
                self.progress += broken_offset
 
           if self.progress <= 0:
-               LOGGER.info(f"fresh sequence query of {self.seq} revealed no progress")
+               _logger.info(f"fresh sequence query of {self.seq} revealed no progress")
                self.progress = fdb.id_created(self.id)
 
           self.calculate_priority()
