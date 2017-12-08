@@ -179,10 +179,10 @@ def create_stats_write_html(seqinfo):
 ################################################################################
 # primary update logic
 
-def check_update(old, special):
+def check_update(old):
      '''Returns (old-or-new ali object, successful_update)'''
 
-     if special or not old or not old.is_minimally_valid() or not old.id:
+     if not old or not old.is_minimally_valid() or not old.id:
           return do_update(old)
 
      status = _fdb_error_handler_wrapper(fdb.query_id_status, old.seq, old.id)
@@ -204,7 +204,6 @@ def check_update(old, special):
 
 
 def do_update(old):
-
      if old.seq in BROKEN:
           seq = BROKEN[old.seq][1]
      else:
@@ -289,7 +288,7 @@ def primary_update_loop(seqinfo, seqs_todo, special=None):
 
      for seq in seqs_todo:
           old = seqinfo[seq]
-          ali, update_successful = check_update(old, special)
+          ali, update_successful = check_update(old)
           seqinfo.push_new_info(ali)
           if update_successful:
                count += 1

@@ -127,7 +127,7 @@
        //$('#button').mousedown( redraw );
      }});
      </script>
-     <title>Current status of aliquot sequences with start term below 1 million</title>
+     <title>Current status of aliquot sequences with start term below 2 million</title>
 </head>
 <body>
      <h3 class="cen">Current status of aliquot sequences with start term below <s>1</s> <em>2</em> million</h3><br>
@@ -136,7 +136,7 @@
      This is supposed to make things easier (including easier sorting and data mining).
      This uses Syd's wonderful <a href="http://factordb.com/help.php?page=0">Factor DataBase</a> to get FDB's last <a href="http://factordb.com/sequences.php">known information</a>
      about an <a href="http://en.wikipedia.org/wiki/Aliquot_sequence">Aliquot sequence</a>. As such, if a worker hasn't updated the DB in a while or the DB has errors in a sequence,
-     well... there's not much I can do about it.</p></div>
+     well... there's not much to be done about it.</p></div>
 
      <div class="just"><p><h4>Instructions:</h4></p>
      <p>This table makes use of a wonderful JavaScript library called DataTables created by <a href="http://datatables.net/index">this awesome group</a>
@@ -152,18 +152,24 @@
      That's the source for the reservations shown in this table. Also note that if the sequence is less than 10,000,
      there's a good chance it's being <a href="http://christophe.clavier.free.fr/Aliquot/site/clavier_table.html">worked on</a> by
      <a href="http://christophe.clavier.free.fr/Aliquot/site/Aliquot.html">Christophe Clavier</a>. All such reservation requests should be emailed to him. Also keep in mind
-     that his work may not be in the FDB (and thus not in this table). Sequences between 10,000 and 100,000
+     that his work may not be in the FDB (and thus not in this table). <s>Sequences between 10,000 and 100,000
      should also be checked further at MersenneForum, because this range was worked on by Clifford Stern. See
-     <a href="http://www.mersenneforum.org/showthread.php?t=11625">this MF thread</a> for more details about or to ask about the status of sequences in these ranges.</p>
+     <a href="http://www.mersenneforum.org/showthread.php?t=11625">this MF thread</a> for more details about or to ask about the status of sequences in these ranges.</s>
+     The previous two sentences don't seem to be true anymore; 5 digit sequences may be reserved and worked as freely as 6 or 7 digit sequences.</p>
 
      <p>If you'd like to have the basic information available in the old AllSeq.txt format (to e.g. perform an analysis with grep, etc.), that can be found <a href="AllSeq.txt">here</a>.
      The plaintext list of every sequence being tracked is found <a href="SeqList.txt">here</a>, while the raw JSON data that the table presents is found <a href=AllSeq.json">here</a>.</p>
 
      <p><h4>Other Information</h4></p>
-     <p>To keep load on the FDB to a minimum, the Python sequence-update script which tracks the data on this page runs roughly 100 sequences per hour; this is subject to change.
-     Given the current total sequence count, that means each sequence is updated roughly <a href="http://www.wolframalpha.com/input/?i=18500%2F110%20hours">once a week</a>.
-     Each sequence lists the date it was last updated. To further reduce FDB load, the script queries the FDB ID of the last unfactored line from the previous update.
-     Only if that line is factored does the script actually request the much heavier sequence status page.</p>
+     <p>To keep load on the FDB to a minimum, the Python sequence-update script which tracks the data on this page runs roughly 200 sequences per hour; this is subject to change.
+     To further reduce FDB load, the script queries the FDB ID of the last unfactored line from the previous update. Only if that line is factored does the script actually request
+     the much heavier sequence status page.
+     The underlying Python update code uses a (somewhat ad hoc/arbitrary) "priority" algorithm to determine which sequences are more likely to have made recent progress. To zeroth
+     order, the priority is derived from (time_between_last_update_and_last_movement - time_since_last_update) (while being generally floored at zero). So sequences that haven't
+     seen progress in years are checked very infrequently. There is a maximum update period, currently 90 days; even the most progress-less sequences will be updated at least that
+     often (roughly). This maximum update period is also subject to change. Each sequence lists the date it was last updated. The current settings of a 90 day max update period,
+     and 200 sequences per hour, is <em>suspected</em> to be more than sufficient to support a table size of at least five halves its current size, i.e. supporting an extension to
+     5 000 000, with extension to 10e7 also being quite plausible. Such an extension is tabled for now (if you'll pardon the pun), but the "technology" is now here, so to speak.</p>
 
      <p>Drivers and guides: I wrote a short <a href="https://github.com/MersenneForum/MersenneForumAliquot/blob/master/mfaliquot/aliquot.py">Python module</a>,
      based on the definitions and notes from Clifford Stern's <a href="analysis.html">Analysis page</a>,
@@ -173,15 +179,15 @@
 
      <p>At kar_bon's suggestion, the script now also records the FDB ID of the last line, to try and detect merges. The merge finder is run after each hourly update.
      The main drawback is that a merged sequence could advance between getting the info for one branch and the info of the other, meaning that such a merge would go undetected.
-     In practice this doesn't seem to be a problem.</p>
+     In practice the merge is eventually detected, but occasionally several days after humans first notice it, depending on who or what found the merge.</p>
 
      <p>At fivemack's suggestion, the script now also tracks the last time a sequence was lengthened. If, at the current update, a sequence is longer than at the previous update,
      the "Recent Progress" column displays the total increase in length. If a sequence has not been extended, then the date of the last extension is shown.
-     (The FDB doesn't seem to have recorded dates before 2011-03-17.)</p>
+     (The FDB doesn't seem to have recorded dates before 2011-03-17.) (This feature is the basis of the new priority algorithm.)</p>
 
-     <p>As you've probably noticed, this table is also capable of reading the current reservations from the lead post of the reservations thread. <s>The time reported is
-     the last edit date of that post.</s> Ensuring the post(s) was up to date turned out to be quite tedious; the reservations thread is now actively spidered from offsite,
-     where the resulting reservations table is also kept. The time shown is the last time the reservations spider was run.
+     <p>As you've probably noticed, the code behind this website is capable of spidering the MersenneForum Aliquot sequences reservations thread. The actual reservations are tracked
+     only in the corresponding column of the table, with no independent "master reservations file" as was previously the case. The reservation update time listed below is the last
+     time the res-thread spider ran.
      The reservations are all updated independently of the sequence data, meaning <em>every</em> reservation is up to date (modulo the spider frequency), unlike the sequence data.</p>
 
      <p>There is also a <a href="statistics.html">statistics page</a> based on the data in the table. Check back every so often for new features.</p>
@@ -193,7 +199,7 @@
 
      <br>
      <div class="cen">
-          <p>All times are UTC. Reservations are as of {:s}. <br />
+          <p>All times are UTC. Reservations are current as of {:s}. <br />
           <!--<p>All times are UTC. <strong>Reservations are not up to date!</strong> <br /> -->
                          These sequences are currently broken: {:s}</p>
           {:s}
