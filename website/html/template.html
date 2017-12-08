@@ -157,8 +157,7 @@
      <a href="http://www.mersenneforum.org/showthread.php?t=11625">this MF thread</a> for more details about or to ask about the status of sequences in these ranges.</s>
      The previous two sentences don't seem to be true anymore; 5 digit sequences may be reserved and worked as freely as 6 or 7 digit sequences.</p>
 
-     <p>If you'd like to have the basic information available in the old AllSeq.txt format (to e.g. perform an analysis with grep, etc.), that can be found <a href="AllSeq.txt">here</a>.
-     The plaintext list of every sequence being tracked is found <a href="SeqList.txt">here</a>, while the raw JSON data that the table presents is found <a href=AllSeq.json">here</a>.</p>
+     <p>If you'd like to have the basic information available in the old AllSeq.txt format (to e.g. perform an analysis with grep, etc.), that can be found <a href="AllSeq.txt">here</a>, while the raw JSON data that the table presents is found <a href="AllSeq.json">here</a>.</p>
 
      <p><h4>Other Information</h4></p>
      <p>To keep load on the FDB to a minimum, the Python sequence-update script which tracks the data on this page runs roughly 200 sequences per hour; this is subject to change.
@@ -169,9 +168,9 @@
      seen progress in years are checked very infrequently. There is a maximum update period, currently 90 days; even the most progress-less sequences will be updated at least that
      often (roughly). This maximum update period is also subject to change. Each sequence lists the date it was last updated. The current settings of a 90 day max update period,
      and 200 sequences per hour, is <em>suspected</em> to be more than sufficient to support a table size of at least five halves its current size, i.e. supporting an extension to
-     5 000 000, with extension to 10e7 also being quite plausible. Such an extension is tabled for now (if you'll pardon the pun), but the "technology" is now here, so to speak.</p>
+     5 000 000, with extension to 10e6 also being quite plausible. Such an extension is tabled for now (if you'll pardon the pun), but the "technology" is now here, so to speak.</p>
 
-     <p>Drivers and guides: I wrote a short <a href="https://github.com/MersenneForum/MersenneForumAliquot/blob/master/mfaliquot/aliquot.py">Python module</a>,
+     <p>Drivers and guides: I wrote a short <a href="https://github.com/MersenneForum/MersenneForumAliquot/blob/master/mfaliquot/theory/aliquot.py">Python module</a>,
      based on the definitions and notes from Clifford Stern's <a href="analysis.html">Analysis page</a>,
      in order to classify the sequences in the table. The only exception to Clifford's definitions I use is to present the power of two as a "guide" if a "proper" guide is lacking.
      The guide column does show proper drivers, though there is a checkbox to exclude sequences controlled by a driver (as well as a box to exclude sequences with a
