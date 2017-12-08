@@ -46,6 +46,7 @@ from collections import defaultdict, Counter
 from time import sleep, strftime, gmtime
 from datetime import datetime, timedelta, date
 from os import remove as rm
+from contextlib import contextmanager
 
 
 ################################################################################
@@ -391,7 +392,6 @@ class _SequencesData:
 
 
      def _read_init(self):
-
           with open(self.file, 'r') as f:
                data = json.load(f)
 
@@ -412,6 +412,11 @@ class _SequencesData:
           self._heap.heapify()
 
 
+     def readonly_init(self):
+          self._have_lock = False
+          self._read_init()
+
+
      def lock_read_init(self):
           '''Initialize self from the (immutable attribute) `file` passed to the constructor.'''
           self._lock()
@@ -419,16 +424,22 @@ class _SequencesData:
           self._read_init()
 
 
-     def acquire_lock(self, *, block_minutes=0):
+     @contextmanager
+     def acquire_lock(self, block_minutes=0):
           '''Use this to begin a `with` statement'''
-          # Dummy function for code clarity and "argument passing"
-          self._block_minutes = block_minutes
-          return self
+          # seems better to *not* define self as a context manager, I don't think
+          # `self` will ever have a name suitable for reading a with statement,
+          # i.e. "with seqinfo.acquire_lock():" is much clearer than "with seqinfo:"
+          self._blocking_lock_read_init(block_minutes)
+          try:
+               yield # Exceptions in the body of `with` are reraised here
+          finally: # Unhandled except to guarantee cleanup
+               self.write_unlock()
 
 
-     def __enter__(self):
+     def _blocking_lock_read_init(self, block_minutes):
           # Thin wrapper around lock_read_init, only difference is artifical blocking
-          seconds = self._block_minutes*60
+          seconds = block_minutes*60
           period = 5 # No idea if this is sane or not
           count = seconds // period
 
@@ -438,31 +449,24 @@ class _SequencesData:
                f = e
                _logger.warning("Failed to acquire lock for {}, retrying in {} seconds".format(self.file, period))
           else:
-               return self
+               return
           # I've yet to see a good alternative to the missing do...while syntax that Python lacks
           for i in range(count):
                sleep(period)
                try:
                     self.lock_read_init()
                except LockError as e:
-                    f = e
+                    f = e # rebind the exception to the local scope
                     _logger.warning("Failed to acquire lock for {}, retrying in {} seconds".format(self.file, period))
                else:
-                    return self
+                    return
           raise f
-
-
-     @staticmethod
-     def as_read_only_dict(file):
-          with open(file, 'r') as f:
-               data = json.load(f)['aaData']
-          return {seq[0]: AliquotSequence(lst=seq) for seq in data}
 
 
      def write(self):
           '''Finalize self to file. Totally overwrites old data with current data.'''
-          if not self._have_lock:
-               raise LockError("Can't use SequencesManager.write() without lock!")
+          if not self._have_lock: raise LockError("Can't use SequencesManager.write() without lock!")
+          # TODO: should these errors be (programmatically) distinguishable from unable-to-acquire-lock errors?
           # ignore dropped seqs (HEAPENTRY)
           out = [item[2] for item in self._heap if (item[2] and item[2] in self._data)]
           # Find seqs that have been dropped from heap, they're just appended
@@ -497,10 +501,6 @@ class _SequencesData:
           self._unlock()
 
 
-     def __exit__(self, *exception):
-          self.write_unlock()
-
-
      @staticmethod
      def _make_heap_entry(ali):
           # Must be sabotage-able, i.e. mutable, can't use tuple
@@ -516,7 +516,7 @@ class _SequencesData:
           ali._heap_entry[2] = None
 
 
-     def pop_n_todo(self, n):
+     def pop_n_todo(self, n): # Should the two pop* methods be write-only?
           '''A lazy iterator yielding the n highest priority sequences'''
           while n > 0:
                seq = self._heap.pop()[2] # HEAPENTRY
@@ -533,6 +533,7 @@ class _SequencesData:
 
      def drop(self, seqs):
           '''Drop the given sequences from the dictionary.'''
+          if not self._have_lock: raise LockError("Can't use SequencesManager.drop() without lock!")
           _logger.info("Dropping seqs {}".format(', '.join(str(s) for s in seqs)))
           # ^ I can't decide if this should be in the actual package or at clients' discretion
           for seq in seqs:
@@ -549,6 +550,7 @@ class _SequencesData:
           '''Call this method to insert a newly updated AliquotSequence object
           into the underlying datastructures. Any previous such object is
           silently overwritten.'''
+          if not self._have_lock: raise LockError("Can't use SequencesManager.push_new_info() without lock!")
           if ali.seq in self._data:
                self._sabotage_heap_entry(self._data[ali.seq])
           self._data[ali.seq] = ali
@@ -591,6 +593,7 @@ class SequencesManager(_SequencesData):
      def find_and_drop_merges(self):
           '''A convenience method wrapped around `find_merges` and `drop`.
           Literally 3 lines long.'''
+          if not self._have_lock: raise LockError("Can't use SequencesManager.find_and_drop_merges() without lock!")
           merges = self.find_merges()
           drops = [drop for target, drops in merges for drop in drops]
           # I still say that "they" got the loop order wrong in comprehensions
@@ -602,6 +605,7 @@ class SequencesManager(_SequencesData):
      def reserve_seqs(self, name, seqs):
           '''Mark the `seqs` as reserved by `name`. Raises ValueError if a seq
           doesn't exist. Returns (successes, DNEs, already_owns, other_owns)'''
+          if not self._have_lock: raise LockError("Can't use SequencesManager.reserve_seqs() without lock!")
           success, DNEs, already_owns, other_owns = [], [], [], []
           for seq in seqs:
                if seq not in self:
@@ -627,6 +631,7 @@ class SequencesManager(_SequencesData):
      def unreserve_seqs(self, name, seqs):
           '''Mark the `seqs` as no longer reserved. Raises ValueError if seq does
           not exist. Returns (successes, DNEs, not_reserveds, wrong_reserveds) '''
+          if not self._have_lock: raise LockError("Can't use SequencesManager.unreserve_seqs() without lock!")
           success, DNEs, not_reserveds, wrong_reserveds = [], [], [], []
           for seq in seqs:
                if seq not in self:
@@ -650,7 +655,6 @@ class SequencesManager(_SequencesData):
 
 
      def calc_common_stats(self):
-
           sizes = Counter(); lens = Counter(); guides = Counter(); progs = Counter(); cofacts = Counter()
           totsiz = 0; totlen = 0; avginc = 0; totprog = 0
           for ali in self.values():

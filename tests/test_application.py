@@ -24,14 +24,20 @@ import sys
 sys.path.insert(0, realpath(join(dirname(sys.argv[0]), '..')))
 
 from mfaliquot.application import reservations as R
-from mfaliquot.application import SequencesManager, LockError
+from mfaliquot.application import SequencesManager, LockError, AliquotSequence
 from os import remove as rm
 from shutil import copy2 as cp
 from os.path import exists, realpath, join, dirname
 import unittest
 
 
-class TestSequencesManager(unittest.TestCase):
+class TestCaseWithFilesEqual(unittest.TestCase):
+     def assertFilesEqual(self, f1, f2):
+          with open(f1) as g1, open(f2) as g2:
+               self.assertEqual(g1.read(), g2.read())
+
+
+class TestSequencesManagerLocking(TestCaseWithFilesEqual):
 
      snapshot = 'json_snapshot'
      txtsnapshot = 'txt_snapshot'
@@ -57,6 +63,7 @@ class TestSequencesManager(unittest.TestCase):
 
           seqinfo.lock_read_init()
 
+          self.assertTrue(seqinfo._have_lock)
           self.assertTrue(exists(self.lockfile))
           self.assertFalse(exists(self.txtfile))
 
@@ -74,6 +81,7 @@ class TestSequencesManager(unittest.TestCase):
           self.assertFalse(exists(self.txtfile))
 
           with seqinfo.acquire_lock(block_minutes=0):
+               self.assertTrue(seqinfo._have_lock)
                self.assertTrue(exists(self.lockfile))
                self.assertFalse(exists(self.txtfile))
 
@@ -92,13 +100,25 @@ class TestSequencesManager(unittest.TestCase):
           self.assertRaises(LockError, seqinfo.lock_read_init)
 
 
-     def assertFilesEqual(self, f1, f2):
-          with open(f1) as f:
-               s1 = f.read()
-          with open(f2) as f:
-               s2 = f.read()
-          self.assertEqual(s1, s2)
+     def test_readonly(self):
+          seqinfo = SequencesManager(self.file)
 
+          seqinfo.readonly_init()
+
+          self.assertFalse(seqinfo._have_lock)
+          self.assertFalse(exists(self.lockfile))
+          self.assertRaises(LockError, seqinfo.write)
+          self.assertRaises(LockError, seqinfo.drop, 276)
+          self.assertRaises(LockError, seqinfo.push_new_info, AliquotSequence)
+          self.assertRaises(LockError, seqinfo.find_and_drop_merges)
+          self.assertRaises(LockError, seqinfo.reserve_seqs, 'mersenneforum', [276])
+          self.assertRaises(LockError, seqinfo.unreserve_seqs, 'mersenneforum', [276])
+
+          self.assertFalse(exists(self.txtfile))
+
+          seqinfo.lock_read_init() # Just verify that we can re-init as we please
+          seqinfo.readonly_init() # ...and that re-init clears all locking state
+          self.assertFalse(seqinfo._have_lock)
 
 
 #class ReservationsTest(unittest.TestCase):
@@ -140,7 +160,7 @@ class TestSequencesManager(unittest.TestCase):
 #
 #          ######################################################################
 #
-#          adds, drops = res.apply_to_seqinfo(_SEQINFO) #TODO: bug if SEQINFO is itself in error(/out of date)! rewrite from scratch.
+#          adds, drops = res.apply_to_seqinfo(_SEQINFO) #TO DO: bug if SEQINFO is itself in error(/out of date)! rewrite from scratch.
 #
 #          self.assertEqual(len(res._db), 20)
 #          self.assertTupleEqual((adds, drops), (1, 4))
