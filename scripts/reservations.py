@@ -1,4 +1,4 @@
-#! /usr/bin/env python3
+#!/opt/rh/rh-python36/root/usr/bin/python
 
 #    Copyright (C) 2014-2015 Bill Winslow
 #

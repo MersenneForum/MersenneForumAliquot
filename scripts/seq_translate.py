@@ -1,4 +1,4 @@
-#! /usr/bin/env python3
+#!/opt/rh/rh-python36/root/usr/bin/python
 # This is written to Python 3.3 standards
 # indentation: 5 spaces (personal preference)
 # when making large scope switches (e.g. between def or class blocks) use two

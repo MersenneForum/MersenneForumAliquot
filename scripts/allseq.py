@@ -1,4 +1,4 @@
-#! /usr/bin/env python3
+#!/opt/rh/rh-python36/root/usr/bin/python -u
 # This is written to Python 3.5 standards
 # indentation: 5 spaces (personal preference)
 # when making large backwards scope switches (e.g. between def or class blocks)

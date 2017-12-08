@@ -1,5 +1,4 @@
-#! /usr/bin/env python3
-
+#!/opt/rh/rh-python36/root/usr/bin/python
 # Note: tab depth is 5, as a personal preference
 
 
