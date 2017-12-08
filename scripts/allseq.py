@@ -27,16 +27,17 @@
 ################################################################################
 # globals/configuration
 
+WEBSITEPATH = '/var/www/rechenkraft.net/aliquot2/'
 
-JSONFILE = '../website/html/AllSeq.json'
-TXTFILE  = '../website/html/AllSeq.txt'
+JSONFILE = WEBSITEPATH + 'AllSeq.json'
+TXTFILE  = WEBSITEPATH + 'AllSeq.txt'
 
-MAINTEMPLATE  = '../website/html/template.html'
-STATSTEMPLATE = '../website/html/template2.html'
+MAINTEMPLATE  = WEBSITEPATH + 'template.html'
+STATSTEMPLATE = WEBSITEPATH + 'template2.html'
 
-MAINHTML  = '../website/html/AllSeq.html'
-STATSHTML = '../website/html/statistics.html'
-STATSJSON = '../website/html/statistics.json'
+MAINHTML  = WEBSITEPATH + 'AllSeq.html'
+STATSHTML = WEBSITEPATH + 'statistics.html'
+STATSJSON = WEBSITEPATH + 'statistics.json'
 
 
 DROPFILE = 'allseq.drops.txt'
