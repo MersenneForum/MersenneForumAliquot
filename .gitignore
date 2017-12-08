@@ -7,3 +7,5 @@ scripts/reservations.py.last_pid
 scripts/reservations
 website/html/AllSeq.html
 website/html/statistics.html
+tmp/
+log/
