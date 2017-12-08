@@ -197,7 +197,7 @@ def check_update(old):
           LOGGER.warning("got a prime id value?? termination?")
           old.process_no_progress()
      else:
-          LOGGER.error(f"problem: crazy status for most recent id of {seq} ({status})")
+          LOGGER.error(f"problem: crazy status for most recent id of {old.seq} ({status})")
           return old, False
 
      return old, True
