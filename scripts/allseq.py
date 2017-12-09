@@ -27,7 +27,7 @@
 ################################################################################
 # globals/configuration
 
-WEBSITEPATH = '/var/www/rechenkraft.net/aliquot2/'
+WEBSITEPATH = '../website/html/'
 
 JSONFILE = WEBSITEPATH + 'AllSeq.json'
 TXTFILE  = WEBSITEPATH + 'AllSeq.txt'

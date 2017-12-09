@@ -22,7 +22,8 @@ add_path_relative_to_script('..')
 from mfaliquot.application import SequencesManager
 
 
-JSON = '/home/bill/mfaliquot/website/html/AllSeq.json'
+WEBSITEPATH = '../website/html/'
+JSON = WEBSITEPATH + 'AllSeq.json'
 
 
 def filter(filt_expr, sort_expr, N, sep):
