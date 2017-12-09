@@ -499,6 +499,7 @@ class _SequencesData:
      def write_unlock(self):
           self.write()
           self._unlock()
+          _logger.info("seqinfo written, lock released")
 
 
      @staticmethod
