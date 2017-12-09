@@ -482,7 +482,8 @@ class _SequencesData:
                outdict['resdatetime'] = self.resdatetime
           except Exception:
                pass
-          json_string = json.dumps(outdict).replace('],', '],\n') + '\n'
+          json_string = json.dumps(outdict, ensure_ascii=False, sort_keys=True).replace('],', '],\n') + '\n'
+          # sort_keys to get reproducible output for testing, ensure_ascii=False to allow fancy names
           with open(self._jsonfile, 'w') as f:
                f.write(json_string)
           del json_string # Both outstrings generated here can be multiple megabytes each
