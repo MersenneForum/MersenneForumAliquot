@@ -139,7 +139,7 @@ def query_parse_seq_status(seq, tries=5):
                ali = _process_ali_data(seq, page)
           except FDBDataError as e:
                if i <= 0:
-                    _logger.exception(f"Seq {seq}: bad data after {tries} tries: {str(e)}", exc_info=e)
+                    _logger.error(f"Seq {seq}: bad data after {tries} tries: {str(e)}")
                     raise
                else:
                     _logger.info(str(e))

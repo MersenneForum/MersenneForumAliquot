@@ -52,8 +52,9 @@ class ReservationsSpider: # name is of debatable good-ness
 
           last_pid, *other = update_apply_all_res(self.seqinfo, last_pid, mass_reses)
 
-          with open(self.pidfile, 'w') as f:
-               f.write(str(last_pid) + '\n')
+          if last_pid is not None:
+               with open(self.pidfile, 'w') as f:
+                    f.write(str(last_pid) + '\n')
 
           return other[1:] # other[0] == prev_pages
 

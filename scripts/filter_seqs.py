@@ -28,7 +28,8 @@ JSON = '/home/bill/mfaliquot/website/html/AllSeq.json'
 def filter(filt_expr, sort_expr, N, sep):
      filt = lambda ali: eval(filt_expr)
      sort = lambda ali: eval(sort_expr)
-     seqinfo = SequencesManager.as_read_only_dict(JSON)
+     seqinfo = SequencesManager(JSON)
+     seqinfo.readonly_init()
      out = [ali for ali in seqinfo.values() if filt(ali)]
      out.sort(key=sort)
      out = out[:N]

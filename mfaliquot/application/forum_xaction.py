@@ -39,6 +39,9 @@ def spider_res_thread(last_pid):
      wobsite = 'http://www.mersenneforum.org/showthread.php?t=11588&page='
 
      html = blogotubes(wobsite+'100000') # vBulletin rounds to last page
+     if not html:
+          _logger.error(f"unable to spider forum")
+          return last_pid, [], []
      all_pages = [_parse_page(html)]
      lowest_pid = _order_posts(all_pages[0])
 
@@ -52,6 +55,9 @@ def spider_res_thread(last_pid):
           _logger.info("forum_spider: looks like posts were missed, checking page {}".format(page_num))
           prev_pages.append(page_num)
           html = blogotubes(wobsite+page_num)
+          if not html:
+               _logger.error(f"unable to spider forum (prev page)")
+               return last_pid, [], []
           all_pages.insert(0, _parse_page(html))
           lowest_pid = _order_posts(all_pages[0])
 

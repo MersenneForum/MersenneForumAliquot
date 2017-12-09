@@ -24,7 +24,7 @@
 ################################################################################
 
 
-#from sys import argv, exit
+from sys import argv, exit
 #PIDFILE = argv[0] + '.last_pid'
 PIDFILE = 'last_pid'
 INFOFILE = '../website/html/AllSeq.json'
