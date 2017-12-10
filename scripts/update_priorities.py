@@ -33,7 +33,7 @@ add_path_relative_to_script('..')
 
 from mfaliquot.application import SequencesManager
 
-WEBSITEPATH = '/var/www/rechenkraft.net/aliquot2/'
+WEBSITEPATH = '/var/www/rechenkraft.net/aliquot/'
 
 seqinfo = SequencesManager(WEBSITEPATH + "AllSeq.json")
 
