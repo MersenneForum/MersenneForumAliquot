@@ -24,10 +24,11 @@
 ################################################################################
 
 
-#from sys import argv, exit
+from sys import argv, exit
 #PIDFILE = argv[0] + '.last_pid'
 PIDFILE = 'last_pid'
-INFOFILE = '../website/html/AllSeq.json'
+WEBSITEPATH = '../website/html/'
+INFOFILE = WEBSITEPATH + 'AllSeq.json'
 MASS_RESERVATIONS = {'yafu@home': 'http://yafu.myfirewall.org/yafu/download/ali/ali.txt.all'}
 
 

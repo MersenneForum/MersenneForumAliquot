@@ -52,8 +52,9 @@ class ReservationsSpider: # name is of debatable good-ness
 
           last_pid, *other = update_apply_all_res(self.seqinfo, last_pid, mass_reses)
 
-          with open(self.pidfile, 'w') as f:
-               f.write(str(last_pid) + '\n')
+          if last_pid is not None:
+               with open(self.pidfile, 'w') as f:
+                    f.write(str(last_pid) + '\n')
 
           return other[1:] # other[0] == prev_pages
 
@@ -65,7 +66,6 @@ class ReservationsSpider: # name is of debatable good-ness
 def parse_mass_reservation(reservee, url):
      '''Parses a '\n' separated list of sequences, to be reserved to the given
      name. Returns (current_entries, duplicate_seqs, unknown_lines)'''
-     #global email_msg
      txt = blogotubes(url)
      if not txt:
           _logger.error(f"unable to get mass reservation file for {reservee}")
@@ -100,6 +100,10 @@ def update_apply_all_res(seqinfo, last_pid, mass_reses):
           old = set(ali.seq for ali in seqinfo.values() if ali.res == reservee)
           drops = old - current
           adds = current - old
+          if adds or drops:
+               _logger.info(f"mass reservee {reservee}: add {len(adds)} seqs, drop {len(drops)}")
+          else:
+               _logger.info(f"no res changes for {reservee}")
           dropres = seqinfo.unreserve_seqs(reservee, drops)
           mass_adds.append((reservee, adds))
           mass_reses_out.append([reservee, dups, unknowns, dropres])

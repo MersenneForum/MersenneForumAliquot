@@ -164,7 +164,7 @@
      To further reduce FDB load, the script queries the FDB ID of the last unfactored line from the previous update. Only if that line is factored does the script actually request
      the much heavier sequence status page.
      The underlying Python update code uses a (somewhat ad hoc/arbitrary) "priority" algorithm to determine which sequences are more likely to have made recent progress. To zeroth
-     order, the priority is derived from (time_between_last_update_and_last_movement - time_since_last_update) (while being generally floored at zero). So sequences that haven't
+     order, the priority is derived from (time_between_last_update_and_last_movement - time_since_last_update), while being generally floored at zero. So sequences that haven't
      seen progress in years are checked very infrequently. There is a maximum update period, currently 90 days; even the most progress-less sequences will be updated at least that
      often (roughly). This maximum update period is also subject to change. Each sequence lists the date it was last updated. The current settings of a 90 day max update period,
      and 200 sequences per hour, is <em>suspected</em> to be more than sufficient to support a table size of at least five halves its current size, i.e. supporting an extension to

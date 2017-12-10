@@ -32,6 +32,7 @@ from .. import blogotubes
 from . import AliquotSequence, DATETIMEFMT
 from enum import Enum, auto
 from time import gmtime, sleep, strftime, strptime
+from math import log10
 
 def _blogotubes_with_fdb_useragent(*args, **kwargs):
      kwargs.setdefault('hdrs', {}).update({'User-Agent': 'MersenneForum/Dubslow/AliquotSequences'})
@@ -139,7 +140,7 @@ def query_parse_seq_status(seq, tries=5):
                ali = _process_ali_data(seq, page)
           except FDBDataError as e:
                if i <= 0:
-                    _logger.exception(f"Seq {seq}: bad data after {tries} tries: {str(e)}", exc_info=e)
+                    _logger.error(f"Seq {seq}: bad data after {tries} tries: {str(e)}")
                     raise
                else:
                     _logger.info(str(e))
@@ -148,7 +149,7 @@ def query_parse_seq_status(seq, tries=5):
                     continue
 
           if i < tries-1:
-               _logger.info(f'Seq {seq}: retry factors: {ali.factors}')
+               _logger.info(f'Seq {seq}: retry factors (index {ali.index}): {ali.factors}')
 
           return ali
 
@@ -185,11 +186,14 @@ def _process_ali_data(seq, page):
      if smalls[0][0] != '2':
           raise FDBDataError(f'Seq {seq}: no 2 in the smalls!')
 
-     factors = ''; size = 2
-     factors += smalls[0]
-     for small in smalls[1:]:
-          factors += " * "+small
-          size += len(small)
+     factors = " * ".join(small for small in smalls)
+     size = 0
+     for small in smalls:
+          if '^' in small:
+               base, exp = small.split('^')
+               size += log10(int(base))*int(exp)
+          else:
+               size += log10(int(small))
 
      if bigs:
           for big in bigs:
@@ -204,8 +208,10 @@ def _process_ali_data(seq, page):
           cofactor = int(comp)
           size += cofactor
 
-     if size < 0.95 * ali.size:
-          raise FDBDataError(f'Seq {seq}: index: {ali.index}, size: {ali.size}, '
+     # the digit size overestimates the actual log of a given prime by a small fraction,
+     # hence allow slight excess of size over ali.size
+     if not (ali.size - 1 < size < ali.size + 3):
+          raise FDBDataError(f'Seq {seq}: index: {ali.index}, size: {ali.size}, calcsize: {size}, '
                                       f'garbage factors found: {factors}, cofactor: {cofactor}')
 
      if cofactor < 70: # FDB will autofactor it

@@ -23,6 +23,9 @@
 # To be run once daily (or so), it's rather too expensive to run for every
 # allseq update
 
+import logging
+LOGGER = logging.getLogger()
+logging.basicConfig(level=logging.WARNING)
 
 from _import_hack import add_path_relative_to_script
 add_path_relative_to_script('..')

@@ -136,7 +136,8 @@ def main():
      # because I use 'seq' for both just the integer of the sequence leader *and*
      # the corresponding AliquotSequence object.
      # data is a dictionary mapping the ints to the AliquotSequence objects.
-     data = SequencesManager.as_read_only_dict('AllSeq.json')
+     data = SequencesManager('../website/html/AllSeq.json')
+     data.readonly_init()
      targets = []; derp = []
      for i, seq in enumerate(data.values()):
           #print('looking at seq {}'.format(i))
