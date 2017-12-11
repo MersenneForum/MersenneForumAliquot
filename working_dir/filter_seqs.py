@@ -19,17 +19,17 @@ import json
 from _import_hack import add_path_relative_to_script
 add_path_relative_to_script('..')
 # this should be removed when proper pip installation is supported
+from mfaliquot import InterpolatedJSONConfig
 from mfaliquot.application import SequencesManager
 
-
-WEBSITEPATH = '../website/html/'
-JSON = WEBSITEPATH + 'AllSeq.json'
+CONFIG = InterpolatedJSONConfig()
+CONFIG.read_file('mfaliquot.config.json')
 
 
 def filter(filt_expr, sort_expr, N, sep):
      filt = lambda ali: eval(filt_expr)
      sort = lambda ali: eval(sort_expr)
-     seqinfo = SequencesManager(JSON)
+     seqinfo = SequencesManager(CONFIG)
      seqinfo.readonly_init()
      out = [ali for ali in seqinfo.values() if filt(ali)]
      out.sort(key=sort)

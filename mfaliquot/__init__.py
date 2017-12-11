@@ -45,3 +45,56 @@ def blogotubes(url, encoding='utf-8', hdrs=None, data=None):
      else:
           return page
 
+
+from collections import OrderedDict
+from collections.abc import MutableMapping
+import json
+
+class InterpolatedJSONConfig(OrderedDict):
+     '''A class to allow human-readable text configuration, without the complicated and
+     historical API of the stdlib's ConfigParser. Example:
+
+     >>> ijc = InterpolatedJSONConfig()
+     >>> test = {"akey": 2, "bkey": "notmplstr", "ckey": "a formatted str: {akey}", "dkey": {"ekey": "nested val", "fkey": "nested formatted val: {akey}  (with nested formattings:) {dkey[ekey]}!!"}}
+     >>> ijc.update(test)
+     >>> ijc
+     InterpolatedJSONConfig([('akey', 2), ('bkey', 'notmplstr'), ('ckey', 'a formatted str: 2'), ('dkey', {'ekey': 'nested val', 'fkey': 'nested formatted val: 2  (with nested formattings:) nested val!!'})])
+     '''
+
+     def update(self, other):
+          super().update(other)
+          self.interpolate(other, _smooshed=True)
+
+
+     def __setitem__(self, key, value):
+          super().__setitem__(key, value)
+          if isinstance(value, MutableMapping):
+               self.interpolate(value)
+
+
+     def read_file(self, file):
+          with open(file) as f:
+               d = json.load(f, object_pairs_hook=OrderedDict)
+          self.update(d)
+
+
+     def interpolate(self, dct, *, _smooshed=False):
+          # _smooshed is true for toplevel dcts which have already been `update`d to self
+          stodo, dtodo = [], []
+
+          for key, val in dct.items():
+               if isinstance(val, str) and ('{' in val or '}' in val):
+                    stodo.append((key,val))
+               elif isinstance(val, MutableMapping):
+                    dtodo.append(val)
+
+          for key, s in stodo:
+               tmp = s.format_map(self) # allow absolute only references (for now?)
+               if _smooshed:
+                    self[key] = tmp
+               else:
+                    dct[key] = tmp
+          for d in dtodo:
+               self.interpolate(d)
+
+

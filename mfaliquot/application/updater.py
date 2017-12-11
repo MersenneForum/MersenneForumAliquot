@@ -21,33 +21,27 @@
 '''This is the module that contains the AllSeqUpdater class, which contains the
 primary logic to interface with the FDB to actually update SequencesManager instances'''
 
+from time import sleep
 from . import AliquotSequence, fdb
-import logging, signal
+import logging, signal, json
 _logger = logging.getLogger(__name__)
 
 
 class AllSeqUpdater:
      '''A class to manage the state of updating a batch of sequences from the FDB.
-     This is meant to operate solely with an already-locked-and-init-ed SequencesManager
-     object, so e.g. if you want to write a sleeping loop around this, you'll need
-     to re-instantiate the class each time. The only method that calling code needs to
-     worry about is do_all_updates, everything else is an implementation detail.'''
+     The only method that calling code needs to worry about is do_all_updates,
+     everything else is an implementation detail.'''
 
-     def __init__(self, seqinfo, config):
-          '''`seqinfo` is assumed to be an already-locked-and-init-ed SequencesManager
-          object. `config` is the configuration read from file.'''
-          self.seqinfo = seqinfo
-          #self._jsonfile = pass # something something config
-          #self._txtfile = pass
-          self._maintemplate = pass
-          self._statstemplate = pass
-          self._mainhtml = pass
-          self._statshtml = pass
-          self._statsjson = pass
-          self._dropfile = pass
-          self._termfile = pass
-          self._batchsize = pass
-          self._broken = pass
+     def __init__(self, config):
+          self._maintemplate  = config['maintemplate']
+          self._statstemplate = config['statstemplate']
+          self._mainhtml      = config['mainhtml']
+          self._statshtml     = config['statshtml']
+          self._statsjson     = config['statsjson']
+          self._dropfile      = config['dropfile']
+          self._termfile      = config['termfile']
+          self._batchsize     = config['batchsize']
+          self._broken        = {int(seq): stuff for seq, stuff in config['broken']}
 
           self.quitting = False
 
@@ -232,7 +226,7 @@ class AllSeqUpdater:
                self.seqinfo.write() # "Atomic"
                seqs_todo = special
           else:
-               seqs_todo = seqinfo.pop_n_todo(BATCHSIZE)
+               seqs_todo = tuple(self.seqinfo.pop_n_todo(self.batchsize))
 
           _logger.debug(f"got {len(seqs_todo)} sequences: {' '.join(str(s) for s in seqs_todo)}")
           return seqs_todo
@@ -260,7 +254,7 @@ class AllSeqUpdater:
 
      def postloop_finalize(self, terminated):
           _logger.info("Searching for merges...")
-          merges = seqinfo.find_and_drop_merges()
+          merges = self.seqinfo.find_and_drop_merges()
           if not merges:
                _logger.info("No merges found")
 
@@ -269,14 +263,19 @@ class AllSeqUpdater:
                with open(TERMFILE, 'a') as f:
                     f.write(''.join(f'{seq}\n' for seq in terminated))
 
-          _logger.info(f'Currently have {len(seqinfo)} sequences on file.')
+          _logger.info(f'Currently have {len(self.seqinfo)} sequences on file.')
           _logger.info('Creating statistics...')
-          create_stats_write_html(seqinfo)
+          self.create_stats_write_html()
           _logger.info('Statistics written')
 
 
-     def do_all_updates(self, special=None):
-          '''The only method that external code needs to call.'''
+     def do_all_updates(self, seqinfo, special=None):
+          '''The only method that external code needs to call. `seqinfo` must
+          already be locked and initialized. Returns whether or not the loop was
+          aborted due to error, or completed normally.'''
+          self.seqinfo = seqinfo
+          self.quitting = False
+
           seqs_todo = self.preloop_initialize(special)
           n = len(seqs_todo)
 
@@ -293,4 +292,6 @@ class AllSeqUpdater:
                _logger.info(msg.format('complete'))
 
           self.postloop_finalize(terminated)
+          del self.seqinfo
+          return self.quitting
 

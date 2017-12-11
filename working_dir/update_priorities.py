@@ -23,20 +23,26 @@
 # To be run once daily (or so), it's rather too expensive to run for every
 # allseq update
 
-import logging
-LOGGER = logging.getLogger()
-logging.basicConfig(level=logging.WARNING)
-
 from _import_hack import add_path_relative_to_script
 add_path_relative_to_script('..')
 # this should be removed when proper pip installation is supported
 
+from mfaliquot import InterpolatedJSONConfig
 from mfaliquot.application import SequencesManager
 
-WEBSITEPATH = '../website/html/'
+import logging
 
-seqinfo = SequencesManager(WEBSITEPATH + "AllSeq.json")
+CONFIG = InterpolatedJSONConfig()
+CONFIG.read_file('mfaliquot.config.json')
 
-with seqinfo.acquire_lock(block_minutes=5):
+# logging.config.dictConfig(CONFIG["logging"])
+# TODO make default log config file in scripts/
+LOGGER = logging.getLogger()
+logging.basicConfig(level=logging.INFO)
+
+
+seqinfo = SequencesManager(CONFIG)
+
+with seqinfo.acquire_lock(block_minutes=CONFIG['blockminutes']):
      for ali in seqinfo.values():
           ali.calculate_priority()

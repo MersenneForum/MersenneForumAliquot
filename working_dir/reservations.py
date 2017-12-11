@@ -20,37 +20,30 @@
 # The very first run only checks the most recent page of reservation posts, since
 # there isn't yet a record of last post checked
 
-
-################################################################################
-
-
-from sys import argv, exit
-#PIDFILE = argv[0] + '.last_pid'
-PIDFILE = 'last_pid'
-WEBSITEPATH = '../website/html/'
-INFOFILE = WEBSITEPATH + 'AllSeq.json'
-MASS_RESERVATIONS = {'yafu@home': 'http://yafu.myfirewall.org/yafu/download/ali/ali.txt.all'}
-
-
 ################################################################################
 #
 ################################################################################
 
 
+from sys import argv, exit
 from _import_hack import add_path_relative_to_script
 add_path_relative_to_script('..')
 # this should be removed when proper pip installation is supported
 
+from mfaliquot import InterpolatedJSONConfig
 from mfaliquot.application.reservations import ReservationsSpider
 from mfaliquot.application import SequencesManager
-
 import logging
+
+CONFIG = InterpolatedJSONConfig()
+CONFIG.read_file('mfaliquot.config.json')
+
+# logging.config.dictConfig(CONFIG["logging"])
+# TODO make default log config file in scripts/
 LOGGER = logging.getLogger()
-logging.basicConfig(level=logging.INFO) # TODO: add configuration for this (create default config in scripts/)
+logging.basicConfig(level=logging.INFO)
 
 
-# Can confirm that the package really should be using a logger, not this adhoc,
-# non-live results-to-str nonsense
 def inner_main(seqinfo, err):
 
      if argv[1] == 'add':
@@ -71,8 +64,8 @@ def inner_main(seqinfo, err):
 
      elif argv[1] == 'spider':
 
-          spider = ReservationsSpider(seqinfo, PIDFILE)
-          thread_out, mass_out = spider.spider_all_apply_all(MASS_RESERVATIONS)
+          spider = ReservationsSpider(seqinfo, CONFIG['ReservationsSpider'])
+          thread_out, mass_out = spider.spider_all_apply_all()
           for name, addres, dropres in thread_out:
                LOGGER.info(f"{name} successfully added {addres[0]}, dropped {dropres[0]}")
 
@@ -87,9 +80,9 @@ def main():
           print(err)
           exit(-1)
 
-     s = SequencesManager(INFOFILE)
+     s = SequencesManager(CONFIG)
 
-     with s.acquire_lock(block_minutes=3): # reads and inits
+     with s.acquire_lock(block_minutes=CONFIG['blockminutes']): # reads and inits
           inner_main(s, err)
 
 

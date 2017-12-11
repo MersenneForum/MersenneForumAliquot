@@ -27,33 +27,8 @@
 ################################################################################
 # globals/configuration
 
-WEBSITEPATH = '../website/html/'
-
-JSONFILE = WEBSITEPATH + 'AllSeq.json'
-TXTFILE  = WEBSITEPATH + 'AllSeq.txt'
-
-MAINTEMPLATE  = WEBSITEPATH + 'template.html'
-STATSTEMPLATE = WEBSITEPATH + 'template2.html'
-
-MAINHTML  = WEBSITEPATH + 'AllSeq.html'
-STATSHTML = WEBSITEPATH + 'statistics.html'
-STATSJSON = WEBSITEPATH + 'statistics.json'
-
-
-DROPFILE = 'allseq.drops.txt'
-TERMFILE = 'allseq.terms.txt'
-
-BATCHSIZE = 100
-BLOCKMINUTES = 3
-CHECK_RESERVATIONS = True
-
-SLEEPMINUTES = 30
+SLEEPMINUTES = 30 # TODO
 LOOPING = False
-
-BROKEN = {}
-#BROKEN = {747720: (67, 1977171370480)}
-# A dict of tuples of {broken seq: (offset, new_start_val)}
-
 
 #
 ################################################################################
@@ -68,63 +43,66 @@ from time import sleep, gmtime, strftime
 from _import_hack import add_path_relative_to_script
 add_path_relative_to_script('..')
 # this should be removed when proper pip installation is supported
+from mfaliquot import InterpolatedJSONConfig
 from mfaliquot.application import SequencesManager, AliquotSequence, DATETIMEFMT, fdb
-from mfaliquot.application.reservations import ReservationsSpider
+from mfaliquot.application.updater import AllSeqUpdater
 
+CONFIG = InterpolatedJSONConfig()
+CONFIG.read_file('mfaliquot.config.json')
+
+# logging.config.dictConfig(CONFIG["logging"])
+# TODO make default log config file in scripts/
 LOGGER = logging.getLogger()
-logging.basicConfig(level=logging.INFO) # TODO make default log config file in scripts/
-
-
-SLEEPING = QUITTING = False
-def handler(sig, frame):
-     LOGGER.error("Recieved signal {}, now quitting".format(sig))
-     global QUITTING
-     QUITTING = True
-     if SLEEPING:
-          sys.exit()
-signal.signal(signal.SIGTERM, handler)
-signal.signal(signal.SIGINT, handler)
+logging.basicConfig(level=logging.INFO)
 
 #
 ################################################################################
 
+################################################################################
+#
 
-def inner_main(seqinfo, special=None):
+def inner_main(updater, seqinfo, special=None):
      LOGGER.info('\n'+strftime(DATETIMEFMT))
 
      LOGGER.info('Initializing')
-     block = 0 if special else BLOCKMINUTES
+     block = 0 if special else CONFIG['blockminutes']
 
      with seqinfo.acquire_lock(block_minutes=block):
 
-          AllSeqUpdater(seqinfo, config).do_all_updates()
+          quitting = updater.do_all_updates(seqinfo, special)
 
 
-     LOGGER.info('allseq.py complete')
+     LOGGER.info('allseq.py update loop complete')
+     return quitting
 
 
 def main():
      global LOOPING, SLEEPING, QUITTING
 
      try:
-          special = {int(arg) for arg in sys.argv[1:]}
+          special = [int(arg) for arg in sys.argv[1:]]
      except ValueError:
           print('Error: Args are sequences to be run')
           sys.exit(-1)
 
      if special:
           LOOPING = False
+          # de-duplicate while preserving order
+          seen = set()
+          seen_add = seen.add # more efficient, tho gain is negligible for small specials
+          special = [s for s in special if not (s in seen or seen_add(s))]
      else:
           special = None
 
-     seqinfo = SequencesManager(JSONFILE, TXTFILE)
+     seqinfo = SequencesManager(CONFIG)
+     updater = AllSeqUpdater(CONFIG['AllSeqUpdater'])
 
      # This means you can start it once and leave it, but by setting LOOPING = False you can make it one-and-done
      # This would be a good place for a do...while syntax
      while True:
-          inner_main(seqinfo, special)
+          quitting = inner_main(updater, seqinfo, special)
 
-          if LOOPING and not QUITTING:
+          if LOOPING and not quitting:
                LOGGER.info('Sleeping.')
                SLEEPING = True
                sleep(SLEEPMINUTES*60)

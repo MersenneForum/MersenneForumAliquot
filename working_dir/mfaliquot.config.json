@@ -1,0 +1,29 @@
+{ "live_web_dir": "../website/html",
+  "working_dir": ".",
+
+  "jsonfile":  "{live_web_dir}/AllSeq.json",
+  "lockfile":  "{jsonfile}.lock",
+  "txtfile":   "{live_web_dir}/AllSeq.txt",
+  "blockminutes": 3,
+
+  "AllSeqUpdater": {
+      "mainhtml":  "{live_web_dir}/AllSeq.html",
+      "statshtml": "{live_web_dir}/statistics.html",
+      "statsjson": "{live_web_dir}/statistics.json",
+      "maintemplate":  "{working_dir}/template.html",
+      "statstemplate": "{working_dir}/statstemplate.html",
+      "dropfile":      "{working_dir}/allseq.drops.txt",
+      "termfile":      "{working_dir}/allseq.terms.txt",
+      "batchsize": 100,
+      "broken": {},
+      "_example_broken_since_no_json_comments":
+                {"747720": [67, 1977171370480],
+                 "brokenseq": ["offset", "new_start_val"]}
+  },
+  "ReservationsSpider": {
+      "pidfile": "{working_dir}/res_thread_last_pid",
+      "mass_reservations":
+          {"yafu@home": "http://yafu.myfirewall.org/yafu/download/ali/ali.txt.all"}
+  },
+  "logging": {"tbd":"tbd"}
+}

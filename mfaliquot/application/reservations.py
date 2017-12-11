@@ -36,27 +36,30 @@ class ReservationsSpider: # name is of debatable good-ness
      '''A class to manage the statefulness of spidering the MersenneForum res
      thread. Delegates the primary spidering logic to the module level functions.'''
 
-     def __init__(self, seqinfo, pidfile):
+     def __init__(self, seqinfo, config):
           '''`seqinfo` should be a SequencesManager instance. It is assumed to
           already have acquired its lock.'''
           self.seqinfo = seqinfo
-          self.pidfile = pidfile
+          self.pidfile = config['pidfile']
+          self.mass_reses = config['mass_reservations']
 
 
-     def spider_all_apply_all(self, mass_reses):
+     def spider_all_apply_all(self):
           try:
                with open(self.pidfile, 'r') as f:
                     last_pid = int(f.read())
           except FileNotFoundError:
                last_pid = None
 
-          last_pid, *other = update_apply_all_res(self.seqinfo, last_pid, mass_reses)
+          last_pid, *other = update_apply_all_res(self.seqinfo, last_pid, self.mass_reses)
 
           if last_pid is not None:
                with open(self.pidfile, 'w') as f:
                     f.write(str(last_pid) + '\n')
 
           return other[1:] # other[0] == prev_pages
+
+     # TODO: call AllSeqUpdater with the sequences whose reservation changed
 
 
 ################################################################################

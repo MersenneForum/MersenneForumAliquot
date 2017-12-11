@@ -148,10 +148,6 @@ class AliquotSequence(list):
           time between updates for any sequence no matter how little it moves,
           in days. `res_factor` is a "discount" factor applied to all reserved
           sequences priorities.'''
-          # The biggest problem with this prio algo is that I had only planned that
-          # `allseq.py` runs it for newly-updated seqs -- so the old seqs will
-          # never get their prio actually updated towards 0, even if they should be
-          # Solution: add a third script run once a day to update *all* prios? TODO
 
           last_update_datetime = datetime.strptime(self.time, DATETIMEFMT)
           updatedelta = (datetime.utcnow() - last_update_datetime)
@@ -340,24 +336,21 @@ class LockError(Exception): pass
 
 @_custom_inherit(dict, delegator='_data', include=['__len__', '__getitem__',
                    '__contains__', 'get', 'items', 'keys', 'values', '__str__'])
+# TODO: types.MappingProxyType? Why is that buried away where it's useless?
 class _SequencesData:
      '''The class that reads and writes The Sequence Data File. The `file`
      constructor argument is immutable for the lifetime of the object. Writing
      also writes to the other two files (which are read-only).'''
 
-     def __init__(self, jsonfile, txtfile=''):
+     def __init__(self, config):
           '''Create the object with its one and only jsonfile. To switch files,
           you must finalize this object and "manually" move the file, then make
-          a new SequenceData object.'''
+          a new SequencesManager object.'''
+          self._jsonfile = config['jsonfile']
+          self._lockfile = config['lockfile']
+          self._txtfile  = config['txtfile']
           # For priority purposes, we keep the jsonlist in minheap form ordered
           # by priority. The dict is an access convenience for most purposes.
-          if jsonfile == txtfile:
-               raise ValueError("file arguments must be unique!")
-          self._jsonfile = jsonfile
-          self._lockfile = self._jsonfile + '.lock'
-          if not txtfile:
-               txtfile = jsonfile.replace('.json', '.txt')
-          self._txtfile = txtfile
           self._data = None # Will cause errors if you try and use this class
           self._heap = None # before actually reading data
 

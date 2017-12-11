@@ -18,9 +18,8 @@
 #
 #    See the LICENSE file for more details.
 
-# Some of the data handling code is copied from allseq.py
 data_file = 'http://rechenkraft.net/aliquot/AllSeq.json'
-
+# !!! ^ Don't use on live instance
 
 ###############################################################################
 
@@ -32,7 +31,11 @@ add_path_relative_to_script('..')
 from mfaliquot.theory import numtheory as nt
 from mfaliquot.theory import aliquot as aq
 from mfaliquot.application import AliquotSequence, SequencesManager
-from mfaliquot import blogotubes
+from mfaliquot import blogotubes, InterpolatedJSONConfig
+
+CONFIG = InterpolatedJSONConfig()
+CONFIG.read_file('mfaliquot.config.json')
+
 
 # TODO: clean up this mess, ideally move some of it to mfaliquot.application.fdb
 
@@ -52,7 +55,7 @@ def get_data():
           if txt is None:
                raise ValueError("Couldn't get data file")
           else:
-               data_file = 'AllSeq.json'
+               data_file = CONFIG['jsonfile']
                with open(data_file, 'w') as f:
                     f.write(txt)
 
@@ -137,7 +140,7 @@ def main():
      # because I use 'seq' for both just the integer of the sequence leader *and*
      # the corresponding AliquotSequence object.
      # data is a dictionary mapping the ints to the AliquotSequence objects.
-     data = SequencesManager('../website/html/AllSeq.json')
+     data = SequencesManager(CONFIG)
      data.readonly_init()
      targets = []; derp = []
      for i, seq in enumerate(data.values()):
