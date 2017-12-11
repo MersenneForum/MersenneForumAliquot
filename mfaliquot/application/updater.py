@@ -86,12 +86,15 @@ class AllSeqUpdater:
           if not _drops:
                return []
 
-          drops = []
+          drops = set()
           for drop in _drops:
                try:
-                    drops.append(int(drop))
+                    drop = int(drop)
                except ValueError:
                     _logger.warning("Ignoring unknown 'drop' entry {}".format(drop))
+               else:
+                    if drop in self.seqinfo and drop not in drops:
+                         drops.add(drop)
 
           return drops
 
@@ -103,7 +106,7 @@ class AllSeqUpdater:
                     if seq <= 276 or seq >= 10**7 or not seq & 1 == 0:
                          raise ValueError(f"new seq {seq} is invalid")
                     news.append(seq)
-                    seqinfo.push_new_info(AliquotSequence(seq=seq, index=-1))
+                    self.seqinfo.push_new_info(AliquotSequence(seq=seq, index=-1))
           if news:
                _logger.info(f"Adding {len(news)} new seqs: {' '.join(str(s) for s in news)}")
           return news
@@ -165,7 +168,7 @@ class AllSeqUpdater:
           elif status is fdb.FDBStatus.CompositePartiallyFactored: # no progress since last
                old.process_no_progress()
           elif status is fdb.FDBStatus.Prime:
-               _logger.warning("seq {old.seq}: got a prime id value?? termination?")
+               _logger.warning(f"seq {old.seq}: got a prime id value?? termination?")
                old.process_no_progress()
           else:
                _logger.error(f"problem: crazy status for most recent id of {old.seq} ({status})")
@@ -259,12 +262,12 @@ class AllSeqUpdater:
                _logger.info("No merges found")
 
           if terminated:
-               _logger.info(f"Writing terminations to {TERMFILE}: {' '.join(str(seq) for seq in terminated)}")
-               with open(TERMFILE, 'a') as f:
+               _logger.warning(f"Writing terminations to {self.termfile}: {' '.join(str(seq) for seq in terminated)}")
+               # _logger.notable()
+               with open(self.termfile, 'a') as f:
                     f.write(''.join(f'{seq}\n' for seq in terminated))
 
-          _logger.info(f'Currently have {len(self.seqinfo)} sequences on file.')
-          _logger.info('Creating statistics...')
+          _logger.info(f'Currently have {len(self.seqinfo)} sequences on file. Creating statistics...')
           self.create_stats_write_html()
           _logger.info('Statistics written')
 
@@ -279,7 +282,7 @@ class AllSeqUpdater:
           seqs_todo = self.preloop_initialize(special)
           n = len(seqs_todo)
 
-          _logger.info(f'Init complete, starting FDB queries on {n} sequences')
+          _logger.info(f'Updater init complete, starting FDB queries on {n} sequences')
 
           self._install_handlers()
           count, terminated = self.primary_update_loop(seqs_todo)

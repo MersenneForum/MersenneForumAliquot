@@ -71,7 +71,7 @@ class AliquotSequence(list):
              'index':    (2, None),
              'guide':    (3, ''),
              'factors':  (4, ''),
-             'cofactor': (5, ''),
+             'cofactor': (5, 0),
              'klass':    (6, None),
              'res':      (7, ''),
              'progress': (8, None),
@@ -482,7 +482,8 @@ class _SequencesData:
           del json_string # Both outstrings generated here can be multiple megabytes each
 
           if self._txtfile:
-               txt_string = '\n'.join(str(ali) for ali in sorted(out, key=lambda ali: ali.seq)) + '\n'
+               txt_string = ''.join(str(ali)+'\n' for ali in sorted(out, key=lambda ali: ali.seq) if ali.is_minimally_valid())
+               # we want to go easy on newly added seqs with invalid data
                with open(self._txtfile, 'w') as f:
                     f.write(txt_string)
                del txt_string
@@ -491,9 +492,14 @@ class _SequencesData:
 
 
      def write_unlock(self):
-          self.write()
-          self._unlock()
-          _logger.info("seqinfo written, lock released")
+          msg = 'seqinfo written, '
+          try:
+               self.write()
+          except:
+               msg = "seqinfo failed to write! "
+          finally:
+               self._unlock()
+          _logger.info(msg + "lock released")
 
 
      @staticmethod
@@ -653,6 +659,8 @@ class SequencesManager(_SequencesData):
           sizes = Counter(); lens = Counter(); guides = Counter(); progs = Counter(); cofacts = Counter()
           totsiz = 0; totlen = 0; avginc = 0; totprog = 0
           for ali in self.values():
+               if not ali.is_minimally_valid():
+                    continue
                sizes[ali.size] += 1; totsiz += ali.size
                lens[ali.index] += 1; totlen += ali.index
                guides[ali.guide] += 1; avginc += ali.index/ali.size

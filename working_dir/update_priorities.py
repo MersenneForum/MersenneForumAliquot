@@ -44,5 +44,6 @@ logging.basicConfig(level=logging.INFO)
 seqinfo = SequencesManager(CONFIG)
 
 with seqinfo.acquire_lock(block_minutes=CONFIG['blockminutes']):
+     LOGGER.info("seqinfo inited, updating priorities...")
      for ali in seqinfo.values():
           ali.calculate_priority()

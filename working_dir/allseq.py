@@ -62,22 +62,20 @@ logging.basicConfig(level=logging.INFO)
 #
 
 def inner_main(updater, seqinfo, special=None):
-     LOGGER.info('\n'+strftime(DATETIMEFMT))
+     LOGGER.info(strftime(DATETIMEFMT))
 
      LOGGER.info('Initializing')
      block = 0 if special else CONFIG['blockminutes']
 
      with seqinfo.acquire_lock(block_minutes=block):
-
           quitting = updater.do_all_updates(seqinfo, special)
-
 
      LOGGER.info('allseq.py update loop complete')
      return quitting
 
 
 def main():
-     global LOOPING, SLEEPING, QUITTING
+     global LOOPING
 
      try:
           special = [int(arg) for arg in sys.argv[1:]]
@@ -104,9 +102,7 @@ def main():
 
           if LOOPING and not quitting:
                LOGGER.info('Sleeping.')
-               SLEEPING = True
                sleep(SLEEPMINUTES*60)
-               SLEEPING = False
           else:
                break
 
