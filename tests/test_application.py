@@ -44,6 +44,7 @@ class TestSequencesManagerLocking(TestCaseWithFilesEqual):
      file = 'test_AllSeq.json'
      txtfile = 'test_AllSeq.txt'
      lockfile = file + '.lock'
+     config = {'jsonfile': file,  'txtfile': txtfile, 'lockfile': lockfile}
 
 
      def setUp(self):
@@ -59,7 +60,7 @@ class TestSequencesManagerLocking(TestCaseWithFilesEqual):
 
 
      def test_manual_lock_unlock(self):
-          seqinfo = SequencesManager(self.file)
+          seqinfo = SequencesManager(self.config)
 
           seqinfo.lock_read_init()
 
@@ -77,7 +78,7 @@ class TestSequencesManagerLocking(TestCaseWithFilesEqual):
 
 
      def test_auto_lock_unlock(self):
-          seqinfo = SequencesManager(self.file)
+          seqinfo = SequencesManager(self.config)
           self.assertFalse(exists(self.txtfile))
 
           with seqinfo.acquire_lock(block_minutes=0):
@@ -95,13 +96,13 @@ class TestSequencesManagerLocking(TestCaseWithFilesEqual):
      def test_already_locked(self):
           open(self.lockfile, 'w').close()
 
-          seqinfo = SequencesManager(self.file)
+          seqinfo = SequencesManager(self.config)
 
           self.assertRaises(LockError, seqinfo.lock_read_init)
 
 
      def test_readonly(self):
-          seqinfo = SequencesManager(self.file)
+          seqinfo = SequencesManager(self.config)
 
           seqinfo.readonly_init()
 

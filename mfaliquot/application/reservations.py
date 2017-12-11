@@ -59,8 +59,6 @@ class ReservationsSpider: # name is of debatable good-ness
 
           return other[1:] # other[0] == prev_pages
 
-     # TODO: call AllSeqUpdater with the sequences whose reservation changed
-
 
 ################################################################################
 
