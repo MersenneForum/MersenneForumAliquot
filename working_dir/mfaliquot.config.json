@@ -23,7 +23,8 @@
   "ReservationsSpider": {
       "pidfile": "{working_dir}/res_thread_last_pid",
       "mass_reservations":
-          {"yafu@home": "http://yafu.myfirewall.org/yafu/download/ali/ali.txt.all"}
+          {"yafu@home": "http://yafu.myfirewall.org/yafu/download/ali/ali.txt.all"},
+      "batchsize": 250
   },
   "logging": {"tbd":"tbd"}
 }

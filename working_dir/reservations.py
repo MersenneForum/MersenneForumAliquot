@@ -33,6 +33,7 @@ add_path_relative_to_script('..')
 from mfaliquot import InterpolatedJSONConfig
 from mfaliquot.application.reservations import ReservationsSpider
 from mfaliquot.application import SequencesManager
+from mfaliquot.application.updater import AllSeqUpdater
 import logging
 
 CONFIG = InterpolatedJSONConfig()
@@ -42,6 +43,36 @@ CONFIG.read_file('mfaliquot.config.json')
 # TODO make default log config file in scripts/
 LOGGER = logging.getLogger()
 logging.basicConfig(level=logging.INFO)
+
+
+def do_spider(seqinfo):
+
+     spider = ReservationsSpider(seqinfo, CONFIG['ReservationsSpider'])
+     thread_out, mass_out = spider.spider_all_apply_all()
+     for name, addres, dropres in thread_out:
+          LOGGER.info(f"{name} successfully added {addres[0]}, dropped {dropres[0]}")
+     LOGGER.info("Saving reservation changes to file")
+     seqinfo.write() # "Atomic"
+     # prepare a list of all res-changed seqs: manual drops, then manual adds, then
+     # mass drops then mass adds. Overflows get priority 0 (slight race condition
+     # with update_priorities.py)
+     # TODO: maybe factor this out into the class?
+     seqs = [seq for name, addres, dropres in thread_out for seq in dropres[0]]
+     seqs.extend(seq for name, addres, dropres in thread_out for seq in addres[0])
+     # mass_reses_out = list-of [name, dups, unknowns, dropres, addres]
+     seqs.extend(seq for name, _, _, dropres, addres in mass_out for seq in dropres[0])
+     seqs.extend(seq for name, _, _, dropres, addres in mass_out for seq in addres[0])
+     if seqs:
+          ntodo = CONFIG['ReservationsSpider']['batchsize']
+          num = len(seqs)
+          LOGGER.info(f"got {num} with new reservations: updating {min(num, ntodo)}, remainder set to low priority")
+          todo, later = seqs[:ntodo], seqs[ntodo:]
+          updater = AllSeqUpdater(CONFIG['AllSeqUpdater'])
+          updater.do_all_updates(seqinfo, todo)
+          LOGGER.info('New-reservation seq updates complete, writing low priority for remainder')
+          for seq in later:
+               seqinfo[seq].priority = 0
+     LOGGER.info('Reservations spidering is complete')
 
 
 def inner_main(seqinfo, err):
@@ -64,10 +95,7 @@ def inner_main(seqinfo, err):
 
      elif argv[1] == 'spider':
 
-          spider = ReservationsSpider(seqinfo, CONFIG['ReservationsSpider'])
-          thread_out, mass_out = spider.spider_all_apply_all()
-          for name, addres, dropres in thread_out:
-               LOGGER.info(f"{name} successfully added {addres[0]}, dropped {dropres[0]}")
+          do_spider(seqinfo)
 
      else:
           print(err)

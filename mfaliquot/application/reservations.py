@@ -123,4 +123,5 @@ def update_apply_all_res(seqinfo, last_pid, mass_reses):
      seqinfo.resdatetime = now
 
      return last_pid, prev_pages, out, mass_reses_out # What a mess of data
+     # mass_reses_out = list-of [name, dups, unknowns, dropres, addres]
 
