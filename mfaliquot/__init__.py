@@ -59,17 +59,14 @@ class InterpolatedJSONConfig(OrderedDict):
      >>> ijc.update(test)
      >>> ijc
      InterpolatedJSONConfig([('akey', 2), ('bkey', 'notmplstr'), ('ckey', 'a formatted str: 2'), ('dkey', {'ekey': 'nested val', 'fkey': 'nested formatted val: 2  (with nested formattings:) nested val!!'})])
+
+     Caution: dynamically adding further dicts requires manually calling interpolate() on those
+     dicts as well.
      '''
 
      def update(self, other):
           super().update(other)
           self.interpolate(other, _smooshed=True)
-
-
-     def __setitem__(self, key, value):
-          super().__setitem__(key, value)
-          if isinstance(value, MutableMapping):
-               self.interpolate(value)
 
 
      def read_file(self, file):
@@ -81,7 +78,6 @@ class InterpolatedJSONConfig(OrderedDict):
      def interpolate(self, dct, *, _smooshed=False):
           # _smooshed is true for toplevel dcts which have already been `update`d to self
           stodo, dtodo = [], []
-
           for key, val in dct.items():
                if isinstance(val, str) and ('{' in val or '}' in val):
                     stodo.append((key,val))

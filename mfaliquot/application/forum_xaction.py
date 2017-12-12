@@ -72,7 +72,7 @@ def spider_res_thread(last_pid):
                all_res.append((name, adds, drops))
           last_pid = all_posts[-1][0] # Highest PID processed
      else:
-          _logger.info("forum_spider: no new posts!")
+          _logger.info("no new res thread posts!")
 
      return last_pid, prev_pages, all_res
 

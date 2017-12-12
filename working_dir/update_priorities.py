@@ -20,30 +20,48 @@
 #    See the LICENSE file for more details.
 
 
-# To be run once daily (or so), it's rather too expensive to run for every
-# allseq update
+# To be run once every several hours or so, it's rather too expensive to run for
+# every allseq update
+
+CONFIGFILE = 'mfaliquot.config.json'
+LOGFILE = 'update_priorities.log'
+
+################################################################################
+
+
 
 from _import_hack import add_path_relative_to_script
 add_path_relative_to_script('..')
 # this should be removed when proper pip installation is supported
 
 from mfaliquot import InterpolatedJSONConfig
-from mfaliquot.application import SequencesManager
+from mfaliquot.application import SequencesManager, DATETIMEFMT
 
-import logging
+from time import strftime
 
+# This block is entirely boilerplate
+from logging import getLogger
+from logging.config import dictConfig
 CONFIG = InterpolatedJSONConfig()
-CONFIG.read_file('mfaliquot.config.json')
+CONFIG.read_file(CONFIGFILE)
+logconf = CONFIG['logging']
+file_handler = logconf['handlers']['file_handler']
+file_handler['filename'] = file_handler['filename'].format(LOGFILE)
+# TODO: ^ that's pretty darn ugly, surely there's a better way?
+dictConfig(logconf)
+LOGGER = getLogger(); LOGGER.info(strftime(DATETIMEFMT))
 
-# logging.config.dictConfig(CONFIG["logging"])
-# TODO make default log config file in scripts/
-LOGGER = logging.getLogger()
-logging.basicConfig(level=logging.INFO)
 
+def main():
+     seqinfo = SequencesManager(CONFIG)
+     with seqinfo.acquire_lock(block_minutes=CONFIG['blockminutes']):
+          LOGGER.info("seqinfo inited, updating priorities...")
+          for ali in seqinfo.values():
+               ali.calculate_priority()
 
-seqinfo = SequencesManager(CONFIG)
-
-with seqinfo.acquire_lock(block_minutes=CONFIG['blockminutes']):
-     LOGGER.info("seqinfo inited, updating priorities...")
-     for ali in seqinfo.values():
-          ali.calculate_priority()
+if __name__ == '__main__':
+     try:
+          main()
+     except BaseException as e:
+          LOGGER.exception(f"allseq.py interrupted by {type(e).__name__}: {str(e)}", exc_info=e)
+     LOGGER.info('\n') # Leaves a blank log-header after each block, but it's still better than no gap

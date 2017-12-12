@@ -1,9 +1,6 @@
 __pycache__/
-numtheory/__pycache__/
-scripts/AllSeq.txt
-scripts/__pycache__/
-scripts/allseq.py.conf
-scripts/reservations.py.last_pid
-scripts/reservations
+working_dir/res_thread_last_pid
+working_dir/allseq.drops.txt
+working_dir/allseq.terms.txt
 website/html/AllSeq.html
 website/html/statistics.html

@@ -21,28 +21,37 @@
 # there isn't yet a record of last post checked
 
 ################################################################################
+
+CONFIGFILE = 'mfaliquot.config.json'
+LOGFILE = 'reservations.log'
+
+################################################################################
 #
 ################################################################################
 
-
 from sys import argv, exit
+from time import strftime
+
 from _import_hack import add_path_relative_to_script
 add_path_relative_to_script('..')
 # this should be removed when proper pip installation is supported
 
 from mfaliquot import InterpolatedJSONConfig
 from mfaliquot.application.reservations import ReservationsSpider
-from mfaliquot.application import SequencesManager
+from mfaliquot.application import SequencesManager, DATETIMEFMT
 from mfaliquot.application.updater import AllSeqUpdater
-import logging
 
+# This block is entirely boilerplate
+from logging import getLogger
+from logging.config import dictConfig
 CONFIG = InterpolatedJSONConfig()
-CONFIG.read_file('mfaliquot.config.json')
-
-# logging.config.dictConfig(CONFIG["logging"])
-# TODO make default log config file in scripts/
-LOGGER = logging.getLogger()
-logging.basicConfig(level=logging.INFO)
+CONFIG.read_file(CONFIGFILE)
+logconf = CONFIG['logging']
+file_handler = logconf['handlers']['file_handler']
+file_handler['filename'] = file_handler['filename'].format(LOGFILE)
+# TODO: ^ that's pretty darn ugly, surely there's a better way?
+dictConfig(logconf)
+LOGGER = getLogger(); LOGGER.info(strftime(DATETIMEFMT))
 
 
 def do_spider(seqinfo):
@@ -115,4 +124,8 @@ def main():
 
 
 if __name__ == '__main__':
-     main()
+     try:
+          main()
+     except BaseException as e:
+          LOGGER.exception(f"reservations.py interrupted by {type(e).__name__}: {str(e)}", exc_info=e)
+     LOGGER.info('\n') # Leaves a blank log-header after each block, but it's still better than no gap

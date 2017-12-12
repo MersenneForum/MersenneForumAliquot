@@ -211,12 +211,12 @@ def _process_ali_data(seq, page):
      # the digit size overestimates the actual log of a given prime by a small fraction,
      # hence allow slight excess of size over ali.size
      if not (ali.size - 1 < size < ali.size + 3):
-          raise FDBDataError(f'Seq {seq}: index: {ali.index}, size: {ali.size}, calcsize: '
-                             f'{size:.2f}, garbage factors found: {factors}, cofactor: {cofactor}')
+          raise FDBDataError(f'Seq {seq}: index {ali.index}, size {ali.size}, garbage factors '
+                             f'found: {factors} (calcsize {size:.2f})')
 
      if cofactor < 70: # FDB will autofactor it
           # less of an error more of just an un-updated downdriver run
-          raise FDBDataError(f'Seq {seq} (index {ali.index}): small cofactor')
+          raise FDBDataError(f'Seq {seq} (index {ali.index}): small cofactor ({cofactor})')
 
      ali.factors = factors
      ali.cofactor = cofactor
