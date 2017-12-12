@@ -1,6 +1,6 @@
 __pycache__/
-working_dir/res_thread_last_pid
-working_dir/allseq.drops.txt
-working_dir/allseq.terms.txt
+scripts/res_thread_last_pid
+scripts/allseq.drops.txt
+scripts/allseq.terms.txt
 website/html/AllSeq.html
 website/html/statistics.html

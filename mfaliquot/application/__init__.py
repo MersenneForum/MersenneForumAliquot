@@ -414,7 +414,11 @@ class _SequencesData:
           '''Initialize self from the (immutable attribute) `file` passed to the constructor.'''
           self._lock()
           _logger.info("Lock acquired, reading {}".format(self.file))
-          self._read_init()
+          try:
+               self._read_init()
+          except:
+               self._unlock()
+               raise
 
 
      @contextmanager
