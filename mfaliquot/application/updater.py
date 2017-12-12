@@ -47,8 +47,6 @@ class AllSeqUpdater:
 
      # excessive? probably. but I qualify it as "better explicit than implicit",
      # and there's *no* reason this data should change post-initialization
-     #jsonfile      = property(lambda self: self._jsonfile)
-     #txtfile       = property(lambda self: self._txtfile)
      maintemplate  = property(lambda self: self._maintemplate)
      statstemplate = property(lambda self: self._statstemplate)
      mainhtml      = property(lambda self: self._mainhtml)
@@ -99,7 +97,7 @@ class AllSeqUpdater:
           return drops
 
 
-     def check_special_for_new_seqs(self, special):
+     def add_new_seqs(self, special):
           news = []
           for seq in special:
                if seq not in self.seqinfo:
@@ -108,7 +106,8 @@ class AllSeqUpdater:
                     news.append(seq)
                     self.seqinfo.push_new_info(AliquotSequence(seq=seq, index=-1))
           if news:
-               _logger.info(f"Adding {len(news)} new seqs: {' '.join(str(s) for s in news)}")
+               _logger.info(f"Added {len(news)} new seqs: {' '.join(str(s) for s in news)}")
+               self.seqinfo.write() # "Atomic"
           return news
 
 
@@ -225,8 +224,7 @@ class AllSeqUpdater:
                open(self.dropfile, 'w').close() # leave blank file on filesystem for forgetful humans :)
 
           if special:
-               self.check_special_for_new_seqs(special)
-               self.seqinfo.write() # "Atomic"
+               self.add_new_seqs(special)
                seqs_todo = special
           else:
                seqs_todo = tuple(self.seqinfo.pop_n_todo(self.batchsize))

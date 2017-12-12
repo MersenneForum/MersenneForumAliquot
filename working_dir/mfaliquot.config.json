@@ -38,7 +38,7 @@
     "formatters": {
         "main": {
             "datefmt": "%H:%M:%S",
-            "format": "%(asctime)s %(name)s.%(funcName)s:%(lineno)d %(levelname)s: %(message)s"
+            "format": "%(asctime)s %(name)s:%(lineno)d %(levelname)s: %(message)s"
         }
     },
 

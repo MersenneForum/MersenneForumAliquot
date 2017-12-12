@@ -63,5 +63,5 @@ if __name__ == '__main__':
      try:
           main()
      except BaseException as e:
-          LOGGER.exception(f"allseq.py interrupted by {type(e).__name__}: {str(e)}", exc_info=e)
+          LOGGER.exception(f"update_priorities.py interrupted by {type(e).__name__}: {str(e)}", exc_info=e)
      LOGGER.info('\n') # Leaves a blank log-header after each block, but it's still better than no gap

@@ -492,14 +492,14 @@ class _SequencesData:
 
 
      def write_unlock(self):
-          msg = 'seqinfo written, '
           try:
                self.write()
-          except:
-               msg = "seqinfo failed to write! "
+          except BaseException as e:
+               _logger.exception(f"seqinfo failed to write!", exc_info=e)
+               raise
           finally:
                self._unlock()
-          _logger.info(msg + "lock released")
+          _logger.info("seqinfo written, lock released")
 
 
      @staticmethod
