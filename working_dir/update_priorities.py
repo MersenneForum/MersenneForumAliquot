@@ -34,22 +34,10 @@ from _import_hack import add_path_relative_to_script
 add_path_relative_to_script('..')
 # this should be removed when proper pip installation is supported
 
-from mfaliquot import InterpolatedJSONConfig
-from mfaliquot.application import SequencesManager, DATETIMEFMT
+from mfaliquot import config_boilerplate
+from mfaliquot.application import SequencesManager
 
-from time import strftime
-
-# This block is entirely boilerplate
-from logging import getLogger
-from logging.config import dictConfig
-CONFIG = InterpolatedJSONConfig()
-CONFIG.read_file(CONFIGFILE)
-logconf = CONFIG['logging']
-file_handler = logconf['handlers']['file_handler']
-file_handler['filename'] = file_handler['filename'].format(LOGFILE)
-# TODO: ^ that's pretty darn ugly, surely there's a better way?
-dictConfig(logconf)
-LOGGER = getLogger(); LOGGER.info(strftime(DATETIMEFMT))
+CONFIG, LOGGER = config_boilerplate(CONFIGFILE, LOGFILE)
 
 
 def main():

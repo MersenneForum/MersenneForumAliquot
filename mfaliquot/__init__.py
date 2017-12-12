@@ -93,4 +93,17 @@ class InterpolatedJSONConfig(OrderedDict):
           for d in dtodo:
                self.interpolate(d)
 
+from time import strftime
 
+def config_boilerplate(CONFIGFILE, LOGFILE):
+     from logging.config import dictConfig
+     CONFIG = InterpolatedJSONConfig()
+     CONFIG.read_file(CONFIGFILE)
+     logconf = CONFIG['logging']
+     file_handler = logconf['handlers']['file_handler']
+     file_handler['filename'] = file_handler['filename'].format(LOGFILE)
+     # TODO: ^ that's pretty darn ugly, surely there's a better way?
+     dictConfig(logconf)
+     LOGGER = logging.getLogger()
+     LOGGER.info(strftime('%Y-%m-%d %H:%M:%S'))
+     return CONFIG, LOGGER

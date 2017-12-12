@@ -162,7 +162,7 @@ class AliquotSequence(list):
 
           base_prio = max(0, days_without_movement - updatedeltadays)
 
-          if self.cofactor < 100:
+          if self.cofactor and self.cofactor < 100:
                base_prio *= (self.cofactor)/100
 
           if self.res:
