@@ -93,6 +93,7 @@ class InterpolatedJSONConfig(OrderedDict):
           for d in dtodo:
                self.interpolate(d)
 
+
 from time import strftime
 
 def config_boilerplate(CONFIGFILE, SCRIPTNAME):
@@ -100,10 +101,76 @@ def config_boilerplate(CONFIGFILE, SCRIPTNAME):
      CONFIG = InterpolatedJSONConfig()
      CONFIG.read_file(CONFIGFILE)
      logconf = CONFIG['logging']
+
      file_handler = logconf['handlers']['file_handler']
      file_handler['filename'] = file_handler['filename'].format(SCRIPTNAME)
+     email_handler = logconf['handlers']['email_handler']
+     email_handler['scriptname'] = email_handler['scriptname'].format(SCRIPTNAME)
      # TODO: ^ that's pretty darn ugly, surely there's a better way?
+
      dictConfig(logconf)
      LOGGER = logging.getLogger()
      LOGGER.info(strftime('%Y-%m-%d %H:%M:%S'))
      return CONFIG, LOGGER
+
+
+from smtplib import SMTP, SMTPException
+from email.message import EmailMessage
+
+class BufferingSMTPHandler(logging.Handler):
+
+     # Don't try to send emails about logging records reporting email errors
+     _special_attr = 'SMTPException'
+     _special_kwarg = {_special_attr: True}
+
+     @classmethod
+     def _smtpfilter(klass, record):
+          if hasattr(record, klass._special_attr):
+               return False
+          return True
+
+
+     def __init__(self, host, from_addr, to_addrs, scriptname, port=None, username=None, password=None):
+          super().__init__()
+          self.buffer = []
+          self.host = host
+          self.port = port
+          self.from_addr = from_addr
+          self.to_addrs = to_addrs
+          self.scriptname = scriptname
+          self.username = username
+          self.password = password
+          self.addFilter(self._smtpfilter)
+
+
+     def emit(self, record):
+          self.buffer.append(record)
+
+
+     def flush(self):
+          if not self.buffer:
+               return
+          _logger.info(f"Sending logging email with {len(self.buffer)} records")
+          txt = ''.join(self.format(record)+'\n' for record in self.buffer)
+          msg = EmailMessage()
+          msg['Subject'] = "mfaliquot: warnings or errors while running {}.py".format(self.scriptname)
+          msg['To'] = ', '.join(self.to_addrs)
+          msg['From'] = self.from_addr
+          msg.set_content("Something went wrong while {}.py was running:\n\n".format(self.scriptname)+txt)
+          try:
+               s = SMTP()
+               s.connect(self.host, self.port)
+               s.starttls()
+               if self.username and self.password:
+                    s.login(self.username, self.password)
+               s.send_message(msg)
+               s.quit()
+          except SMTPException as e:
+               _logger.exception("Logging email failed to send:", exc_info=e, extra=self._special_kwarg)
+          except OSError as e:
+               _logger.exception("Some sort of smtp problem:", exc_info=e, extra=self._special_kwarg)
+          except BaseException as e:
+               _logger.exception("Unknown error while attempting to email:", exc_info=e, extra=self._special_kwarg)
+          else:
+               self.buffer.clear()
+
