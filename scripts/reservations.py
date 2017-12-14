@@ -47,8 +47,6 @@ def do_spider(seqinfo):
 
      spider = ReservationsSpider(seqinfo, CONFIG['ReservationsSpider'])
      thread_out, mass_out = spider.spider_all_apply_all()
-     for name, addres, dropres in thread_out:
-          LOGGER.info(f"{name} successfully added {addres[0]}, dropped {dropres[0]}")
      LOGGER.info("Saving reservation changes to file")
      seqinfo.write() # "Atomic"
      # prepare a list of all res-changed seqs: manual drops, then manual adds, then

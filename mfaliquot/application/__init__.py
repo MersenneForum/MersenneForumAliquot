@@ -614,7 +614,6 @@ class SequencesManager(_SequencesData):
           success, DNEs, already_owns, other_owns = [], [], [], []
           for seq in seqs:
                if seq not in self:
-                    _logger.warning("reserve_seqs: {} doesn't exist ({})".format(seq, name))
                     DNEs.append(seq)
                     continue
 
@@ -624,11 +623,14 @@ class SequencesManager(_SequencesData):
                     self[seq].res = name
                     success.append(seq)
                elif name == other:
-                    _logger.warning("reserve_seqs: {} already owns {}".format(name, seq))
                     already_owns.append(seq)
                else:
-                    _logger.warning("reserve_seqs: {} is owned by {} but is trying to be reserved by {}!".format(seq, other, name))
                     other_owns.append((seq, other))
+
+          if DNEs: _logger.warning("reserve_seqs ({}): seqs don't exist: {}".format(name, DNEs))
+          if already_owns: _logger.warning("reserve_seqs ({}): seqs are already reserved: {}".format(name, already_owns))
+          if other_owns: _logger.warning("reserve_seqs ({}): seqs are reserved by someone else: {}".format(name, other_owns))
+          if success: _logger.info("reserve_seqs ({}): successfully added {}".format(name, success))
 
           return success, DNEs, already_owns, other_owns
 
@@ -640,21 +642,23 @@ class SequencesManager(_SequencesData):
           success, DNEs, not_reserveds, wrong_reserveds = [], [], [], []
           for seq in seqs:
                if seq not in self:
-                    _logger.warning("unreserve_seqs: {} doesn't exist ({})".format(seq, name))
                     DNEs.append(seq)
                     continue
 
                current = self[seq].res
 
                if not current:
-                    _logger.warning("unreserve_seqs: {} is not currently reserved ({})".format(seq, name))
                     not_reserveds.append(seq)
                elif name == current:
                     self[seq].res = ''
                     success.append(seq)
                else:
-                    _logger.warning("unreserve_seqs: {} is reserved by {}, not dropee {}!".format(seq, current, name))
                     wrong_reserveds.append((seq, current))
+
+          if DNEs: _logger.warning("unreserve_seqs ({}): seqs don't exist: {}".format(name, DNEs))
+          if not_reserveds: _logger.warning("unreserve_seqs ({}): seqs are not currently reserved: {}".format(name, not_reserveds))
+          if wrong_reserveds: _logger.warning("unreserve_seqs ({}): seqs aren't reserved by dropee: {}".format(name, wrong_reserveds))
+          if success: _logger.info("unreserve_seqs ({}): successfully dropped {}".format(name, success))
 
           return success, DNEs, not_reserveds, wrong_reserveds
 
