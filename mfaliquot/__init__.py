@@ -95,13 +95,13 @@ class InterpolatedJSONConfig(OrderedDict):
 
 from time import strftime
 
-def config_boilerplate(CONFIGFILE, LOGFILE):
+def config_boilerplate(CONFIGFILE, SCRIPTNAME):
      from logging.config import dictConfig
      CONFIG = InterpolatedJSONConfig()
      CONFIG.read_file(CONFIGFILE)
      logconf = CONFIG['logging']
      file_handler = logconf['handlers']['file_handler']
-     file_handler['filename'] = file_handler['filename'].format(LOGFILE)
+     file_handler['filename'] = file_handler['filename'].format(SCRIPTNAME)
      # TODO: ^ that's pretty darn ugly, surely there's a better way?
      dictConfig(logconf)
      LOGGER = logging.getLogger()

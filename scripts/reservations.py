@@ -23,7 +23,7 @@
 ################################################################################
 
 CONFIGFILE = 'mfaliquot.config.json'
-LOGFILE = 'reservations.log'
+SCRIPTNAME = 'reservations'
 
 ################################################################################
 #
@@ -40,7 +40,7 @@ from mfaliquot.application.reservations import ReservationsSpider
 from mfaliquot.application import SequencesManager
 from mfaliquot.application.updater import AllSeqUpdater
 
-CONFIG, LOGGER = config_boilerplate(CONFIGFILE, LOGFILE)
+CONFIG, LOGGER = config_boilerplate(CONFIGFILE, SCRIPTNAME)
 
 
 def do_spider(seqinfo):

@@ -47,7 +47,7 @@
             "class": "logging.handlers.TimedRotatingFileHandler",
             "level": "INFO",
             "formatter": "main",
-            "filename": "{logging[log_dir]}/{{}}",
+            "filename": "{logging[log_dir]}/{{}}.log",
             "when": "W0"
         },
         "console_handler": {

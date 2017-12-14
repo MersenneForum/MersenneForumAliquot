@@ -28,7 +28,7 @@
 # globals/configuration
 
 CONFIGFILE = 'mfaliquot.config.json'
-LOGFILE = 'allseq.log'
+SCRIPTNAME = 'allseq'
 SLEEPMINUTES = 30 # TODO
 LOOPING = False
 
@@ -49,7 +49,7 @@ from mfaliquot import config_boilerplate
 from mfaliquot.application import SequencesManager
 from mfaliquot.application.updater import AllSeqUpdater
 
-CONFIG, LOGGER = config_boilerplate(CONFIGFILE, LOGFILE)
+CONFIG, LOGGER = config_boilerplate(CONFIGFILE, SCRIPTNAME)
 
 #
 ################################################################################

@@ -24,7 +24,7 @@
 # every allseq update
 
 CONFIGFILE = 'mfaliquot.config.json'
-LOGFILE = 'update_priorities.log'
+SCRIPTNAME = 'update_priorities'
 
 ################################################################################
 
@@ -37,7 +37,7 @@ add_path_relative_to_script('..')
 from mfaliquot import config_boilerplate
 from mfaliquot.application import SequencesManager
 
-CONFIG, LOGGER = config_boilerplate(CONFIGFILE, LOGFILE)
+CONFIG, LOGGER = config_boilerplate(CONFIGFILE, SCRIPTNAME)
 
 
 def main():

@@ -661,7 +661,7 @@ class SequencesManager(_SequencesData):
 
      def calc_common_stats(self):
           sizes = Counter(); lens = Counter(); guides = Counter(); progs = Counter(); cofacts = Counter()
-          totsiz = 0; totlen = 0; avginc = 0; totprog = 0
+          totsiz = 0; totlen = 0; avginc = 0; totprog = 0; data_total = 0
           for ali in self.values():
                if not ali.is_minimally_valid():
                     continue
@@ -673,9 +673,9 @@ class SequencesManager(_SequencesData):
 
                if isinstance(ali.progress, int):
                     totprog += 1
+               data_total += 1
 
           # Put stats table in json-able format
-          data_total = len(self)
           lentable = []; lencount = 0
           sizetable = [ [key, value] for key, value in sizes.items() ]
           cofactable = [ [key, value] for key, value in cofacts.items() ]
