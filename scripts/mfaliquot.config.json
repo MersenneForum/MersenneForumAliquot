@@ -1,5 +1,6 @@
 {
-"live_web_dir": "../website/html",
+"live_web_dir": "../data",
+"template_dir": "../website/templates",
 "working_dir": ".",
 
 "jsonfile":  "{live_web_dir}/AllSeq.json",
@@ -11,10 +12,10 @@
     "mainhtml":  "{live_web_dir}/AllSeq.html",
     "statshtml": "{live_web_dir}/statistics.html",
     "statsjson": "{live_web_dir}/statistics.json",
-    "maintemplate":  "{live_web_dir}/template.html",
-    "statstemplate": "{live_web_dir}/template2.html",
-    "dropfile":      "{working_dir}/allseq.drops.txt",
-    "termfile":      "{working_dir}/allseq.terms.txt",
+    "maintemplate":  "{template_dir}/template.html",
+    "statstemplate": "{template_dir}/statstemplate.html",
+    "dropfile": "{working_dir}/allseq.drops.txt",
+    "termfile": "{working_dir}/allseq.terms.txt",
     "batchsize": 100,
     "broken": {},
     "_example_broken_since_no_json_comments":
@@ -32,7 +33,7 @@
 
 "logging": {
     "version": 1,
-    "log_dir": "{working_dir}/log",
+    "log_dir": "../log",
     "disable_existing_loggers": false,
 
     "formatters": {

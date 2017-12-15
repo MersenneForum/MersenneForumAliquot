@@ -68,7 +68,7 @@ def spider_res_thread(last_pid):
           for pid, name, msg in all_posts:
                adds, drops = _read_msg(msg)
                if adds or drops:
-                    _logger.info('forum_spider: {}: {} adding {}, dropping {}'.format(pid, name, repr(adds), repr(drops)))
+                    _logger.info(f'post id {pid}: {name} adding {adds}, dropping {drops}')
                all_res.append((name, adds, drops))
           last_pid = all_posts[-1][0] # Highest PID processed
      else:
