@@ -148,9 +148,11 @@ class BufferingSMTPHandler(logging.Handler):
 
 
      def flush(self):
+          # Add extra newline to info() messages for separation in logfile
           if not self.buffer:
+               _logger.info("No warnings, no email to send\n")
                return
-          _logger.info(f"Sending logging email with {len(self.buffer)} records")
+          _logger.info(f"Sending logging email with {len(self.buffer)} records\n")
           txt = ''.join(self.format(record)+'\n' for record in self.buffer)
           msg = EmailMessage()
           msg['Subject'] = "mfaliquot: warnings or errors while running {}.py".format(self.scriptname)
