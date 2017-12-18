@@ -1,27 +1,73 @@
 This is a suite of various semi-related software concerning MersenneForum's
-Aliquot sequences forum. Of most note is the website that maintains the current
-status of all sequences less than 10^6 -- its primary script, as well as all
+Aliquot sequences forum. Of most note is the website --
+<https://www.rechenkraft.net/aliquot/> -- that maintains the current
+status of all sequences less than ~5E6. Its primary script, as well as all
 HTML templates, are included in this repository. The primary script relies on
 the various other things located here as well.
 
-The website/ folder contains the relevant HTML/JS/CSS/etc.
+The website/ folder contains the relevant HTML/JS/CSS/etc. templates and static
+pages. The static pages are meant to be copied to a live HTTP-server directory.
 
-The scripts/ folder contains the main website script, as well as the
-reservations tracking script, a small script to find sequences with drivers
-susceptible to breaking, and the merge detecting script.
+The data/ folder contains the formatted templates and other data pages generated
+by the backend scripts; they are also meant to be copied to the live web server
+directory in parallel to the static pages.
 
-The mfaliquot/ package contains the numtheory.py and aliquot.py modules
-I wrote while I was talking a number theory course -- the former module has a
-lot of unrelated-to-aliquot material, but has a bunch of relevant stuff as well,
-which aliquot.py and in turn the website and other scripts depend on.
+The mfaliquot/ Python package contains a number of modules used for the backend
+scripts. It has two subpackages. The theory package contains the numtheory.py and
+aliquot.py modules I wrote while I was talking a number theory course -- the
+former module has a lot of unrelated-to-aliquot material, but has a bunch of
+relevant stuff as well, which aliquot.py and in turn the website and other
+scripts depend on. aliquot.py also contains various functions which can be used
+to test sequences for possible mutations. The application package contains a
+variety of modules for safely manipulating the primary JSON file which is the
+main purpose of the website; it includes code for updating sequences from the
+file as well as tracking reservations. All of this functionality is more or less
+modular.
 
-The fdb/ pseudo-package can be ignored for now. (I had the ambitious idea of
-writing a Python package that extends some HTML parsing done in the scripts/
-folder into a complete FDB "API" that interacts with the HTML. Work halted for
-the forseeable future.)
+The scripts/ folder contains the thin frontend wrapper scripts to the
+mfaliquot.application package, which are used to run/update the website, as well
+as a small script to find sequences with drivers susceptible to mutating. The
+primary site-deployment configuration file is also found in this folder, adjacent
+to said scripts. The allseq.py, reservations.py, and update_priority.py scripts
+are the two primary scripts, meant to be run from the crontab:
 
-All code, markup, and text in this repository (save for the website/html/js/
-folder, which contains external projects) is copyright by Dubslow (aka Bill
-Winslow), and is licensed under the GPL. See LICENSE for details.
+17,47 * * * * $HOME/mfaliquot/scripts/allseq.py > /dev/null 2>&1
+01,31 * * * * $HOME/mfaliquot/scripts/reservations.py spider > /dev/null 2>&1
+59 0,6,12,18 * * * $HOME/mfaliquot/scripts/update_priorities.py > /dev/null 2>&1
 
-Contributors: Christian Beer
+All three scripts can be run manually as well. allseq.py accepts optional
+arguments, which are the specific sequences to be updated at that time; otherwise,
+it reads BATCHSIZE sequences to update based on their priority. reservations.py
+accepts "spider", "add", and "drop" commands; the first takes no arguments, and
+spiders the MersenneForum thread and any mass reservations text files; the
+latter two commands accept 2+ arguments: a name for which to add/drop sequences,
+followed by the one-or-more sequences to be added/dropped.
+
+The aforementioned priority system is used to update the sequences most likely
+to have seen progress since their last update, under a somewhat arbitrary
+heuristic. To first order, it's derived from
+(days_between_last_progress_and_last_update - days_since_last_update), while
+generally being floored at 0. Note that this means a lower priority means greater
+importance, and greater speed to next update. To higher order, various discounts
+and penalties are applied for, e.g., being reserved, having a downdriver, or
+being recently updated. In addition, there is a relatively hard cap on the
+maximum time between updates, currently 90 days. No matter how little a sequence
+moves, it's guaranteed to be updated with a period no greater than that (roughly).
+
+The automagic spidering of the reservations thread works like so:
+Currently, any line with any of these keywords:
+'Reserv', 'reserv', 'Add', 'add', 'Tak', 'tak'
+with 5-7 digit numbers, is assumed to be a reservation made by the poster;
+any line with these keywords:
+'Unreserv', 'unreserv', 'Drop', 'drop', 'Releas', 'releas'
+and 5-7 digit numbers is treated as a drop.
+
+
+All code, markup, and text in this repository (save for the website/static/js/
+folder, which contains external projects) is copyright by Bill Winslow, and is
+licensed under the GPL. See LICENSE for details. Christian Beer has also made
+notable contributions, mostly in relation to usability of this repository from
+an admin and hosting perspective. They are very much appreciated.
+
+Any problems can be reported via the GitHub issue tracker, or via the Mersenne
+Forum discussion thread linked from the primary webpage of the website.
