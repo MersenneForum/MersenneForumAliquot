@@ -2,5 +2,5 @@ __pycache__/
 scripts/res_thread_last_pid
 scripts/allseq.drops.txt
 scripts/allseq.terms.txt
-data/AllSeq.html
-data/statistics.html
+website/generated/AllSeq.html
+website/generated/statistics.html
