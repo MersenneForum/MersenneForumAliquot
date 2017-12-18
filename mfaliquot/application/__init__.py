@@ -171,13 +171,14 @@ class AliquotSequence(list):
           if 'Downdriver' in self.guide:
                base_prio /= 2
 
-          ratio = updatedelta/timedelta(days=max_update_period)
-          if ratio > 0.5: # If max_update_period is at least half over
-               # f(0.5) = 1, f(1) = 0 --> f(x) = 2 - 2x
-               base_prio *= 2*(1-ratio)
-          elif updatedeltadays < 1: # Prevent getting overzealous on a single seq in too short a time
-               # f(0) = 2, f(1) = 0, actually the same exact function lol
-               base_prio += 2*(1-updatedeltadays)
+          if updatedeltadays < 2: # Prevent getting overzealous on a single seq in too short a time
+               # f(0) = 2, f(2) = 0, slope = 1, y-intercept = 2, f(x) = 2 - 1x
+               base_prio += 2 - updatedeltadays
+          else: # If max_update_period is at least half over, start scaling priority to 0
+               ratio = updatedelta/timedelta(days=max_update_period)
+               if ratio > 0.5:
+                    # f(0.5) = 1, f(1) = 0 --> f(x) = 2 - 2x
+                    base_prio *= 2 - 2*ratio
 
           self.priority = round(base_prio, 2)
 
