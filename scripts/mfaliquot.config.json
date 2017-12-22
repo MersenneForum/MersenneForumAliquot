@@ -1,0 +1,78 @@
+{
+"live_web_dir": "../data",
+"template_dir": "../website/templates",
+"working_dir": ".",
+
+"jsonfile":  "{live_web_dir}/AllSeq.json",
+"lockfile":  "{jsonfile}.lock",
+"txtfile":   "{live_web_dir}/AllSeq.txt",
+"blockminutes": 3,
+
+"AllSeqUpdater": {
+    "mainhtml":  "{live_web_dir}/AllSeq.html",
+    "statshtml": "{live_web_dir}/statistics.html",
+    "statsjson": "{live_web_dir}/statistics.json",
+    "maintemplate":  "{template_dir}/template.html",
+    "statstemplate": "{template_dir}/statstemplate.html",
+    "dropfile": "{working_dir}/allseq.drops.txt",
+    "termfile": "{working_dir}/allseq.terms.txt",
+    "batchsize": 100,
+    "broken": {},
+    "_example_broken_since_no_json_comments":
+              {"747720": [67, 1977171370480],
+               "brokenseq": ["offset", "new_start_val"]}
+},
+
+"ReservationsSpider": {
+    "pidfile": "{working_dir}/res_thread_last_pid",
+    "mass_reservations":
+        {"yafu@home": "http://yafu.myfirewall.org/yafu/download/ali/ali.txt.all"},
+    "batchsize": 250
+},
+
+
+"logging": {
+    "version": 1,
+    "log_dir": "../log",
+    "disable_existing_loggers": false,
+
+    "formatters": {
+        "main": {
+            "datefmt": "%H:%M:%S",
+            "format": "%(asctime)s %(levelname)s %(name)s:%(lineno)d: %(message)s"
+        }
+    },
+
+    "handlers": {
+        "file_handler": {
+            "level": "INFO",
+            "formatter": "main",
+            "class": "logging.handlers.TimedRotatingFileHandler",
+            "filename": "{logging[log_dir]}/{{}}.log",
+            "when": "W0"
+        },
+        "console_handler": {
+            "level": "INFO",
+            "formatter": "main",
+            "class": "logging.StreamHandler",
+            "stream": "ext://sys.stdout"
+        },
+        "email_handler": {
+            "level": "WARNING",
+            "formatter": "main",
+            "()": "mfaliquot.BufferingSMTPHandler",
+            "host": "localhost",
+            "username": "",
+            "password": "",
+            "from_addr": "mfaliquot email logging",
+            "to_addrs": ["bunslow@gmail.com"],
+            "scriptname": "{{}}"
+        }
+    },
+
+    "root": {
+        "level": "DEBUG",
+        "handlers": ["file_handler", "console_handler", "email_handler"]
+    }
+}
+}

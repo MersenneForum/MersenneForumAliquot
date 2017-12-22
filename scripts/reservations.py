@@ -1,6 +1,11 @@
 #!/opt/rh/rh-python36/root/usr/bin/python
 
-#    Copyright (C) 2014-2015 Bill Winslow
+# This is written to Python 3.6 standards
+# indentation: 5 spaces (eccentric personal preference)
+# when making large backwards scope switches (e.g. leaving def or class blocks),
+# use two blank lines for clearer visual separation
+
+#    Copyright (C) 2014-2017 Bill Winslow
 #
 #    This module is a part of the mfaliquot package.
 #
@@ -20,37 +25,58 @@
 # The very first run only checks the most recent page of reservation posts, since
 # there isn't yet a record of last post checked
 
-
 ################################################################################
 
-
-from sys import argv, exit
-#PIDFILE = argv[0] + '.last_pid'
-PIDFILE = 'last_pid'
-WEBSITEPATH = '../website/html/'
-INFOFILE = WEBSITEPATH + 'AllSeq.json'
-MASS_RESERVATIONS = {'yafu@home': 'http://yafu.myfirewall.org/yafu/download/ali/ali.txt.all'}
-
+CONFIGFILE = 'mfaliquot.config.json'
+SCRIPTNAME = 'reservations'
 
 ################################################################################
 #
 ################################################################################
 
+from sys import argv, exit
 
 from _import_hack import add_path_relative_to_script
 add_path_relative_to_script('..')
 # this should be removed when proper pip installation is supported
 
+from mfaliquot import config_boilerplate
 from mfaliquot.application.reservations import ReservationsSpider
 from mfaliquot.application import SequencesManager
+from mfaliquot.application.updater import AllSeqUpdater
 
-import logging
-LOGGER = logging.getLogger()
-logging.basicConfig(level=logging.INFO) # TODO: add configuration for this (create default config in scripts/)
+CONFIG, LOGGER = config_boilerplate(CONFIGFILE, SCRIPTNAME)
 
 
-# Can confirm that the package really should be using a logger, not this adhoc,
-# non-live results-to-str nonsense
+def do_spider(seqinfo):
+
+     spider = ReservationsSpider(seqinfo, CONFIG['ReservationsSpider'])
+     thread_out, mass_out = spider.spider_all_apply_all()
+     LOGGER.info("Saving reservation changes to file")
+     seqinfo.write() # "Atomic"
+     # prepare a list of all res-changed seqs: manual drops, then manual adds, then
+     # mass drops then mass adds. Overflows get priority 0 (slight race condition
+     # with update_priorities.py)
+     # TODO: maybe factor this out into the class?
+     seqs = [seq for name, addres, dropres in thread_out for seq in dropres[0]]
+     seqs.extend(seq for name, addres, dropres in thread_out for seq in addres[0])
+     # mass_reses_out = list-of [name, dups, unknowns, dropres, addres]
+     seqs.extend(seq for name, _, _, dropres, addres in mass_out for seq in dropres[0])
+     seqs.extend(seq for name, _, _, dropres, addres in mass_out for seq in addres[0])
+     if seqs:
+          ntodo = CONFIG['ReservationsSpider']['batchsize']
+          num = len(seqs)
+          LOGGER.info(f"got {num} with new reservations: setting priority to 0 and immediately updating {min(num, ntodo)}")
+          for seq in seqs:
+               # These will be overwritten by update_priorities.py if the current batch + later allseq runs fail to complete them
+               seqinfo[seq].priority = 0
+          todo = seqs[:ntodo]
+          updater = AllSeqUpdater(CONFIG['AllSeqUpdater'])
+          updater.do_all_updates(seqinfo, todo)
+          LOGGER.info('New-reservation seq updates complete')
+     LOGGER.info('Reservations spidering is complete')
+
+
 def inner_main(seqinfo, err):
 
      if argv[1] == 'add':
@@ -71,10 +97,7 @@ def inner_main(seqinfo, err):
 
      elif argv[1] == 'spider':
 
-          spider = ReservationsSpider(seqinfo, PIDFILE)
-          thread_out, mass_out = spider.spider_all_apply_all(MASS_RESERVATIONS)
-          for name, addres, dropres in thread_out:
-               LOGGER.info(f"{name} successfully added {addres[0]}, dropped {dropres[0]}")
+          do_spider(seqinfo)
 
      else:
           print(err)
@@ -87,11 +110,14 @@ def main():
           print(err)
           exit(-1)
 
-     s = SequencesManager(INFOFILE)
+     s = SequencesManager(CONFIG)
 
-     with s.acquire_lock(block_minutes=3): # reads and inits
+     with s.acquire_lock(block_minutes=CONFIG['blockminutes']): # reads and inits
           inner_main(s, err)
 
 
 if __name__ == '__main__':
-     main()
+     try:
+          main()
+     except BaseException as e:
+          LOGGER.exception(f"reservations.py interrupted by {type(e).__name__}: {str(e)}", exc_info=e)

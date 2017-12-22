@@ -1,9 +1,9 @@
-# This is written to Python 3.5 standards
-# indentation: 5 spaces (personal preference)
-# when making large backwards scope switches (e.g. between def or class blocks)
+# This is written to Python 3.6 standards
+# indentation: 5 spaces (eccentric personal preference)
+# when making large backwards scope switches (e.g. leaving def or class blocks),
 # use two blank lines for clearer visual separation
 
-#    Copyright (C) 2014-2015 Bill Winslow
+#    Copyright (C) 2014-2017 Bill Winslow
 #
 #    This module is a part of the mfaliquot package.
 #
@@ -155,7 +155,7 @@ def query_parse_seq_status(seq, tries=5):
 
 
 def _process_ali_data(seq, page):
-     # I can't believe it took me this long to figure out a way passed the spaghetti.
+     # I can't believe it took me this long to figure out a way past the spaghetti.
      # Instead of repeating the conditional error handling code once for each error,
      # which is what a goto would typically be used for in e.g. C, just factor out
      # all that code into a function that unconditionally raises appropriate exceptions
@@ -211,12 +211,12 @@ def _process_ali_data(seq, page):
      # the digit size overestimates the actual log of a given prime by a small fraction,
      # hence allow slight excess of size over ali.size
      if not (ali.size - 1 < size < ali.size + 3):
-          raise FDBDataError(f'Seq {seq}: index: {ali.index}, size: {ali.size}, calcsize: {size}, '
-                                      f'garbage factors found: {factors}, cofactor: {cofactor}')
+          raise FDBDataError(f'Seq {seq}: index {ali.index}, size {ali.size}, garbage factors '
+                             f'found: {factors} (calcsize {size:.2f})')
 
      if cofactor < 70: # FDB will autofactor it
           # less of an error more of just an un-updated downdriver run
-          raise FDBDataError(f'Seq {seq} (index {ali.index}): small cofactor')
+          raise FDBDataError(f'Seq {seq} (index {ali.index}): small cofactor ({cofactor})')
 
      ali.factors = factors
      ali.cofactor = cofactor

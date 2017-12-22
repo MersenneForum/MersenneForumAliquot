@@ -1,9 +1,9 @@
-# This is written to Python 3.3 standards
-# indentation: 5 spaces (personal preference)
-# when making large scope switches (e.g. between def or class blocks) use two
-# blank lines for clearer visual separation
+# This is written to Python 3.6 standards
+# indentation: 5 spaces (eccentric personal preference)
+# when making large backwards scope switches (e.g. leaving def or class blocks),
+# use two blank lines for clearer visual separation
 
-#    Copyright (C) 2014-2015 Bill Winslow
+#    Copyright (C) 2014-2017 Bill Winslow
 #
 #    This module is a part of the mfaliquot package.
 #
@@ -36,21 +36,22 @@ class ReservationsSpider: # name is of debatable good-ness
      '''A class to manage the statefulness of spidering the MersenneForum res
      thread. Delegates the primary spidering logic to the module level functions.'''
 
-     def __init__(self, seqinfo, pidfile):
+     def __init__(self, seqinfo, config):
           '''`seqinfo` should be a SequencesManager instance. It is assumed to
           already have acquired its lock.'''
           self.seqinfo = seqinfo
-          self.pidfile = pidfile
+          self.pidfile = config['pidfile']
+          self.mass_reses = config['mass_reservations']
 
 
-     def spider_all_apply_all(self, mass_reses):
+     def spider_all_apply_all(self):
           try:
                with open(self.pidfile, 'r') as f:
                     last_pid = int(f.read())
           except FileNotFoundError:
                last_pid = None
 
-          last_pid, *other = update_apply_all_res(self.seqinfo, last_pid, mass_reses)
+          last_pid, *other = update_apply_all_res(self.seqinfo, last_pid, self.mass_reses)
 
           if last_pid is not None:
                with open(self.pidfile, 'w') as f:
@@ -120,4 +121,5 @@ def update_apply_all_res(seqinfo, last_pid, mass_reses):
      seqinfo.resdatetime = now
 
      return last_pid, prev_pages, out, mass_reses_out # What a mess of data
+     # mass_reses_out = list-of [name, dups, unknowns, dropres, addres]
 

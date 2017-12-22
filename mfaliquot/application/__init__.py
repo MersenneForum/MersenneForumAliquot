@@ -1,9 +1,9 @@
-# This is written to Python 3.3 standards
-# indentation: 5 spaces (personal preference)
-# when making large scope switches (e.g. between def or class blocks) use two
-# blank lines for clearer visual separation
+# This is written to Python 3.6 standards
+# indentation: 5 spaces (eccentric personal preference)
+# when making large backwards scope switches (e.g. leaving def or class blocks),
+# use two blank lines for clearer visual separation
 
-#    Copyright (C) 2014-2015 Bill Winslow
+#    Copyright (C) 2014-2017 Bill Winslow
 #
 #    This module is a part of the mfaliquot package.
 #
@@ -71,7 +71,7 @@ class AliquotSequence(list):
              'index':    (2, None),
              'guide':    (3, ''),
              'factors':  (4, ''),
-             'cofactor': (5, ''),
+             'cofactor': (5, 0),
              'klass':    (6, None),
              'res':      (7, ''),
              'progress': (8, None),
@@ -148,10 +148,6 @@ class AliquotSequence(list):
           time between updates for any sequence no matter how little it moves,
           in days. `res_factor` is a "discount" factor applied to all reserved
           sequences priorities.'''
-          # The biggest problem with this prio algo is that I had only planned that
-          # `allseq.py` runs it for newly-updated seqs -- so the old seqs will
-          # never get their prio actually updated towards 0, even if they should be
-          # Solution: add a third script run once a day to update *all* prios? TODO
 
           last_update_datetime = datetime.strptime(self.time, DATETIMEFMT)
           updatedelta = (datetime.utcnow() - last_update_datetime)
@@ -166,7 +162,7 @@ class AliquotSequence(list):
 
           base_prio = max(0, days_without_movement - updatedeltadays)
 
-          if self.cofactor < 100:
+          if self.cofactor and self.cofactor < 100:
                base_prio *= (self.cofactor)/100
 
           if self.res:
@@ -175,13 +171,14 @@ class AliquotSequence(list):
           if 'Downdriver' in self.guide:
                base_prio /= 2
 
-          ratio = updatedelta/timedelta(days=max_update_period)
-          if ratio > 0.5: # If max_update_period is at least half over
-               # f(0.5) = 1, f(1) = 0 --> f(x) = 2 - 2x
-               base_prio *= 2*(1-ratio)
-          elif updatedeltadays < 1: # Prevent getting overzealous on a single seq in too short a time
-               # f(0) = 2, f(1) = 0, actually the same exact function lol
-               base_prio += 2*(1-updatedeltadays)
+          if updatedeltadays < 2: # Prevent getting overzealous on a single seq in too short a time
+               # f(0) = 2, f(2) = 0, slope = 1, y-intercept = 2, f(x) = 2 - 1x
+               base_prio += 2 - updatedeltadays
+          else: # If max_update_period is at least half over, start scaling priority to 0
+               ratio = updatedelta/timedelta(days=max_update_period)
+               if ratio > 0.5:
+                    # f(0.5) = 1, f(1) = 0 --> f(x) = 2 - 2x
+                    base_prio *= 2 - 2*ratio
 
           self.priority = round(base_prio, 2)
 
@@ -340,24 +337,21 @@ class LockError(Exception): pass
 
 @_custom_inherit(dict, delegator='_data', include=['__len__', '__getitem__',
                    '__contains__', 'get', 'items', 'keys', 'values', '__str__'])
+# TODO: types.MappingProxyType? Why is that buried away where it's useless?
 class _SequencesData:
      '''The class that reads and writes The Sequence Data File. The `file`
      constructor argument is immutable for the lifetime of the object. Writing
      also writes to the other two files (which are read-only).'''
 
-     def __init__(self, jsonfile, txtfile=''):
+     def __init__(self, config):
           '''Create the object with its one and only jsonfile. To switch files,
           you must finalize this object and "manually" move the file, then make
-          a new SequenceData object.'''
+          a new SequencesManager object.'''
+          self._jsonfile = config['jsonfile']
+          self._lockfile = config['lockfile']
+          self._txtfile  = config['txtfile']
           # For priority purposes, we keep the jsonlist in minheap form ordered
           # by priority. The dict is an access convenience for most purposes.
-          if jsonfile == txtfile:
-               raise ValueError("file arguments must be unique!")
-          self._jsonfile = jsonfile
-          self._lockfile = self._jsonfile + '.lock'
-          if not txtfile:
-               txtfile = jsonfile.replace('.json', '.txt')
-          self._txtfile = txtfile
           self._data = None # Will cause errors if you try and use this class
           self._heap = None # before actually reading data
 
@@ -421,7 +415,11 @@ class _SequencesData:
           '''Initialize self from the (immutable attribute) `file` passed to the constructor.'''
           self._lock()
           _logger.info("Lock acquired, reading {}".format(self.file))
-          self._read_init()
+          try:
+               self._read_init()
+          except:
+               self._unlock()
+               raise
 
 
      @contextmanager
@@ -482,13 +480,15 @@ class _SequencesData:
                outdict['resdatetime'] = self.resdatetime
           except Exception:
                pass
-          json_string = json.dumps(outdict).replace('],', '],\n') + '\n'
+          json_string = json.dumps(outdict, ensure_ascii=False, sort_keys=True).replace('],', '],\n') + '\n'
+          # sort_keys to get reproducible output for testing, ensure_ascii=False to allow fancy names
           with open(self._jsonfile, 'w') as f:
                f.write(json_string)
           del json_string # Both outstrings generated here can be multiple megabytes each
 
           if self._txtfile:
-               txt_string = '\n'.join(str(ali) for ali in sorted(out, key=lambda ali: ali.seq)) + '\n'
+               txt_string = ''.join(str(ali)+'\n' for ali in sorted(out, key=lambda ali: ali.seq) if ali.is_minimally_valid())
+               # we want to go easy on newly added seqs with invalid data
                with open(self._txtfile, 'w') as f:
                     f.write(txt_string)
                del txt_string
@@ -497,8 +497,13 @@ class _SequencesData:
 
 
      def write_unlock(self):
-          self.write()
-          self._unlock()
+          try:
+               self.write()
+          except BaseException as e:
+               _logger.exception(f"seqinfo failed to write!", exc_info=e)
+               raise
+          finally:
+               self._unlock()
           _logger.info("seqinfo written, lock released")
 
 
@@ -610,7 +615,6 @@ class SequencesManager(_SequencesData):
           success, DNEs, already_owns, other_owns = [], [], [], []
           for seq in seqs:
                if seq not in self:
-                    _logger.warning("reserve_seqs: {} doesn't exist ({})".format(seq, name))
                     DNEs.append(seq)
                     continue
 
@@ -620,11 +624,14 @@ class SequencesManager(_SequencesData):
                     self[seq].res = name
                     success.append(seq)
                elif name == other:
-                    _logger.warning("reserve_seqs: {} already owns {}".format(name, seq))
                     already_owns.append(seq)
                else:
-                    _logger.warning("reserve_seqs: {} is owned by {} but is trying to be reserved by {}!".format(seq, other, name))
                     other_owns.append((seq, other))
+
+          if DNEs: _logger.warning("reserve_seqs ({}): seqs don't exist: {}".format(name, DNEs))
+          if already_owns: _logger.warning("reserve_seqs ({}): seqs are already reserved: {}".format(name, already_owns))
+          if other_owns: _logger.warning("reserve_seqs ({}): seqs are reserved by someone else: {}".format(name, other_owns))
+          if success: _logger.info("reserve_seqs ({}): successfully added {}".format(name, success))
 
           return success, DNEs, already_owns, other_owns
 
@@ -636,29 +643,33 @@ class SequencesManager(_SequencesData):
           success, DNEs, not_reserveds, wrong_reserveds = [], [], [], []
           for seq in seqs:
                if seq not in self:
-                    _logger.warning("unreserve_seqs: {} doesn't exist ({})".format(seq, name))
                     DNEs.append(seq)
                     continue
 
                current = self[seq].res
 
                if not current:
-                    _logger.warning("unreserve_seqs: {} is not currently reserved ({})".format(seq, name))
                     not_reserveds.append(seq)
                elif name == current:
                     self[seq].res = ''
                     success.append(seq)
                else:
-                    _logger.warning("unreserve_seqs: {} is reserved by {}, not dropee {}!".format(seq, current, name))
                     wrong_reserveds.append((seq, current))
+
+          if DNEs: _logger.warning("unreserve_seqs ({}): seqs don't exist: {}".format(name, DNEs))
+          if not_reserveds: _logger.warning("unreserve_seqs ({}): seqs are not currently reserved: {}".format(name, not_reserveds))
+          if wrong_reserveds: _logger.warning("unreserve_seqs ({}): seqs aren't reserved by dropee: {}".format(name, wrong_reserveds))
+          if success: _logger.info("unreserve_seqs ({}): successfully dropped {}".format(name, success))
 
           return success, DNEs, not_reserveds, wrong_reserveds
 
 
      def calc_common_stats(self):
           sizes = Counter(); lens = Counter(); guides = Counter(); progs = Counter(); cofacts = Counter()
-          totsiz = 0; totlen = 0; avginc = 0; totprog = 0
+          totsiz = 0; totlen = 0; avginc = 0; totprog = 0; data_total = 0
           for ali in self.values():
+               if not ali.is_minimally_valid():
+                    continue
                sizes[ali.size] += 1; totsiz += ali.size
                lens[ali.index] += 1; totlen += ali.index
                guides[ali.guide] += 1; avginc += ali.index/ali.size
@@ -667,9 +678,9 @@ class SequencesManager(_SequencesData):
 
                if isinstance(ali.progress, int):
                     totprog += 1
+               data_total += 1
 
           # Put stats table in json-able format
-          data_total = len(self)
           lentable = []; lencount = 0
           sizetable = [ [key, value] for key, value in sizes.items() ]
           cofactable = [ [key, value] for key, value in cofacts.items() ]

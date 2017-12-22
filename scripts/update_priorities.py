@@ -1,10 +1,11 @@
 #!/opt/rh/rh-python36/root/usr/bin/python
-# This is written to Python 3.3 standards
-# indentation: 5 spaces (personal preference)
-# when making large scope switches (e.g. between def or class blocks) use two
-# blank lines for clearer visual separation
 
-#    Copyright (C) 2014-2015 Bill Winslow
+# This is written to Python 3.6 standards
+# indentation: 5 spaces (eccentric personal preference)
+# when making large backwards scope switches (e.g. leaving def or class blocks),
+# use two blank lines for clearer visual separation
+
+#    Copyright (C) 2014-2017 Bill Winslow
 #
 #    This module is a part of the mfaliquot package.
 #
@@ -20,23 +21,34 @@
 #    See the LICENSE file for more details.
 
 
-# To be run once daily (or so), it's rather too expensive to run for every
-# allseq update
+# To be run once every several hours or so, it's rather too expensive to run for
+# every allseq update
 
-import logging
-LOGGER = logging.getLogger()
-logging.basicConfig(level=logging.WARNING)
+CONFIGFILE = 'mfaliquot.config.json'
+SCRIPTNAME = 'update_priorities'
+
+################################################################################
+
+
 
 from _import_hack import add_path_relative_to_script
 add_path_relative_to_script('..')
 # this should be removed when proper pip installation is supported
 
+from mfaliquot import config_boilerplate
 from mfaliquot.application import SequencesManager
 
-WEBSITEPATH = '/var/www/rechenkraft.net/aliquot/'
+CONFIG, LOGGER = config_boilerplate(CONFIGFILE, SCRIPTNAME)
 
-seqinfo = SequencesManager(WEBSITEPATH + "AllSeq.json")
+def main():
+     seqinfo = SequencesManager(CONFIG)
+     with seqinfo.acquire_lock(block_minutes=CONFIG['blockminutes']):
+          LOGGER.info("seqinfo inited, updating priorities...")
+          for ali in seqinfo.values():
+               ali.calculate_priority()
 
-with seqinfo.acquire_lock(block_minutes=5):
-     for ali in seqinfo.values():
-          ali.calculate_priority()
+if __name__ == '__main__':
+     try:
+          main()
+     except BaseException as e:
+          LOGGER.exception(f"update_priorities.py interrupted by {type(e).__name__}: {str(e)}", exc_info=e)

@@ -1,6 +1,11 @@
 #!/opt/rh/rh-python36/root/usr/bin/python
 
-#    Copyright (C) 2014-2015 Bill Winslow
+# This is written to Python 3.6 standards
+# indentation: 5 spaces (eccentric personal preference)
+# when making large backwards scope switches (e.g. leaving def or class blocks),
+# use two blank lines for clearer visual separation
+
+#    Copyright (C) 2014-2017 Bill Winslow
 #
 #    This module is a part of the mfaliquot package.
 #
@@ -19,17 +24,17 @@ import json
 from _import_hack import add_path_relative_to_script
 add_path_relative_to_script('..')
 # this should be removed when proper pip installation is supported
+from mfaliquot import InterpolatedJSONConfig
 from mfaliquot.application import SequencesManager
 
-
-WEBSITEPATH = '../website/html/'
-JSON = WEBSITEPATH + 'AllSeq.json'
+CONFIG = InterpolatedJSONConfig()
+CONFIG.read_file('mfaliquot.config.json')
 
 
 def filter(filt_expr, sort_expr, N, sep):
      filt = lambda ali: eval(filt_expr)
      sort = lambda ali: eval(sort_expr)
-     seqinfo = SequencesManager(JSON)
+     seqinfo = SequencesManager(CONFIG)
      seqinfo.readonly_init()
      out = [ali for ali in seqinfo.values() if filt(ali)]
      out.sort(key=sort)

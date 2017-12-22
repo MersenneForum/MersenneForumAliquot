@@ -1,9 +1,9 @@
-# This is written to Python 3.3 standards
-# indentation: 5 spaces (personal preference)
-# when making large scope switches (e.g. between def or class blocks) use two
-# blank lines for clearer visual separation
+# This is written to Python 3.6 standards
+# indentation: 5 spaces (eccentric personal preference)
+# when making large backwards scope switches (e.g. leaving def or class blocks),
+# use two blank lines for clearer visual separation
 
-#    Copyright (C) 2014-2015 Bill Winslow
+#    Copyright (C) 2014-2017 Bill Winslow
 #
 #    This module is a part of the mfaliquot package.
 #
@@ -68,11 +68,11 @@ def spider_res_thread(last_pid):
           for pid, name, msg in all_posts:
                adds, drops = _read_msg(msg)
                if adds or drops:
-                    _logger.info('forum_spider: {}: {} adding {}, dropping {}'.format(pid, name, repr(adds), repr(drops)))
+                    _logger.info(f'post id {pid}: {name} adding {adds}, dropping {drops}')
                all_res.append((name, adds, drops))
           last_pid = all_posts[-1][0] # Highest PID processed
      else:
-          _logger.info("forum_spider: no new posts!")
+          _logger.info("no new res thread posts!")
 
      return last_pid, prev_pages, all_res
 

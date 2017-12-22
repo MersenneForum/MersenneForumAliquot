@@ -1,11 +1,6 @@
 __pycache__/
-numtheory/__pycache__/
-scripts/AllSeq.txt
-scripts/__pycache__/
-scripts/allseq.py.conf
-scripts/reservations.py.last_pid
-scripts/reservations
-website/html/AllSeq.html
-website/html/statistics.html
-tmp/
-log/
+scripts/res_thread_last_pid
+scripts/allseq.drops.txt
+scripts/allseq.terms.txt
+website/generated/AllSeq.html
+website/generated/statistics.html
