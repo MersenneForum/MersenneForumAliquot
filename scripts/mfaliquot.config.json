@@ -1,5 +1,5 @@
 {
-"live_web_dir": "../data",
+"live_web_dir": "/var/www/rechenkraft.net/aliquot",
 "template_dir": "../website/templates",
 "working_dir": ".",
 
@@ -25,7 +25,7 @@
 
 "ReservationsSpider": {
     "pidfile": "{working_dir}/res_thread_last_pid",
-    "mass_reservations":
+    "mass_reservations_disabled":
         {"yafu@home": "http://yafu.myfirewall.org/yafu/download/ali/ali.txt.all"},
     "batchsize": 250
 },
@@ -64,8 +64,8 @@
             "host": "localhost",
             "username": "",
             "password": "",
-            "from_addr": "mfaliquot email logging",
-            "to_addrs": ["bunslow@gmail.com"],
+            "from_addr": "technik@rechenkraft.net",
+            "to_addrs": ["bunslow@gmail.com", "technik@rechenkraft.net"],
             "scriptname": "{{}}"
         }
     },
