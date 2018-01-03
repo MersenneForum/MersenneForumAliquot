@@ -41,7 +41,7 @@ class AllSeqUpdater:
           self._dropfile      = config['dropfile']
           self._termfile      = config['termfile']
           self._batchsize     = config['batchsize']
-          self._broken        = {int(seq): stuff for seq, stuff in config['broken']}
+          self._broken        = {int(seq): stuff for seq, stuff in config['broken'].items()}
 
           self.quitting = False
 
