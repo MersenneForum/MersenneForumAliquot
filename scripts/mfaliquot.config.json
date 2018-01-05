@@ -49,7 +49,7 @@
             "formatter": "main",
             "class": "logging.handlers.TimedRotatingFileHandler",
             "filename": "{logging[log_dir]}/{{}}.log",
-            "when": "W0"
+            "when": "W6"
         },
         "console_handler": {
             "level": "INFO",
