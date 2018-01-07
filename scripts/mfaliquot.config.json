@@ -1,5 +1,5 @@
 {
-"live_web_dir": "../data",
+"live_web_dir": "../website/generated",
 "template_dir": "../website/templates",
 "working_dir": ".",
 
