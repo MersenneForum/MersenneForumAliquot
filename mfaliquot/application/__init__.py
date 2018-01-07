@@ -172,8 +172,8 @@ class AliquotSequence(list):
                base_prio /= 2
 
           if updatedeltadays < 2: # Prevent getting overzealous on a single seq in too short a time
-               # f(0) = 2, f(2) = 0, slope = 1, y-intercept = 2, f(x) = 2 - 1x
-               base_prio += 2 - updatedeltadays
+               # f(0) = 6, f(2) = 0, slope = 3, y-intercept = 6, f(x) = 6 - 3x
+               base_prio += 6 - 3*updatedeltadays
           else: # If max_update_period is at least half over, start scaling priority to 0
                ratio = updatedelta/timedelta(days=max_update_period)
                if ratio > 0.5:
