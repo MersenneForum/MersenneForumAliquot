@@ -198,11 +198,11 @@ class AllSeqUpdater:
           try:
                out = func(*args, **kwargs)
           except fdb.FDBResourceLimitReached as e:
-               _logger.exception(str(e), exc_info=e)
+               _logger.error(str(e))
                self.quitting = True
                return None
           except fdb.FDBDataError as e: # wish these fell through like C switch() statements
-               _logger.exception(str(e), exc_info=e)
+               _logger.error(str(e))
                _logger.info(f"Skipping sequence {seq}")
                return None
           if out is None:
