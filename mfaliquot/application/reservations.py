@@ -70,7 +70,7 @@ def parse_mass_reservation(reservee, url):
      txt = blogotubes(url)
      if not txt:
           _logger.error(f"unable to get mass reservation file for {reservee}")
-          return set(), [], []
+          return None, None, None
      current, dups, unknowns = set(), [], []
      for line in txt.splitlines():
           if SEQ_REGEX.match(line):
@@ -98,6 +98,9 @@ def update_apply_all_res(seqinfo, last_pid, mass_reses):
      mass_reses_out = []
      for reservee, url in mass_reses.items():
           current, dups, unknowns = parse_mass_reservation(reservee, url)
+          if current is None or dups is None or unknowns is None:
+               _logger.info(f"skipping reservations from {reservee}")
+               continue
           old = set(ali.seq for ali in seqinfo.values() if ali.res == reservee)
           drops = old - current
           adds = current - old

@@ -214,7 +214,7 @@ def _process_ali_data(seq, page):
           raise FDBDataError(f'Seq {seq}: index {ali.index}, size {ali.size}, garbage factors '
                              f'found: {factors} (calcsize {size:.2f})')
 
-     if cofactor < 70: # FDB will autofactor it
+     if cofactor < 65: # FDB will autofactor composites less than 70 digits, but 65-70 digit numbers sometimes take more than a few seconds
           # less of an error more of just an un-updated downdriver run
           raise FDBDataError(f'Seq {seq} (index {ali.index}): small cofactor ({cofactor})')
 
