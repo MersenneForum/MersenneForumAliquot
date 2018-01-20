@@ -184,10 +184,14 @@ class AliquotSequence(list):
 
 
      def process_no_progress(self):
+          old_time = self.time
           self.time = strftime(DATETIMEFMT, gmtime())
 
           if isinstance(self.progress, int):
                self.progress = fdb.id_created(self.id)
+          # in case of partial update can't use id_created but will use last update time
+          if isinstance(self.progress, float):
+               self.progress = old_time.split(" ")[0]
 
           self.calculate_priority()
 
@@ -203,7 +207,10 @@ class AliquotSequence(list):
                self.index += broken_offset
                self.progress += broken_offset
 
-          if self.progress <= 0:
+          if self.progress == 0 and self.factors != old.factors:
+               _logger.info(f"fresh sequence query of {self.seq} revealed smaller cofactor but no progress")
+               self.progress = 0.5
+          elif self.progress <= 0:
                _logger.info(f"fresh sequence query of {self.seq} revealed no progress")
                self.progress = fdb.id_created(self.id)
 
