@@ -113,10 +113,11 @@ def update_apply_all_res(seqinfo, last_pid, mass_reses):
           mass_reses_out.append([reservee, dups, unknowns, dropres])
 
      out = []
-     for name, adds, drops in thread_res:
+     for name, adds, drops, updates in thread_res:
           addres = seqinfo.reserve_seqs(name, adds)
           dropres = seqinfo.unreserve_seqs(name, drops)
-          out.append((name, addres, dropres))
+          updateres = seqinfo.update_seqs(name, updates)
+          out.append((name, addres, dropres, updateres))
 
      for name_adds, lst in zip(mass_adds, mass_reses_out):
           lst.append(seqinfo.reserve_seqs(*name_adds))
