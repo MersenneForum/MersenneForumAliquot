@@ -184,10 +184,14 @@ class AliquotSequence(list):
 
 
      def process_no_progress(self):
+          old_time = self.time
           self.time = strftime(DATETIMEFMT, gmtime())
 
           if isinstance(self.progress, int):
                self.progress = fdb.id_created(self.id)
+          # in case of partial update can't use id_created but will use last update time
+          if isinstance(self.progress, float):
+               self.progress = old_time.split(" ")[0]
 
           self.calculate_priority()
 
@@ -203,7 +207,10 @@ class AliquotSequence(list):
                self.index += broken_offset
                self.progress += broken_offset
 
-          if self.progress <= 0:
+          if self.progress == 0 and self.factors != old.factors:
+               _logger.info(f"fresh sequence query of {self.seq} revealed smaller cofactor but no progress")
+               self.progress = 0.5
+          elif self.progress <= 0:
                _logger.info(f"fresh sequence query of {self.seq} revealed no progress")
                self.progress = fdb.id_created(self.id)
 
@@ -662,6 +669,31 @@ class SequencesManager(_SequencesData):
           if success: _logger.info("unreserve_seqs ({}): successfully dropped {}".format(name, success))
 
           return success, DNEs, not_reserveds, wrong_reserveds
+
+
+     def update_seqs(self, name, seqs):
+          '''Update the `seqs` and warn if reserved to a different user. Raises ValueError if seq does
+          not exist. Returns (successes, DNEs, wrong_reserveds) '''
+          if not self._have_lock: raise LockError("Can't use SequencesManager.update_seqs() without lock!")
+          success, DNEs, wrong_reserveds = [], [], []
+          for seq in seqs:
+               if seq not in self:
+                    DNEs.append(seq)
+                    continue
+
+               current = self[seq].res
+
+               if not current or name == current:
+                    success.append(seq)
+               else:
+                    success.append(seq) # for now allow updating someone elses seqs
+                    wrong_reserveds.append((seq, current))
+
+          if DNEs: _logger.warning("update_seqs ({}): seqs don't exist: {}".format(name, DNEs))
+          if wrong_reserveds: _logger.warning("update_seqs ({}): seqs aren't reserved by updatee: {}".format(name, wrong_reserveds))
+          if success: _logger.info("update_seqs ({}): successfully queued for update {}".format(name, success))
+
+          return success, DNEs, wrong_reserveds
 
 
      def calc_common_stats(self):

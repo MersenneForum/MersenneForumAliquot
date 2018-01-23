@@ -55,11 +55,12 @@ def do_spider(seqinfo):
      LOGGER.info("Saving reservation changes to file")
      seqinfo.write() # "Atomic"
      # prepare a list of all res-changed seqs: manual drops, then manual adds, then
-     # mass drops then mass adds. Overflows get priority 0 (slight race condition
-     # with update_priorities.py)
+     # manual updates, then mass drops, then mass adds. Overflows get priority 0
+     # (slight race condition with update_priorities.py)
      # TODO: maybe factor this out into the class?
-     seqs = [seq for name, addres, dropres in thread_out for seq in dropres[0]]
-     seqs.extend(seq for name, addres, dropres in thread_out for seq in addres[0])
+     seqs = [seq for name, addres, dropres, updateres in thread_out for seq in dropres[0]]
+     seqs.extend(seq for name, addres, dropres, updateres in thread_out for seq in addres[0])
+     seqs.extend(seq for name, addres, dropres, updateres in thread_out for seq in updateres[0])
      # mass_reses_out = list-of [name, dups, unknowns, dropres, addres]
      seqs.extend(seq for name, _, _, dropres, addres in mass_out for seq in dropres[0])
      seqs.extend(seq for name, _, _, dropres, addres in mass_out for seq in addres[0])

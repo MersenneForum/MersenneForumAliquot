@@ -66,10 +66,10 @@ def spider_res_thread(last_pid):
      if all_posts:
           _order_posts(all_posts) # Assert order, ignore lowest pid retval
           for pid, name, msg in all_posts:
-               adds, drops = _read_msg(msg)
-               if adds or drops:
-                    _logger.info(f'post id {pid}: {name} adding {adds}, dropping {drops}')
-               all_res.append((name, adds, drops))
+               adds, drops, updates = _read_msg(msg)
+               if adds or drops or updates:
+                    _logger.info(f'post id {pid}: {name} adding {adds}, dropping {drops}, updating {updates}')
+               all_res.append((name, adds, drops, updates))
           last_pid = all_posts[-1][0] # Highest PID processed
      else:
           _logger.info("no new res thread posts!")
@@ -83,6 +83,7 @@ def _read_msg(msg):
      such list of sequences.'''
      add = []; addkws = ('Reserv', 'reserv', 'Add', 'add', 'Tak', 'tak')
      drop = []; dropkws = ('Unreserv', 'unreserv', 'Drop', 'drop', 'Releas', 'releas')
+     update = []; updatekws = ('Update', 'update')
 
      for line in msg.splitlines():
           if any(kw in line for kw in dropkws):
@@ -91,8 +92,11 @@ def _read_msg(msg):
           elif any(kw in line for kw in addkws):
                for s in SEQ_REGEX.findall(line):
                     add.append(int(s))
+          elif any(kw in line for kw in updatekws):
+               for s in SEQ_REGEX.findall(line):
+                    update.append(int(s))
 
-     return tuple(add), tuple(drop)
+     return tuple(add), tuple(drop), tuple(update)
 
 
 # Begin the parsers, converts the various HTML into Python data structures for processing

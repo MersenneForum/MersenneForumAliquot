@@ -158,14 +158,19 @@ class AllSeqUpdater:
           if not old or not old.is_minimally_valid() or not old.id:
                return self.do_update(old)
 
-          status = self._fdb_error_handler_wrapper(fdb.query_id_status, old.seq, old.id)
+          status, factors = self._fdb_error_handler_wrapper(fdb.query_id_status, old.seq, old.id)
           if not status: # the wrapper has logged it and set self.quitting as necessary
                return old, False
 
           if status is fdb.FDBStatus.CompositeFullyFactored:
                return self.do_update(old)
-          elif status is fdb.FDBStatus.CompositePartiallyFactored: # no progress since last
-               old.process_no_progress()
+          elif status is fdb.FDBStatus.CompositePartiallyFactored:
+               if old.factors == factors:
+                    # no progress since last
+                    old.process_no_progress()
+               else:
+                    # a new cofactor was found on the same index
+                    return self.do_update(old)
           elif status is fdb.FDBStatus.Prime:
                _logger.warning(f"seq {old.seq}: got a prime id value?? termination?")
                old.process_no_progress()
