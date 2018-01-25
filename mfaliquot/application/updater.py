@@ -21,8 +21,8 @@
 '''This is the module that contains the AllSeqUpdater class, which contains the
 primary logic to interface with the FDB to actually update SequencesManager instances'''
 
-from time import sleep
-from . import AliquotSequence, fdb
+from time import sleep, gmtime, strftime
+from . import AliquotSequence, fdb, DATETIMEFMT
 import logging, signal, json
 _logger = logging.getLogger(__name__)
 
@@ -158,7 +158,7 @@ class AllSeqUpdater:
           if not old or not old.is_minimally_valid() or not old.id:
                return self.do_update(old)
 
-          status, factors = self._fdb_error_handler_wrapper(fdb.query_id_status, old.seq, old.id)
+          status, factors, cofactor = self._fdb_error_handler_wrapper(fdb.query_id_status, old.seq, old.id)
           if not status: # the wrapper has logged it and set self.quitting as necessary
                return old, False
 
@@ -169,8 +169,15 @@ class AllSeqUpdater:
                     # no progress since last
                     old.process_no_progress()
                else:
-                    # a new cofactor was found on the same index
-                    return self.do_update(old)
+                    # a new cofactor was found on the same index, copy old to update sequence
+                    ali = AliquotSequence(seq=old.seq, size=old.size, index=old.index, id=old.id)
+                    ali.time = strftime(DATETIMEFMT, gmtime())
+                    ali.guide, ali.klass, ali.driver = old.guide, old.klass, old.driver
+                    ali.factors = factors
+                    ali.cofactor = cofactor
+                    broken_index = self.broken[old.seq][0] if old.seq in self.broken else None
+                    ali.process_progress(old, broken_index)
+                    return ali, True
           elif status is fdb.FDBStatus.Prime:
                _logger.warning(f"seq {old.seq}: got a prime id value?? termination?")
                old.process_no_progress()

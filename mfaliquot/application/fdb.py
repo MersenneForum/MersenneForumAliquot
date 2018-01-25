@@ -136,17 +136,16 @@ def query_id_status(fdb_id, tries=5):
                        ('P', FDBStatus.Prime), ('U', FDBStatus.Unknown)):
 
                if f"<td>{s}</td>" in page:
-                    s = ""
                     if ( e is FDBStatus.CompositePartiallyFactored):
                          comps = COMPOSITEREGEX.findall(page)
                          smalls = SMALLFACTREGEX.findall(page)
                          bigs = LARGEFACTREGEX.findall(page)
                          if not smalls:
-                              raise FDBDataError(f'Seq {seq}: no smalls match')
+                              raise FDBDataError(f'fdb id {fdb_id}: no smalls match')
                          if smalls[0][0] != '2':
-                              raise FDBDataError(f'Seq {seq}: no 2 in the smalls!')
-                         factors = _canonicalize_known_factors(smalls, bigs, comps)[0] # only need first element of tuple
-                    return e, factors
+                              raise FDBDataError(f'fdb id {fdb_id}: no 2 in the smalls!')
+                         factors, cofactor = _canonicalize_known_factors(smalls, bigs, comps)[:2] # only need first two elements of tuple
+                    return e, factors, cofactor
 
      return FDBDataError(f'fdb id {fdb_id} failed to produce a valid status after {tries} tries')
 
