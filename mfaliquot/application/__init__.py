@@ -666,28 +666,20 @@ class SequencesManager(_SequencesData):
 
 
      def update_seqs(self, name, seqs):
-          '''Update the `seqs` and warn if reserved to a different user. Raises ValueError if seq does
-          not exist. Returns (successes, DNEs, wrong_reserveds) '''
+          '''Update the `seqs`. Raises ValueError if seq does not exist.
+          Returns (successes, DNEs) '''
           if not self._have_lock: raise LockError("Can't use SequencesManager.update_seqs() without lock!")
-          success, DNEs, wrong_reserveds = [], [], []
+          success, DNEs = [], []
           for seq in seqs:
                if seq not in self:
                     DNEs.append(seq)
                     continue
-
-               current = self[seq].res
-
-               if not current or name == current:
-                    success.append(seq)
-               else:
-                    success.append(seq) # for now allow updating someone elses seqs
-                    wrong_reserveds.append((seq, current))
+               success.append(seq)
 
           if DNEs: _logger.warning("update_seqs ({}): seqs don't exist: {}".format(name, DNEs))
-          if wrong_reserveds: _logger.warning("update_seqs ({}): seqs aren't reserved by updatee: {}".format(name, wrong_reserveds))
           if success: _logger.info("update_seqs ({}): successfully queued for update {}".format(name, success))
 
-          return success, DNEs, wrong_reserveds
+          return success, DNEs
 
 
      def calc_common_stats(self):
