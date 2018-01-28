@@ -167,6 +167,7 @@ class AliquotSequence(list):
 
           if self.res:
                base_prio *= res_factor
+               max_update_period //= 3
 
           if 'Downdriver' in self.guide:
                base_prio /= 2
