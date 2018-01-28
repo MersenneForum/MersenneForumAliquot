@@ -65,7 +65,7 @@ def do_spider(seqinfo):
      if seqs:
           ntodo = CONFIG['ReservationsSpider']['batchsize']
           num = len(seqs)
-          LOGGER.info(f"got {num} with new reservations: setting priority to 0 and immediately updating {min(num, ntodo)}")
+          LOGGER.info(f"got {num} with completed reservations: setting priority to 0 and immediately updating {min(num, ntodo)}")
           for seq in seqs:
                # These will be overwritten by update_priorities.py if the current batch + later allseq runs fail to complete them
                seqinfo[seq].priority = 0
