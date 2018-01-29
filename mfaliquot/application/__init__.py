@@ -598,8 +598,7 @@ class SequencesManager(_SequencesData):
 
 
      def find_and_drop_merges(self):
-          '''A convenience method wrapped around `find_merges` and `drop`.
-          Literally 3 lines long.'''
+          '''A convenience method wrapped around `find_merges` and `drop`.'''
           if not self._have_lock: raise LockError("Can't use SequencesManager.find_and_drop_merges() without lock!")
           merges = self.find_merges()
           drops = [drop for target, drops in merges for drop in drops]
@@ -610,8 +609,8 @@ class SequencesManager(_SequencesData):
 
 
      def reserve_seqs(self, name, seqs):
-          '''Mark the `seqs` as reserved by `name`. Raises ValueError if a seq
-          doesn't exist. Returns (successes, DNEs, already_owns, other_owns)'''
+          '''Mark the `seqs` as reserved by `name`.
+          Returns (successes, DNEs, already_owns, other_owns)'''
           if not self._have_lock: raise LockError("Can't use SequencesManager.reserve_seqs() without lock!")
           success, DNEs, already_owns, other_owns = [], [], [], []
           for seq in seqs:
@@ -638,8 +637,8 @@ class SequencesManager(_SequencesData):
 
 
      def unreserve_seqs(self, name, seqs):
-          '''Mark the `seqs` as no longer reserved. Raises ValueError if seq does
-          not exist. Returns (successes, DNEs, not_reserveds, wrong_reserveds) '''
+          '''Mark the `seqs` as no longer reserved.
+          Returns (successes, DNEs, not_reserveds, wrong_reserveds) '''
           if not self._have_lock: raise LockError("Can't use SequencesManager.unreserve_seqs() without lock!")
           success, DNEs, not_reserveds, wrong_reserveds = [], [], [], []
           for seq in seqs:
@@ -666,7 +665,7 @@ class SequencesManager(_SequencesData):
 
 
      def update_seqs(self, name, seqs):
-          '''Update the `seqs`. Raises ValueError if seq does not exist.
+          '''Validate sequences to be updated. (Caller is responsible for actual updating.)
           Returns (successes, DNEs) '''
           if not self._have_lock: raise LockError("Can't use SequencesManager.update_seqs() without lock!")
           success, DNEs = [], []
