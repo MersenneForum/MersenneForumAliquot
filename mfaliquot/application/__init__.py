@@ -143,11 +143,24 @@ class AliquotSequence(list):
           return out
 
 
-     def calculate_priority(self, max_update_period=90, res_factor=1/2):
-          '''Arguments are as follows: `max_update_period` is the target maximum
-          time between updates for any sequence no matter how little it moves,
-          in days. `res_factor` is a "discount" factor applied to all reserved
-          sequences priorities.'''
+     _prio_config = {
+          'max_update_period': 90,
+          'reservation_update_period': 14,
+          'reservation_discount': 1/2,
+          'small_cofactor_bound': 90,
+          'small_cofactor_discount': 1/120, # actually cofactorsize/120. Must be less than 1/bound
+          'downdriver_discount': 1/2,
+          'shortterm_penalty_duration': 2, # days below which to apply a penalty
+          'shortterm_penalty_initial': 6 # penalty added to newly-updated seqs
+     }
+     # TODO: figure out how to move the above ^ to the config file
+
+
+     def calculate_priority(self, **kwargs):
+          config = self._prio_config # Saves the attribute lookup a dozen times per call
+          config.update(kwargs)
+
+          max_update_period = config['max_update_period']
 
           last_update_datetime = datetime.strptime(self.time, DATETIMEFMT)
           updatedelta = (datetime.utcnow() - last_update_datetime)
@@ -162,20 +175,22 @@ class AliquotSequence(list):
 
           base_prio = max(0, days_without_movement - updatedeltadays)
 
-          if self.cofactor and self.cofactor < 100:
-               base_prio *= (self.cofactor)/100
+          if self.cofactor and self.cofactor < config['small_cofactor_bound']:
+               base_prio *= self.cofactor*config['small_cofactor_discount']
 
           if self.res:
-               base_prio *= res_factor
-               max_update_period //= 3
+               base_prio *= config['reservation_discount']
+               max_update_period = config['reservation_update_period']
 
           if 'Downdriver' in self.guide:
-               base_prio /= 2
+               base_prio *= config['downdriver_discount']
 
-          if updatedeltadays < 2: # Prevent getting overzealous on a single seq in too short a time
-               # f(0) = 6, f(2) = 0, slope = 3, y-intercept = 6, f(x) = 6 - 3x
-               base_prio += 6 - 3*updatedeltadays
-          else: # If max_update_period is at least half over, start scaling priority to 0
+          if updatedeltadays < config['shortterm_penalty_duration']:
+               # Prevent getting overzealous on a single seq in too short a time
+               slope = config['shortterm_penalty_initial']/config['shortterm_penalty_duration']
+               base_prio += config['shortterm_penalty_initial'] - slope*updatedeltadays
+          else:
+               # If max_update_period is at least half over, start scaling priority to 0
                ratio = updatedelta/timedelta(days=max_update_period)
                if ratio > 0.5:
                     # f(0.5) = 1, f(1) = 0 --> f(x) = 2 - 2x
