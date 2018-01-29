@@ -53,6 +53,7 @@ from contextlib import contextmanager
 
 
 DATETIMEFMT = '%Y-%m-%d %H:%M:%S'
+DATEFMT     = '%Y-%m-%d' # needs to be the same format as returned by fdb.id_created()
 _logger = logging.getLogger(__name__)
 
 
@@ -219,7 +220,10 @@ class AliquotSequence(list):
                self.index += broken_offset
                self.progress += broken_offset
 
-          if self.progress <= 0:
+          if self.progress == 0 and self.factors != old.factors:
+               _logger.info(f"fresh sequence query of {self.seq} revealed smaller cofactor but no progress")
+               self.progress = strftime(DATEFMT, gmtime())
+          elif self.progress <= 0:
                _logger.info(f"fresh sequence query of {self.seq} revealed no progress")
                self.progress = fdb.id_created(self.id)
 

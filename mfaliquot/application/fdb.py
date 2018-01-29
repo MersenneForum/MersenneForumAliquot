@@ -99,6 +99,27 @@ class FDBStatus(Enum):
      CompositePartiallyFactored = auto()
      CompositeFullyFactored = auto()
 
+def _canonicalize_known_factors(smalls, bigs, comps):
+     factors = " * ".join(small for small in smalls)
+     size = 0
+     for small in smalls:
+          if '^' in small:
+               base, exp = small.split('^')
+               size += log10(int(base))*int(exp)
+          else:
+               size += log10(int(small))
+
+     if bigs:
+          for big in bigs:
+               factors += " * P"+big
+               size += int(big)
+
+     for comp in comps:
+          factors += ' * C'+comp
+          cofactor = int(comp)
+          size += cofactor
+
+     return factors, cofactor, size
 
 def query_id_status(fdb_id, tries=5):
      '''Returns None on network error, raises FDBDataError on bad data, or an FDBStatus otherwise.'''
@@ -115,7 +136,16 @@ def query_id_status(fdb_id, tries=5):
                        ('P', FDBStatus.Prime), ('U', FDBStatus.Unknown)):
 
                if f"<td>{s}</td>" in page:
-                    return e
+                    if ( e is FDBStatus.CompositePartiallyFactored):
+                         comps = COMPOSITEREGEX.findall(page)
+                         smalls = SMALLFACTREGEX.findall(page)
+                         bigs = LARGEFACTREGEX.findall(page)
+                         if not smalls:
+                              raise FDBDataError(f'fdb id {fdb_id}: no smalls match')
+                         if smalls[0][0] != '2':
+                              raise FDBDataError(f'fdb id {fdb_id}: no 2 in the smalls!')
+                         factors, cofactor = _canonicalize_known_factors(smalls, bigs, comps)[:2] # only need first two elements of tuple
+                    return e, factors, cofactor
 
      return FDBDataError(f'fdb id {fdb_id} failed to produce a valid status after {tries} tries')
 
@@ -186,27 +216,7 @@ def _process_ali_data(seq, page):
      if smalls[0][0] != '2':
           raise FDBDataError(f'Seq {seq}: no 2 in the smalls!')
 
-     factors = " * ".join(small for small in smalls)
-     size = 0
-     for small in smalls:
-          if '^' in small:
-               base, exp = small.split('^')
-               size += log10(int(base))*int(exp)
-          else:
-               size += log10(int(small))
-
-     if bigs:
-          for big in bigs:
-               factors += " * P"+big
-               size += int(big)
-
-     if not comps:
-          raise FDBDataError(f'Seq {seq}: no comps match')
-
-     for comp in comps:
-          factors += ' * C'+comp
-          cofactor = int(comp)
-          size += cofactor
+     factors, cofactor, size = _canonicalize_known_factors(smalls, bigs, comps)
 
      # the digit size overestimates the actual log of a given prime by a small fraction,
      # hence allow slight excess of size over ali.size
