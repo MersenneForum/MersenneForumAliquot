@@ -152,20 +152,21 @@ class AllSeqUpdater:
      ###########################################################################
      # primary update logic
 
-     def check_update(self, old):
+     def update(self, old):
           '''Returns (old-or-new ali object, successful_update)'''
 
           if not old or not old.is_minimally_valid() or not old.id:
-               return self.do_update(old)
+               return self.query_sequence(old)
 
-          status = self._fdb_error_handler_wrapper(fdb.query_id_status, old.seq, old.id)
+          status, factors = self._fdb_error_handler_wrapper(fdb.query_id, old.seq, old.id)
           if not status: # the wrapper has logged it and set self.quitting as necessary
                return old, False
 
           if status is fdb.FDBStatus.CompositeFullyFactored:
-               return self.do_update(old)
+               return self.query_sequence(old)
           elif status is fdb.FDBStatus.CompositePartiallyFactored: # no progress since last
-               old.process_no_progress()
+               # TODO: process factors
+               #old.process_no_progress()
           elif status is fdb.FDBStatus.Prime:
                _logger.warning(f"seq {old.seq}: got a prime id value?? termination?")
                old.process_no_progress()
@@ -176,13 +177,13 @@ class AllSeqUpdater:
           return old, True
 
 
-     def do_update(self, old):
+     def query_sequence(self, old):
           if old.seq in self.broken:
                seq = self.broken[old.seq][1]
           else:
                seq = old.seq
 
-          ali = self._fdb_error_handler_wrapper(fdb.query_parse_seq_status, seq, seq)
+          ali = self._fdb_error_handler_wrapper(fdb.query_sequence, seq, seq)
           if not ali: # the wrapper has logged it and set self.quitting as necessary
                return old, False
 
@@ -201,7 +202,7 @@ class AllSeqUpdater:
                _logger.error(str(e))
                self.quitting = True
                return None
-          except fdb.FDBDataError as e: # wish these fell through like C switch() statements
+          except fdb.FDBDataError as e: # wish these fell through like C switch statements
                _logger.error(str(e))
                _logger.info(f"Skipping sequence {seq}")
                return None
@@ -237,7 +238,7 @@ class AllSeqUpdater:
           count, terminated = 0, []
           for seq in seqs_todo:
                old = self.seqinfo[seq]
-               ali, update_successful = self.check_update(old)
+               ali, update_successful = self.update(old)
                self.seqinfo.push_new_info(ali)
                if update_successful:
                     count += 1

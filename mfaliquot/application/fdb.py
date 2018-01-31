@@ -100,7 +100,7 @@ class FDBStatus(Enum):
      CompositeFullyFactored = auto()
 
 
-def query_id_status(fdb_id, tries=5):
+def query_id(fdb_id, tries=5):
      '''Returns None on network error, raises FDBDataError on bad data, or an FDBStatus otherwise.'''
      for i in range(tries):
           page = _blogotubes_with_fdb_useragent('http://factordb.com/index.php?id='+str(fdb_id))
@@ -123,7 +123,7 @@ def query_id_status(fdb_id, tries=5):
 ################################################################################
 
 
-def query_parse_seq_status(seq, tries=5):
+def query_sequence(seq, tries=5):
      '''Returns None on network error, raises FDBDataError if `tries` consecutive bad data,
      or a new AliquotSequence object if successful'''
 
