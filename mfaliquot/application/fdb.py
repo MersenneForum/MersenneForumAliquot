@@ -43,7 +43,8 @@ _logger = logging.getLogger(__name__)
 COMPOSITEREGEX = re.compile(r'= <a.+<font color="#002099">[0-9.]+</font></a><sub>&lt;(?P<C>[0-9]+)')
 SMALLFACTREGEX = re.compile(r'(?:<font color="#000000">)([0-9^]+)(?:</font></a>)(?!<sub>)')
 LARGEFACTREGEX = re.compile(r'(?:<font color="#000000">[0-9^.]+</font></a><sub>&lt;)([0-9]+)')
-INFOREGEX = re.compile('<td bgcolor="#BBBBBB">n</td>\n<td bgcolor="#BBBBBB">Digits</td>\n<td bgcolor="#BBBBBB">Number</td>\n</tr><tr><td bgcolor="#DDDDDD">.{1,3}hecked</td>\n<td bgcolor="#DDDDDD">(?P<index>[0-9]+)</td>\n<td bgcolor="#DDDDDD">(?P<size>[0-9]+) <a href="index.php\\?showid=(?P<id>[0-9]+)">\\(show\\)')
+IDSIZEREGEX = re.compile(r'<td>(?P<size>[0-9]+) <a href="index.php\?showid=(?P<id>[0-9]+)">\(show\)')
+ALIINFOREGEX = re.compile('<td bgcolor="#BBBBBB">n</td>\n<td bgcolor="#BBBBBB">Digits</td>\n<td bgcolor="#BBBBBB">Number</td>\n</tr><tr><td bgcolor="#DDDDDD">.{1,3}hecked</td>\n<td bgcolor="#DDDDDD">(?P<index>[0-9]+)</td>\n<td bgcolor="#DDDDDD">(?P<size>[0-9]+) <a href="index.php\\?showid=(?P<id>[0-9]+)">\\(show\\)')
 CREATEDREGEX = re.compile('([JFMASOND][a-z]{2,8}) ([0-9]{1,2}), ([0-9]{4})') # strftime('%d', strptime(month, "%B"))
 
 
@@ -101,7 +102,8 @@ class FDBStatus(Enum):
 
 
 def query_id(fdb_id, tries=5):
-     '''Returns None on network error, raises FDBDataError on bad data, or an FDBStatus otherwise.'''
+     '''Returns None on network error, raises FDBDataError on bad data, or an FDBStatus otherwise.
+     Partially factored lines get a (factors, cofactor), all other statuses have no parsing.'''
      for i in range(tries):
           page = _blogotubes_with_fdb_useragent('http://factordb.com/index.php?id='+str(fdb_id))
           if page is None:
@@ -110,12 +112,20 @@ def query_id(fdb_id, tries=5):
                _logger.error('the FDB is refusing requests')
                raise FDBResourceLimitReached(fdbpage=page)
 
-          for s, e in (('PRP', FDBStatus.ProbablyPrime), ('FF', FDBStatus.CompositeFullyFactored),
-                       ('CF', FDBStatus.CompositePartiallyFactored), ('C', FDBStatus.CompositeNoFactors),
-                       ('P', FDBStatus.Prime), ('U', FDBStatus.Unknown)):
 
-               if f"<td>{s}</td>" in page:
-                    return e
+          status_template = "<td>{}</td>"
+          if status_template.format('CF') in page:
+               size = IDSIZEREGEX.search(page)
+               assert size.group('id') == str(fdb_id)
+               size = int(size.group('size'))
+               factors, cofactor = parse_factors(fdb_id, page, size)
+               return FDBStatus.CompositePartiallyFactored, (factors, cofactor)
+
+          for string, enum in (('PRP', FDBStatus.ProbablyPrime), ('FF', FDBStatus.CompositeFullyFactored),
+                       ('C', FDBStatus.CompositeNoFactors), ('P', FDBStatus.Prime), ('U', FDBStatus.Unknown)):
+
+               if status_template.format(string) in page:
+                    return enum, None
 
      return FDBDataError(f'fdb id {fdb_id} failed to produce a valid status after {tries} tries')
 
@@ -137,7 +147,7 @@ def query_sequence(seq, tries=5):
                raise FDBResourceLimitReached(fdbpage=page)
           # not past the resources limit, temporary data errors:
           try:
-               ali = _process_ali_data(seq, page)
+               ali = process_ali_data(seq, page)
           except FDBDataError as e:
                if i <= 0:
                     _logger.error(f"Seq {seq}: bad data after {tries} tries: {str(e)}")
@@ -154,7 +164,7 @@ def query_sequence(seq, tries=5):
           return ali
 
 
-def _process_ali_data(seq, page):
+def process_ali_data(seq, page):
      # I can't believe it took me this long to figure out a way past the spaghetti.
      # Instead of repeating the conditional error handling code once for each error,
      # which is what a goto would typically be used for in e.g. C, just factor out
@@ -162,10 +172,7 @@ def _process_ali_data(seq, page):
      # and then the monolithic conditional error handling can be just after the function --
      # the function+exceptions == traditional-acceptable goto usage for errors.
      # This is so much cleaner. Thank jeebus.
-     info = INFOREGEX.search(page)
-     comps = COMPOSITEREGEX.findall(page)
-     smalls = SMALLFACTREGEX.findall(page)
-     bigs = LARGEFACTREGEX.findall(page)
+     info = ALIINFOREGEX.search(page)
 
      if not info:
           raise FDBDataError(f"Seq {seq}: no basic information!")
@@ -180,11 +187,35 @@ def _process_ali_data(seq, page):
           ali.progress = 'Terminated?'
           return ali
 
+     try:
+          factors, cofactor = parse_factors(seq, page, ali.size)
+     except FDBDataError as e: # improve error message
+          e.args = (f'Seq {seq}, index {ali.index}: ' + e.args[0],) + e.args[1:] # strings and tuples are both immutable... sigh
+          raise
+
+     if cofactor < 65: # FDB will autofactor composites less than 70 digits, but 65-70 digit numbers sometimes take more than a few seconds
+          # less of an error more of just an un-updated downdriver run
+          raise FDBDataError(f'Seq {seq} (index {ali.index}): small cofactor ({cofactor})')
+
+     ali.factors = factors
+     ali.cofactor = cofactor
+     return ali
+
+
+def parse_factors(ident, page, check_size):
+     # Parse factors from a given number. Assumes small factors and composites.
+     # Error checks against the given `size`.
+     # returns factors-as-string, calculated-size (base 10)
+
+     comps = COMPOSITEREGEX.findall(page)
+     smalls = SMALLFACTREGEX.findall(page)
+     bigs = LARGEFACTREGEX.findall(page)
+
      if not smalls:
-          raise FDBDataError(f'Seq {seq}: no smalls match')
+          raise FDBDataError(f'{ident}: no smalls match')
 
      if smalls[0][0] != '2':
-          raise FDBDataError(f'Seq {seq}: no 2 in the smalls!')
+          raise FDBDataError(f'{ident}: no 2 in the smalls!')
 
      factors = " * ".join(small for small in smalls)
      size = 0
@@ -201,7 +232,7 @@ def _process_ali_data(seq, page):
                size += int(big)
 
      if not comps:
-          raise FDBDataError(f'Seq {seq}: no comps match')
+          raise FDBDataError(f'{ident}: no comps match')
 
      for comp in comps:
           factors += ' * C'+comp
@@ -210,15 +241,7 @@ def _process_ali_data(seq, page):
 
      # the digit size overestimates the actual log of a given prime by a small fraction,
      # hence allow slight excess of size over ali.size
-     if not (ali.size - 1 < size < ali.size + 3):
-          raise FDBDataError(f'Seq {seq}: index {ali.index}, size {ali.size}, garbage factors '
-                             f'found: {factors} (calcsize {size:.2f})')
+     if not (check_size - 1 < size < check_size + 3):
+          raise FDBDataError(f'{ident}, size {check_size}: garbage factors found: {factors} (calcsize {size:.2f})')
 
-     if cofactor < 65: # FDB will autofactor composites less than 70 digits, but 65-70 digit numbers sometimes take more than a few seconds
-          # less of an error more of just an un-updated downdriver run
-          raise FDBDataError(f'Seq {seq} (index {ali.index}): small cofactor ({cofactor})')
-
-     ali.factors = factors
-     ali.cofactor = cofactor
-     return ali
-
+     return factors, cofactor
