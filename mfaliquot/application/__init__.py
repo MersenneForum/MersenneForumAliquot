@@ -199,12 +199,21 @@ class AliquotSequence(list):
           self.priority = round(base_prio, 2)
 
 
-     def process_no_progress(self):
+     def process_no_progress(self, partial=False):
+
+          if partial:
+               self.progress = 0
+          elif isinstance(self.progress, int):
+               if self.progress > 0:
+                    self.progress = fdb.id_created(self.id)
+               elif self.progress == 0:
+                    # TODO: is using last-update-time even any better than just the line-creation-date?
+                    # would it be better still to bother with code to get the *cofactor* creation date??
+                    self.progress = self.time.split()[0] # split() on whitespace between date and time
+               else:
+                    raise RuntimeError("wtf? negative progress in no_progress?? this should never happen")
+
           self.time = strftime(DATETIMEFMT, gmtime())
-
-          if isinstance(self.progress, int):
-               self.progress = fdb.id_created(self.id)
-
           self.calculate_priority()
 
 

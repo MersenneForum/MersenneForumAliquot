@@ -162,19 +162,28 @@ class AllSeqUpdater:
           if not status: # the wrapper has logged it and set self.quitting as necessary
                return old, False
 
+
           if status is fdb.FDBStatus.CompositeFullyFactored:
                return self.query_sequence(old)
-          elif status is fdb.FDBStatus.CompositePartiallyFactored: # no progress since last
-               # TODO: process factors
+
+          elif status is fdb.FDBStatus.CompositePartiallyFactored: # no progress since last update
                factors, cofactor = retval
-               _logger.debug(f'Seq {old.seq} index {old.index}: line incomplete, comparison: {factors == old.factors}, parsed {factors!r}, stored {old.factors!r}')
-               old.process_no_progress()
+               if factors != old.factors:
+                    #_logger.debug(f'Seq {old.seq} index {old.index}, partial progress: parsed {factors!r}, stored {old.factors!r}')
+                    old.factors = factors
+                    old.cofactor = cofactor
+                    old.process_no_progress(partial=True) # Implicit assumption: partial progress won't ever change guide/class
+               else:
+                    old.process_no_progress()
+
           elif status is fdb.FDBStatus.Prime:
                _logger.warning(f"seq {old.seq}: got a prime id value?? termination?")
                old.process_no_progress()
+
           else:
                _logger.error(f"problem: crazy status for most recent id of {old.seq} ({status})")
                return old, False
+
 
           return old, True
 
