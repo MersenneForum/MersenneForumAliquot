@@ -29,7 +29,7 @@
     "mass_reservations_disabled": {},
     "mass_reservations":
         {"yafu@home": "http://yafu.myfirewall.org/yafu/download/ali/ali.txt.all"},
-    "batchsize": 250
+    "batchsize": 100
 },
 
 

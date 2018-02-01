@@ -36,7 +36,7 @@ def blogotubes(url, encoding='utf-8', hdrs=None, data=None):
      #req = request.Request(parse.quote(url, safe='/:'), headers=hdrs)
      req = request.Request(url, headers=hdrs)
      try:
-          page = request.urlopen(req, data).read().decode(encoding)
+          page = request.urlopen(req, data, timeout=300).read().decode(encoding) # 5 min timeout
      except error.HTTPError as e:
           _logger.exception(f'{type(e).__name__}: {str(e)}', exc_info=e)
           return None

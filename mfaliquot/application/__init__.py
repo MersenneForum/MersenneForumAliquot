@@ -143,11 +143,24 @@ class AliquotSequence(list):
           return out
 
 
-     def calculate_priority(self, max_update_period=90, res_factor=1/2):
-          '''Arguments are as follows: `max_update_period` is the target maximum
-          time between updates for any sequence no matter how little it moves,
-          in days. `res_factor` is a "discount" factor applied to all reserved
-          sequences priorities.'''
+     _prio_config = {
+          'max_update_period': 90,
+          'reservation_update_period': 14,
+          'reservation_discount': 1/2,
+          'small_cofactor_bound': 90,
+          'small_cofactor_discount': 1/120, # actually cofactorsize/120. Must be less than 1/bound
+          'downdriver_discount': 1/2,
+          'shortterm_penalty_duration': 2, # days below which to apply a penalty
+          'shortterm_penalty_initial': 6 # penalty added to newly-updated seqs
+     }
+     # TODO: figure out how to move the above ^ to the config file
+
+
+     def calculate_priority(self, **kwargs):
+          config = self._prio_config # Saves the attribute lookup a dozen times per call
+          config.update(kwargs)
+
+          max_update_period = config['max_update_period']
 
           last_update_datetime = datetime.strptime(self.time, DATETIMEFMT)
           updatedelta = (datetime.utcnow() - last_update_datetime)
@@ -162,19 +175,22 @@ class AliquotSequence(list):
 
           base_prio = max(0, days_without_movement - updatedeltadays)
 
-          if self.cofactor and self.cofactor < 100:
-               base_prio *= (self.cofactor)/100
+          if self.cofactor and self.cofactor < config['small_cofactor_bound']:
+               base_prio *= self.cofactor*config['small_cofactor_discount']
 
           if self.res:
-               base_prio *= res_factor
+               base_prio *= config['reservation_discount']
+               max_update_period = config['reservation_update_period']
 
           if 'Downdriver' in self.guide:
-               base_prio /= 2
+               base_prio *= config['downdriver_discount']
 
-          if updatedeltadays < 2: # Prevent getting overzealous on a single seq in too short a time
-               # f(0) = 6, f(2) = 0, slope = 3, y-intercept = 6, f(x) = 6 - 3x
-               base_prio += 6 - 3*updatedeltadays
-          else: # If max_update_period is at least half over, start scaling priority to 0
+          if updatedeltadays < config['shortterm_penalty_duration']:
+               # Prevent getting overzealous on a single seq in too short a time
+               slope = config['shortterm_penalty_initial']/config['shortterm_penalty_duration']
+               base_prio += config['shortterm_penalty_initial'] - slope*updatedeltadays
+          else:
+               # If max_update_period is at least half over, start scaling priority to 0
                ratio = updatedelta/timedelta(days=max_update_period)
                if ratio > 0.5:
                     # f(0.5) = 1, f(1) = 0 --> f(x) = 2 - 2x
@@ -183,12 +199,21 @@ class AliquotSequence(list):
           self.priority = round(base_prio, 2)
 
 
-     def process_no_progress(self):
+     def process_no_progress(self, partial=False):
+
+          if partial:
+               self.progress = 0
+          elif isinstance(self.progress, int):
+               if self.progress > 0:
+                    self.progress = fdb.id_created(self.id)
+               elif self.progress == 0:
+                    # TODO: is using last-update-time even any better than just the line-creation-date?
+                    # would it be better still to bother with code to get the *cofactor* creation date??
+                    self.progress = self.time.split()[0] # split() on whitespace between date and time
+               else:
+                    raise RuntimeError("wtf? negative progress in no_progress?? this should never happen")
+
           self.time = strftime(DATETIMEFMT, gmtime())
-
-          if isinstance(self.progress, int):
-               self.progress = fdb.id_created(self.id)
-
           self.calculate_priority()
 
 
@@ -597,8 +622,7 @@ class SequencesManager(_SequencesData):
 
 
      def find_and_drop_merges(self):
-          '''A convenience method wrapped around `find_merges` and `drop`.
-          Literally 3 lines long.'''
+          '''A convenience method wrapped around `find_merges` and `drop`.'''
           if not self._have_lock: raise LockError("Can't use SequencesManager.find_and_drop_merges() without lock!")
           merges = self.find_merges()
           drops = [drop for target, drops in merges for drop in drops]
@@ -609,8 +633,8 @@ class SequencesManager(_SequencesData):
 
 
      def reserve_seqs(self, name, seqs):
-          '''Mark the `seqs` as reserved by `name`. Raises ValueError if a seq
-          doesn't exist. Returns (successes, DNEs, already_owns, other_owns)'''
+          '''Mark the `seqs` as reserved by `name`.
+          Returns (successes, DNEs, already_owns, other_owns)'''
           if not self._have_lock: raise LockError("Can't use SequencesManager.reserve_seqs() without lock!")
           success, DNEs, already_owns, other_owns = [], [], [], []
           for seq in seqs:
@@ -637,8 +661,8 @@ class SequencesManager(_SequencesData):
 
 
      def unreserve_seqs(self, name, seqs):
-          '''Mark the `seqs` as no longer reserved. Raises ValueError if seq does
-          not exist. Returns (successes, DNEs, not_reserveds, wrong_reserveds) '''
+          '''Mark the `seqs` as no longer reserved.
+          Returns (successes, DNEs, not_reserveds, wrong_reserveds) '''
           if not self._have_lock: raise LockError("Can't use SequencesManager.unreserve_seqs() without lock!")
           success, DNEs, not_reserveds, wrong_reserveds = [], [], [], []
           for seq in seqs:
@@ -662,6 +686,23 @@ class SequencesManager(_SequencesData):
           if success: _logger.info("unreserve_seqs ({}): successfully dropped {}".format(name, success))
 
           return success, DNEs, not_reserveds, wrong_reserveds
+
+
+     def update_seqs(self, name, seqs):
+          '''Validate sequences to be updated. (Caller is responsible for actual updating.)
+          Returns (successes, DNEs) '''
+          if not self._have_lock: raise LockError("Can't use SequencesManager.update_seqs() without lock!")
+          success, DNEs = [], []
+          for seq in seqs:
+               if seq not in self:
+                    DNEs.append(seq)
+                    continue
+               success.append(seq)
+
+          if DNEs: _logger.warning("update_seqs ({}): seqs don't exist: {}".format(name, DNEs))
+          if success: _logger.info("update_seqs ({}): successfully queued for update {}".format(name, success))
+
+          return success, DNEs
 
 
      def calc_common_stats(self):
