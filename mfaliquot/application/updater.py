@@ -276,6 +276,7 @@ class AllSeqUpdater:
                # _logger.notable()
                with open(self.termfile, 'a') as f:
                     f.write(''.join(f'{seq}\n' for seq in terminated))
+               self.seqinfo.drop(terminated)
 
           _logger.info(f'Currently have {len(self.seqinfo)} sequences on file. Creating statistics...')
           self.create_stats_write_html()
