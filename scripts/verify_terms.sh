@@ -1,4 +1,4 @@
-#    Copyright (C) 2014-2017 Bill Winslow
+#    Copyright (C) 2014-2018 Bill Winslow
 #
 #    This script is a part of the mfaliquot package.
 #
@@ -29,6 +29,8 @@ for seq in $(cat $termfile); do
 		echo "$seq" >> $errfile
 	fi
 done
+
+echo > $termfile
 
 if [[ -s $errfile ]]; then
 	$emailscript "Sequences failed to verify as terminated: $(cat $errfile)"
