@@ -27,7 +27,7 @@ from .forum_xaction import spider_res_thread, SEQ_REGEX
 from . import DATETIMEFMT
 from .. import blogotubes
 from time import strftime, gmtime
-import logging
+import logging, re
 
 _logger = logging.getLogger(__name__)
 
