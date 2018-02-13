@@ -266,17 +266,17 @@ class AllSeqUpdater:
 
 
      def postloop_finalize(self, terminated):
-          _logger.info("Searching for merges...")
-          merges = self.seqinfo.find_and_drop_merges()
-          if not merges:
-               _logger.info("No merges found")
-
           if terminated:
                _logger.warning(f"Writing terminations to {self.termfile}: {' '.join(str(seq) for seq in terminated)}")
                # _logger.notable()
                with open(self.termfile, 'a') as f:
                     f.write(''.join(f'{seq}\n' for seq in terminated))
                self.seqinfo.drop(terminated)
+
+          _logger.info("Searching for merges...")
+          merges = self.seqinfo.find_and_drop_merges()
+          if not merges:
+               _logger.info("No merges found")
 
           _logger.info(f'Currently have {len(self.seqinfo)} sequences on file. Creating statistics...')
           self.create_stats_write_html()
