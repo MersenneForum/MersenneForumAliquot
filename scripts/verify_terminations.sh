@@ -18,7 +18,6 @@
 aliqueit="/home/bill/aliqueit/aliqueit"
 termfile="./allseq.terms.txt"
 errfile="./allseq.broken.txt"
-goodfile="./allseq.checked.txt"
 emailscript="/usr/bin/env python3 ./send_email.py"
 
 
@@ -30,7 +29,6 @@ for seq in $(cat $termfile); do
 	fi
 	if $aliqueit -t $seq; then
 		rm "alq_$seq.elf"
-		echo "$seq" >> $goodfile # positive verification that script executed
 	else
 		echo "$seq" >> $errfile
 	fi
