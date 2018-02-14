@@ -1,3 +1,5 @@
+#! /bin/bash
+
 #    Copyright (C) 2014-2018 Bill Winslow
 #
 #    This script is a part of the mfaliquot package.
@@ -15,16 +17,20 @@
 
 aliqueit="/home/bill/aliqueit/aliqueit"
 termfile="./allseq.terms.txt"
-errfile="./error_seqs.txt"
+errfile="./allseq.broken.txt"
+goodfile="./allseq.checked.txt"
 emailscript="/usr/bin/env python3 ./send_email.py"
 
 
 if [[ ! -s $termfile ]]; then exit 1; fi
 
 for seq in $(cat $termfile); do
-	wget "http://factordb.com/elf.php?seq=$seq&type=1" -O "alq_$seq.elf"
+	if [[ ! -s "alq_$seq.elf" ]]; then
+		wget "http://factordb.com/elf.php?seq=$seq&type=1" -O "alq_$seq.elf"
+	fi
 	if $aliqueit -t $seq; then
 		rm "alq_$seq.elf"
+		echo "$seq" >> $goodfile # positive verification that script executed
 	else
 		echo "$seq" >> $errfile
 	fi
