@@ -23,6 +23,10 @@ emailscript="/usr/bin/env python3 ./send_email.py"
 
 if [[ ! -s $termfile ]]; then exit 1; fi
 
+if [[ ! -f $aliqueit || ! -x $aliqueit ]]; then
+	$emailscript "Could not find aliqueit executable at $aliqueit"
+fi
+
 for seq in $(cat $termfile); do
 	if [[ ! -s "alq_$seq.elf" ]]; then
 		wget "http://factordb.com/elf.php?seq=$seq&type=1" -O "alq_$seq.elf"
