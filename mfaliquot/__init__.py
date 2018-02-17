@@ -156,10 +156,10 @@ class BufferingSMTPHandler(logging.Handler):
           _logger.info(f"Sending logging email with {len(self.buffer)} records\n")
           txt = ''.join(self.format(record)+'\n' for record in self.buffer)
           msg = EmailMessage()
-          msg['Subject'] = "mfaliquot: warnings or errors while running {}.py".format(self.scriptname)
+          msg['Subject'] = "mfaliquot: {}.py has something to say".format(self.scriptname)
           msg['To'] = ', '.join(self.to_addrs)
           msg['From'] = self.from_addr
-          msg.set_content("Something went wrong while {}.py was running:\n\n".format(self.scriptname)+txt)
+          msg.set_content("Something went wrong (?) while {}.py was running:\n\n".format(self.scriptname)+txt)
           try:
                s = SMTP()
                s.connect(self.host, self.port)
