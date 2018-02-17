@@ -15,7 +15,7 @@
 #
 #    See the LICENSE file for more details.
 
-aliqueit="/home/bill/aliqueit/aliqueit"
+aliqueit="./aliqueit"
 termfile="./allseq.terms.txt"
 errfile="./allseq.broken.txt"
 emailscript="/usr/bin/env python3 ./send_email.py"
