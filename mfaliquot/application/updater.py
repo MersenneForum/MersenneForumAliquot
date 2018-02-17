@@ -22,6 +22,7 @@
 primary logic to interface with the FDB to actually update SequencesManager instances'''
 
 from time import sleep
+from subprocess import Popen
 from . import AliquotSequence, fdb
 import logging, signal, json
 _logger = logging.getLogger(__name__)
@@ -40,6 +41,7 @@ class AllSeqUpdater:
           self._statsjson     = config['statsjson']
           self._dropfile      = config['dropfile']
           self._termfile      = config['termfile']
+          self._termscript    = config['termscript']
           self._batchsize     = config['batchsize']
           self._broken        = {int(seq): stuff for seq, stuff in config['broken'].items()}
 
@@ -54,6 +56,7 @@ class AllSeqUpdater:
      statsjson     = property(lambda self: self._statsjson)
      dropfile      = property(lambda self: self._dropfile)
      termfile      = property(lambda self: self._termfile)
+     termscript    = property(lambda self: self._termscript)
      batchsize     = property(lambda self: self._batchsize)
      broken        = property(lambda self: self._broken)
 
@@ -266,16 +269,20 @@ class AllSeqUpdater:
 
 
      def postloop_finalize(self, terminated):
-          _logger.info("Searching for merges...")
-          merges = self.seqinfo.find_and_drop_merges()
-          if not merges:
-               _logger.info("No merges found")
-
           if terminated:
                _logger.warning(f"Writing terminations to {self.termfile}: {' '.join(str(seq) for seq in terminated)}")
                # _logger.notable()
                with open(self.termfile, 'a') as f:
                     f.write(''.join(f'{seq}\n' for seq in terminated))
+               self.seqinfo.drop(terminated)
+               _logger.info("Launching termination verification script...")
+               Popen(self.termscript, start_new_session=True)
+
+
+          _logger.info("Searching for merges...")
+          merges = self.seqinfo.find_and_drop_merges()
+          if not merges:
+               _logger.info("No merges found")
 
           _logger.info(f'Currently have {len(self.seqinfo)} sequences on file. Creating statistics...')
           self.create_stats_write_html()
