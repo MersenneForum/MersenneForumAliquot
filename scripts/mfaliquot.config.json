@@ -1,6 +1,7 @@
 {
 "live_web_dir": "/var/www/rechenkraft.net/aliquot",
 "template_dir": "../website/templates",
+"script_dir": ".",
 "working_dir": ".",
 
 "jsonfile":  "{live_web_dir}/AllSeq.json",
@@ -16,6 +17,7 @@
     "statstemplate": "{template_dir}/statstemplate.html",
     "dropfile": "{working_dir}/allseq.drops.txt",
     "termfile": "{working_dir}/allseq.terms.txt",
+    "termscript": "{script_dir}/verify_terminations.sh",
     "batchsize": 100,
     "broken": {"72708": [255, 744313934763611816]},
     "_example_broken_since_no_json_comments":
