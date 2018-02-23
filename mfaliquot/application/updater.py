@@ -139,7 +139,7 @@ class AllSeqUpdater:
 
           html = html.format(self.seqinfo.resdatetime, unborken_html, borken_html) # Imbue the template with the reservation time and broken sequences
 
-          sizetable, cofactable, guidetable, progtable, lentable, totinc, avginc, totprog, progcent = self.seqinfo.calc_common_stats()
+          sizetable, cofactable, guidetable, progtable, lentable, updatedtable, totinc, avginc, totprog, progcent = self.seqinfo.calc_common_stats()
 
           stats = stats.format(totinc=totinc, avginc=avginc, totprog=totprog, progcent=progcent)
 
@@ -149,7 +149,7 @@ class AllSeqUpdater:
           with open(self.statshtml, 'w') as f:
                f.write(stats)
           with open(self.statsjson, 'w') as f:
-               f.write(json.dumps({"aSizes": sizetable, "aCofacts": cofactable, "aGuides": guidetable, "aProgress": progtable, "aLens": lentable}).replace('],', '],\n')+'\n')
+               f.write(json.dumps({"aSizes": sizetable, "aCofacts": cofactable, "aGuides": guidetable, "aProgress": progtable, "aLens": lentable, "aUpdated": updatedtable}).replace('],', '],\n')+'\n')
 
 
      ###########################################################################
