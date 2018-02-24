@@ -123,6 +123,15 @@
 		     {{ "sType": "special", "aTargets": [0] }}
 		]
        }});
+       var oTable5 = $('#updated').dataTable( {{
+		"sScrollY": szht,
+		"sAjaxSource": "statistics.json",
+		"sAjaxDataProp": "aUpdated",
+		"sDom": 'rtS',
+		"aaSorting": [[ 0, "asc" ]],
+		"bDeferRender": true,
+		"bAutoWidth": false,
+       }});
      }});
      </script>
      <title>The tru7h, the whole tru7h, and nothing but the tru7h.</title>
@@ -133,13 +142,14 @@
      <br><br>Some simple numbers:
      <br>First, the total lengths (of all seqs) divided by total size: <b>{totinc:1.4f}</b> lines per digit increase
      <br>Second, the average of the individual length/size ratios for each sequence: <b>{avginc:1.4f}</b> lines per digit increase
-     <br>Total sequences extended in the last week: <b>{totprog:d}</b> (or <b>{progcent:2.2%}</b>)<br>
+     <br>Total sequences extended since their prior query: <b>{totprog:d}</b> (or <b>{progcent:2.2%}</b>)<br>
      <br><br>Now some tables.
      <br>First, a table giving the counts of how many sequences are at what size. (Sizes &lt; ~110 are probably FactorDB <a href="http://www.mersenneforum.org/showthread.php?t=16935">sequence errors</a>.)
      <br>Second, a table giving the counts of how many sequences have what size cofactors. (This table is obviously highly volatile, especially thanks to <a href="http://yafu.myfirewall.org/yafu/">yafu@home</a>.)
      <br>Third, a table giving the counts of how many sequences are at what length. (Lengths &lt;  400 are definitely FDB errors.)
      <br>Fourth, a table giving the counts of how many sequences are controlled by which drivers.
      <br>Fifth, a table showing any recent progress, or the date of last progress. (See the main status page for more details.)
+     <br>Sixth, a table showing the counts of how many sequences were last updated on which dates.
      <br>As with the main status table, all these tables are sortable by clicking on the column headers.
      <br><br>
      <table id="sizes" border="1" bordercolor="#B8B8B8" cellpadding="2" cellspacing="0">
@@ -176,7 +186,15 @@
        </thead>
        <tbody>
        </tbody>
-     </table><br>
+     </table>
+     <table id="updated" border="1" bordercolor="#B8B8B8" cellpadding="2" cellspacing="0">
+       <thead>
+          <tr class="headerrow"> <th>Last Updated</th> <th>Count</th></tr>
+       </thead>
+       <tbody>
+       </tbody>
+     </table>
+     <br>
      <footer>
        <img src="picard-appropriate.jpg" class="center" alt="Fin du page">
        <p>This site was created by Dubslow, with contributions from (so far just) ChristianB.</p>

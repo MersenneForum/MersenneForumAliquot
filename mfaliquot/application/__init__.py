@@ -706,7 +706,7 @@ class SequencesManager(_SequencesData):
 
 
      def calc_common_stats(self):
-          sizes = Counter(); lens = Counter(); guides = Counter(); progs = Counter(); cofacts = Counter()
+          sizes = Counter(); lens = Counter(); guides = Counter(); progs = Counter(); cofacts = Counter(); updateds = Counter()
           totsiz = 0; totlen = 0; avginc = 0; totprog = 0; data_total = 0
           for ali in self.values():
                if not ali.is_minimally_valid():
@@ -716,6 +716,7 @@ class SequencesManager(_SequencesData):
                guides[ali.guide] += 1; avginc += ali.index/ali.size
                progs[ali.progress] += 1
                cofacts[ali.cofactor] += 1
+               updateds[ali.time.split(' ')[0]] += 1
 
                if isinstance(ali.progress, int):
                     totprog += 1
@@ -723,16 +724,17 @@ class SequencesManager(_SequencesData):
 
           # Put stats table in json-able format
           lentable = []; lencount = 0
-          sizetable = [ [key, value] for key, value in sizes.items() ]
-          cofactable = [ [key, value] for key, value in cofacts.items() ]
+          sizetable = [[key, value] for key, value in sizes.items()]
+          cofactable = [[key, value] for key, value in cofacts.items()]
           for leng, cnt in sorted(lens.items(), key=lambda tup: tup[0]):
                lentable.append( [leng, cnt, "{:2.2f}".format(lencount/(data_total-cnt)*100)] )
                lencount += cnt
-          guidetable = [ [key, value] for key, value in guides.items() ]
-          progtable = [ [key, value] for key, value in progs.items() ]
+          guidetable = [[key, value] for key, value in guides.items()]
+          progtable = [[key, value] for key, value in progs.items()]
+          updatedtable = [[key, value] for key, value in updateds.items()]
 
           # see allseq.py for use
-          return sizetable, cofactable, guidetable, progtable, lentable, totlen/totsiz, avginc/data_total, totprog, totprog/data_total
+          return sizetable, cofactable, guidetable, progtable, lentable, updatedtable, totlen/totsiz, avginc/data_total, totprog, totprog/data_total
 
 
 
