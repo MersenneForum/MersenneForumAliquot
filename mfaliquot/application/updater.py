@@ -42,8 +42,8 @@ class AllSeqUpdater:
           self._dropfile      = config['dropfile']
           self._termfile      = config['termfile']
           self._termscript    = config['termscript']
-          self._mergefile      = config['mergefile']
-          self._mergescript    = config['mergescript']
+          self._mergefile     = config['mergefile']
+          self._mergescript   = config['mergescript']
           self._batchsize     = config['batchsize']
           self._broken        = {int(seq): stuff for seq, stuff in config['broken'].items()}
 
@@ -59,8 +59,8 @@ class AllSeqUpdater:
      dropfile      = property(lambda self: self._dropfile)
      termfile      = property(lambda self: self._termfile)
      termscript    = property(lambda self: self._termscript)
-     mergefile      = property(lambda self: self._mergefile)
-     mergescript    = property(lambda self: self._mergescript)
+     mergefile     = property(lambda self: self._mergefile)
+     mergescript   = property(lambda self: self._mergescript)
      batchsize     = property(lambda self: self._batchsize)
      broken        = property(lambda self: self._broken)
 
@@ -285,15 +285,16 @@ class AllSeqUpdater:
 
           _logger.info("Searching for merges...")
           merges = self.seqinfo.find_and_drop_merges()
-          if not merges:
-               _logger.info("No merges found")
-          else:
+          if merges:
                _logger.warning(f"Writing merges to {self.mergefile}")
-               for target, drops in merges:
-                    with open(self.mergefile, 'a') as f:
-                         f.write('{}_{}'.format('_'.join(str(d) for d in drops), target))
+               with open(self.mergefile, 'a') as f:
+                    for target, drops in merges:
+                         f.write('_'.join(str(seq) for seq in drops+(target,)) + '\n')
                _logger.info("Launching merge verification script...")
                Popen(self.mergescript, start_new_session=True)
+          else:
+               _logger.info("No merges found")
+
 
           _logger.info(f'Currently have {len(self.seqinfo)} sequences on file. Creating statistics...')
           self.create_stats_write_html()

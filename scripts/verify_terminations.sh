@@ -41,5 +41,5 @@ done
 echo > $termfile
 
 if [[ -s $errfile ]]; then
-	$emailscript "Something is wrong with those sequences: $(cat $errfile)"
+	$emailscript "Something is wrong with these sequences: $(cat $errfile)"
 fi

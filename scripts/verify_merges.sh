@@ -44,7 +44,7 @@ for line in $(cat $mergefile); do
 			error=1
 			break
 		fi
-  done
+	done
 	if [[ $error -gt 0 ]]; then
 		echo "$line" >> $errfile
 	else
@@ -63,5 +63,5 @@ done
 echo > $mergefile
 
 if [[ -s $errfile ]]; then
-	$emailscript "Something is wrong with those sequences: $(cat $errfile)"
+	$emailscript "Something is wrong with these sequences: $(cat $errfile)"
 fi
