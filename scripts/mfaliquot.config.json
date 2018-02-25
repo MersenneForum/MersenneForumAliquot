@@ -18,6 +18,8 @@
     "dropfile": "{working_dir}/allseq.drops.txt",
     "termfile": "{working_dir}/allseq.terms.txt",
     "termscript": "{script_dir}/verify_terminations.sh",
+    "mergefile": "{working_dir}/allseq.merges.txt",
+    "mergescript": "{script_dir}/verify_merges.sh",
     "batchsize": 100,
     "broken": {},
     "_example_broken_since_no_json_comments":
