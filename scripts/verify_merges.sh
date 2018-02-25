@@ -46,7 +46,7 @@ for line in $(cat $mergefile); do
 		fi
   done
 	if [[ $error -gt 0 ]]; then
-    echo "$line" >> $errfile
+		echo "$line" >> $errfile
 	else
 		# determine common index (first line that is present in all alq_*.txt files)
 		ci=$(grep -F -h -f alq_${seqs[0]}.txt alq_*.txt | head -n1)
