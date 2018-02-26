@@ -289,7 +289,7 @@ class AllSeqUpdater:
                _logger.warning(f"Writing merges to {self.mergefile}")
                with open(self.mergefile, 'a') as f:
                     for target, drops in merges:
-                         f.write('_'.join(str(seq) for seq in drops+(target,)) + '\n')
+                         f.write('_'.join(str(seq) for seq in (target,)+drops) + '\n')
                _logger.info("Launching merge verification script...")
                Popen(self.mergescript, start_new_session=True)
           else:
