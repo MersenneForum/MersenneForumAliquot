@@ -29,10 +29,9 @@ fi
 
 out="Sequences verified as merged:\n"
 
-for line in $(cat $mergefile); do
+while read line; do
 	error=0
-	# read $line into array $seqs using _ as delimiter
-	readarray -td_ seqs <<<"${line}_"; unset 'seqs[-1]';
+	seqs=(${line})
 	for seq in "${seqs[@]}"; do
 		if [[ ! -s "alq_$seq.elf" ]]; then
 			wget "http://factordb.com/elf.php?seq=$seq&type=1" -O "alq_$seq.elf"
@@ -64,7 +63,7 @@ for line in $(cat $mergefile); do
 		done
 		rm "alq_$first.elf" "alq_$first.txt"
 	fi
-done
+done < $mergefile
 
 $emailscript "$(echo -e "$out")" # echo -e to interpret the \n to actual newlines
 
