@@ -19,7 +19,7 @@
 aliqueit="./aliqueit"
 mergefile="./allseq.merges.txt"
 errfile="./allseq.broken.txt"
-emailscript="/usr/bin/env python3 ./send_email.py"
+emailscript="./send_email.py"
 
 if [[ ! -s $mergefile ]]; then exit 1; fi
 

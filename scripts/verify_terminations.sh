@@ -18,7 +18,7 @@
 aliqueit="./aliqueit"
 termfile="./allseq.terms.txt"
 errfile="./allseq.broken.txt"
-emailscript="scl enable rh-python36 ./send_email.py"
+emailscript="./send_email.py"
 
 
 if [[ ! -s $termfile ]]; then exit 1; fi
