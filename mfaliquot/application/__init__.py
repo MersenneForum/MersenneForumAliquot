@@ -612,7 +612,7 @@ class SequencesManager(_SequencesData):
                ids[ali.id].append(ali.seq)
 
           merges = [list(sorted(lst)) for lst in ids.values() if len(lst) > 1]
-          merges = tuple((lst[0], lst[1:]) for lst in merges)
+          merges = tuple((lst[0], tuple(lst[1:])) for lst in merges)
           if merges:
                # not really a warning, but noteworthy enough e.g. to trigger an email
                _logger.warning("Found merges!") # LOGGER.notable()

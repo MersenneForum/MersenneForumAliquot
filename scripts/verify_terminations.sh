@@ -31,7 +31,7 @@ for seq in $(cat $termfile); do
 	if [[ ! -s "alq_$seq.elf" ]]; then
 		wget "http://factordb.com/elf.php?seq=$seq&type=1" -O "alq_$seq.elf"
 	fi
-	if $aliqueit -t $seq; then
+	if $aliqueit -u $seq; then
 		rm "alq_$seq.elf"
 	else
 		echo "$seq" >> $errfile
@@ -41,5 +41,5 @@ done
 echo > $termfile
 
 if [[ -s $errfile ]]; then
-	$emailscript "Sequences failed to verify as terminated: $(cat $errfile)"
+	$emailscript "Something is wrong with these sequences: $(cat $errfile)"
 fi
