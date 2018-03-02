@@ -148,10 +148,10 @@ class AliquotSequence(list):
           'max_update_period': 90,
           'reservation_update_period': 14,
           'reservation_discount': 1/2,
-          'small_cofactor_bound': 90,
-          'small_cofactor_discount': 1/120, # actually cofactorsize/120. Must be less than 1/bound
+          'small_cofactor_bound': 98, # inclusive
+          'small_cofactor_discount': 1/150, # actually cofactor/discount. Must be less than 1/bound
           'downdriver_discount': 1/2,
-          'shortterm_penalty_duration': 2, # days below which to apply a penalty
+          'shortterm_penalty_duration': 3, # days below which to apply a penalty
           'shortterm_penalty_initial': 6 # penalty added to newly-updated seqs
      }
      # TODO: figure out how to move the above ^ to the config file
@@ -176,7 +176,7 @@ class AliquotSequence(list):
 
           base_prio = max(0, days_without_movement - updatedeltadays)
 
-          if self.cofactor and self.cofactor < config['small_cofactor_bound']:
+          if self.cofactor and self.cofactor <= config['small_cofactor_bound']:
                base_prio *= self.cofactor*config['small_cofactor_discount']
 
           if self.res:
