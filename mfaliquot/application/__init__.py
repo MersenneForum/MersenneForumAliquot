@@ -47,6 +47,7 @@ from time import sleep, strftime, gmtime
 from datetime import datetime, timedelta, date
 from os import remove as rm
 from contextlib import contextmanager
+from math import inf as _Inf, isfinite
 
 
 ################################################################################
@@ -76,7 +77,7 @@ class AliquotSequence(list):
              'res':      (7, ''),
              'progress': (8, None),
              'time':     (9, ''),
-             'priority': (10, 0),
+             'priority': (10, -1),
              'id':       (11, None),
              'driver':   (12, None)
             }
@@ -491,7 +492,7 @@ class _SequencesData:
           if not self._have_lock: raise LockError("Can't use SequencesManager.write() without lock!")
           # TODO: should these errors be (programmatically) distinguishable from unable-to-acquire-lock errors?
           # ignore dropped seqs (HEAPENTRY)
-          out = [item[2] for item in self._heap if (item[2] and item[2] in self._data)]
+          out = [item[2] for item in self._heap if (isfinite(item[2]) and item[2] in self._data)]
           # Find seqs that have been dropped from heap, they're just appended
           # at the end, no heapifying
           missing = set(self._data.keys()).difference(out)
@@ -544,14 +545,14 @@ class _SequencesData:
      @staticmethod
      def _sabotage_heap_entry(ali):
           # HEAPENTRY
-          ali._heap_entry[2] = None
+          ali._heap_entry[2] = _Inf
 
 
      def pop_n_todo(self, n): # Should the two pop* methods be write-only?
           '''A lazy iterator yielding the n highest priority sequences'''
           while n > 0:
                seq = self._heap.pop()[2] # HEAPENTRY
-               if seq: # heap entries are sabotaged by setting seq==0
+               if isfinite(seq): # heap entries are sabotaged by setting seq=_Inf
                     n -= 1
                     yield seq
 
