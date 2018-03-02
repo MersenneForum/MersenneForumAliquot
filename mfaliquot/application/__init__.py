@@ -47,6 +47,7 @@ from time import sleep, strftime, gmtime
 from datetime import datetime, timedelta, date
 from os import remove as rm
 from contextlib import contextmanager
+from math import inf as _Inf, isfinite
 
 
 ################################################################################
@@ -76,7 +77,7 @@ class AliquotSequence(list):
              'res':      (7, ''),
              'progress': (8, None),
              'time':     (9, ''),
-             'priority': (10, 0),
+             'priority': (10, -1),
              'id':       (11, None),
              'driver':   (12, None)
             }
@@ -147,10 +148,10 @@ class AliquotSequence(list):
           'max_update_period': 90,
           'reservation_update_period': 14,
           'reservation_discount': 1/2,
-          'small_cofactor_bound': 90,
-          'small_cofactor_discount': 1/120, # actually cofactorsize/120. Must be less than 1/bound
+          'small_cofactor_bound': 98, # inclusive
+          'small_cofactor_discount': 1/150, # actually cofactor/discount. Must be less than 1/bound
           'downdriver_discount': 1/2,
-          'shortterm_penalty_duration': 2, # days below which to apply a penalty
+          'shortterm_penalty_duration': 3, # days below which to apply a penalty
           'shortterm_penalty_initial': 6 # penalty added to newly-updated seqs
      }
      # TODO: figure out how to move the above ^ to the config file
@@ -175,7 +176,7 @@ class AliquotSequence(list):
 
           base_prio = max(0, days_without_movement - updatedeltadays)
 
-          if self.cofactor and self.cofactor < config['small_cofactor_bound']:
+          if self.cofactor and self.cofactor <= config['small_cofactor_bound']:
                base_prio *= self.cofactor*config['small_cofactor_discount']
 
           if self.res:
@@ -491,7 +492,7 @@ class _SequencesData:
           if not self._have_lock: raise LockError("Can't use SequencesManager.write() without lock!")
           # TODO: should these errors be (programmatically) distinguishable from unable-to-acquire-lock errors?
           # ignore dropped seqs (HEAPENTRY)
-          out = [item[2] for item in self._heap if (item[2] and item[2] in self._data)]
+          out = [item[2] for item in self._heap if (isfinite(item[2]) and item[2] in self._data)]
           # Find seqs that have been dropped from heap, they're just appended
           # at the end, no heapifying
           missing = set(self._data.keys()).difference(out)
@@ -544,14 +545,14 @@ class _SequencesData:
      @staticmethod
      def _sabotage_heap_entry(ali):
           # HEAPENTRY
-          ali._heap_entry[2] = None
+          ali._heap_entry[2] = _Inf
 
 
      def pop_n_todo(self, n): # Should the two pop* methods be write-only?
           '''A lazy iterator yielding the n highest priority sequences'''
           while n > 0:
                seq = self._heap.pop()[2] # HEAPENTRY
-               if seq: # heap entries are sabotaged by setting seq==0
+               if isfinite(seq): # heap entries are sabotaged by setting seq=_Inf
                     n -= 1
                     yield seq
 
