@@ -592,8 +592,8 @@ def sigma(n):
      n = _positive(n, "sigma") # Check that n is a positive int
      if not isinstance(n, Factors): n = factor(n) # Factor n if not done already
      product = 1
-     for fact in n:
-          product *= ( (fact**(n[fact]+1)-1) // (fact-1) )
+     for prime, power in n.items():
+          product *= ( (prime**(power+1)-1) // (prime-1) )
      return product
 
 def mu(n):
@@ -602,8 +602,8 @@ def mu(n):
      if not isinstance(n, Factors): n = factor(n) # Factor n if not done already
      if int(n) == 1: return 1
      out = 1
-     for fact in n:
-          if n[fact] > 1:
+     for power in n.values():
+          if power > 1:
                return 0 # Not square free
           else:
                out = -out
