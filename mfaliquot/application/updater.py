@@ -96,7 +96,7 @@ class AllSeqUpdater:
                try:
                     drop = int(drop)
                except ValueError:
-                    _logger.warning("Ignoring unknown 'drop' entry {}".format(drop))
+                    _logger.error("Ignoring unknown 'drop' entry {}".format(drop))
                else:
                     if drop in self.seqinfo and drop not in drops:
                          drops.add(drop)
@@ -184,7 +184,7 @@ class AllSeqUpdater:
                     old.process_no_progress()
 
           elif status is fdb.FDBStatus.Prime:
-               _logger.warning(f"seq {old.seq}: got a prime id value?? termination?")
+               _logger.error(f"seq {old.seq}: got a prime id value?? termination?")
                old.process_no_progress()
 
           else:
@@ -221,7 +221,7 @@ class AllSeqUpdater:
                self.quitting = True
                return None
           except fdb.FDBDataError as e: # wish these fell through like C switch statements
-               _logger.error(str(e))
+               _logger.warning(str(e))
                _logger.info(f"Skipping sequence {seq}")
                return None
           if out is None:
@@ -274,7 +274,7 @@ class AllSeqUpdater:
 
      def postloop_finalize(self, terminated):
           if terminated:
-               _logger.warning(f"Writing terminations to {self.termfile}: {' '.join(str(seq) for seq in terminated)}")
+               _logger.error(f"Writing terminations to {self.termfile}: {' '.join(str(seq) for seq in terminated)}")
                # _logger.notable()
                with open(self.termfile, 'a') as f:
                     f.write(''.join(f'{seq}\n' for seq in terminated))
@@ -286,7 +286,7 @@ class AllSeqUpdater:
           _logger.info("Searching for merges...")
           merges = self.seqinfo.find_and_drop_merges()
           if merges:
-               _logger.warning(f"Writing merges to {self.mergefile}")
+               _logger.error(f"Writing merges to {self.mergefile}")
                with open(self.mergefile, 'a') as f:
                     for target, drops in merges:
                          f.write(' '.join(str(seq) for seq in (target,)+drops) + '\n')
@@ -319,7 +319,7 @@ class AllSeqUpdater:
 
           msg = f'Primary loop {{}}, successfully updated {count} of {n} sequences, finalizing...'
           if self.quitting:
-               _logger.warning(msg.format('aborted'))
+               _logger.error(msg.format('aborted'))
           else:
                _logger.info(msg.format('complete'))
 

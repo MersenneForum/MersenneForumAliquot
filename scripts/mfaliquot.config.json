@@ -64,7 +64,7 @@
             "stream": "ext://sys.stdout"
         },
         "email_handler": {
-            "level": "WARNING",
+            "level": "ERROR",
             "formatter": "main",
             "()": "mfaliquot.BufferingSMTPHandler",
             "host": "localhost",

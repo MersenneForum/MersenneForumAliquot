@@ -27,16 +27,21 @@ if [[ ! -f $aliqueit || ! -x $aliqueit ]]; then
 	$emailscript "Could not find aliqueit executable at $aliqueit"
 fi
 
+out="Sequences verified as terminated:\n"
+
 for seq in $(cat $termfile); do
 	if [[ ! -s "alq_$seq.elf" ]]; then
 		wget "http://factordb.com/elf.php?seq=$seq&type=1" -O "alq_$seq.elf"
 	fi
 	if $aliqueit -u $seq; then
 		rm "alq_$seq.elf"
+		out="$out$seq\n"
 	else
 		echo "$seq" >> $errfile
 	fi
 done
+
+$emailscript "$(echo -e "$out")" # echo -e to interpret the \n to actual newlines
 
 echo > $termfile
 

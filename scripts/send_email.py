@@ -39,4 +39,4 @@ from mfaliquot import config_boilerplate
 CONFIG, LOGGER = config_boilerplate(CONFIGFILE, SCRIPTNAME)
 
 for arg in argv[1:]:
-     LOGGER.warning(arg)
+     LOGGER.error(arg)

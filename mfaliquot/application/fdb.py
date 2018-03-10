@@ -150,7 +150,7 @@ def query_sequence(seq, tries=5):
                ali = process_ali_data(seq, page)
           except FDBDataError as e:
                if i <= 0:
-                    _logger.error(f"Seq {seq}: bad data after {tries} tries: {str(e)}")
+                    _logger.warning(f"Seq {seq}: bad data after {tries} tries: {str(e)}")
                     raise
                else:
                     _logger.info(str(e))
@@ -181,7 +181,7 @@ def process_ali_data(seq, page):
      ali.time = strftime(DATETIMEFMT, gmtime())
 
      if 'Not all factors known' not in page:
-          _logger.warning(f'Seq {seq}: strange. Termination?')
+          _logger.error(f'Seq {seq}: strange. Termination?')
           ali.factors = "Reportedly terminated"
           ali.guide, ali.clas, ali.driver = 'Terminated?', -9, True
           ali.progress = 'Terminated?'
