@@ -471,7 +471,7 @@ class _SequencesData:
                self.lock_read_init()
           except LockError as e:
                f = e
-               _logger.warning("Failed to acquire lock for {}, retrying in {} seconds".format(self.file, period))
+               _logger.error("Failed to acquire lock for {}, retrying in {} seconds".format(self.file, period))
           else:
                return
           # I've yet to see a good alternative to the missing do...while syntax that Python lacks
@@ -481,7 +481,7 @@ class _SequencesData:
                     self.lock_read_init()
                except LockError as e:
                     f = e # rebind the exception to the local scope
-                    _logger.warning("Failed to acquire lock for {}, retrying in {} seconds".format(self.file, period))
+                    _logger.error("Failed to acquire lock for {}, retrying in {} seconds".format(self.file, period))
                else:
                     return
           raise f
@@ -570,7 +570,7 @@ class _SequencesData:
           # ^ I can't decide if this should be in the actual package or at clients' discretion
           for seq in seqs:
                if seq not in self._data:
-                    _logger.warning("seq {} not in seqdata".format(seq))
+                    _logger.error("seq {} not in seqdata".format(seq))
                     continue
                ali = self._data[seq]
                self._sabotage_heap_entry(ali)
@@ -615,10 +615,9 @@ class SequencesManager(_SequencesData):
           merges = [list(sorted(lst)) for lst in ids.values() if len(lst) > 1]
           merges = tuple((lst[0], tuple(lst[1:])) for lst in merges)
           if merges:
-               # not really a warning, but noteworthy enough e.g. to trigger an email
-               _logger.warning("Found merges!") # LOGGER.notable()
+               _logger.error("Found merges!")
                for target, drops in merges:
-                    _logger.warning('The seq(s) {} seem(s) to have merged with {}'.format(', '.join(str(d) for d in drops), target)) # LOGGER.notable()
+                    _logger.error('The seq(s) {} seem(s) to have merged with {}'.format(', '.join(str(d) for d in drops), target)) # LOGGER.notable()
           return merges
 
 
@@ -653,9 +652,9 @@ class SequencesManager(_SequencesData):
                else:
                     other_owns.append((seq, other))
 
-          if DNEs: _logger.warning("reserve_seqs ({}): seqs don't exist: {}".format(name, DNEs))
-          if already_owns: _logger.warning("reserve_seqs ({}): seqs are already reserved: {}".format(name, already_owns))
-          if other_owns: _logger.warning("reserve_seqs ({}): seqs are reserved by someone else: {}".format(name, other_owns))
+          if DNEs: _logger.error("reserve_seqs ({}): seqs don't exist: {}".format(name, DNEs))
+          if already_owns: _logger.error("reserve_seqs ({}): seqs are already reserved: {}".format(name, already_owns))
+          if other_owns: _logger.error("reserve_seqs ({}): seqs are reserved by someone else: {}".format(name, other_owns))
           if success: _logger.info("reserve_seqs ({}): successfully added {}".format(name, success))
 
           return success, DNEs, already_owns, other_owns
@@ -681,9 +680,9 @@ class SequencesManager(_SequencesData):
                else:
                     wrong_reserveds.append((seq, current))
 
-          if DNEs: _logger.warning("unreserve_seqs ({}): seqs don't exist: {}".format(name, DNEs))
-          if not_reserveds: _logger.warning("unreserve_seqs ({}): seqs are not currently reserved: {}".format(name, not_reserveds))
-          if wrong_reserveds: _logger.warning("unreserve_seqs ({}): seqs aren't reserved by dropee: {}".format(name, wrong_reserveds))
+          if DNEs: _logger.error("unreserve_seqs ({}): seqs don't exist: {}".format(name, DNEs))
+          if not_reserveds: _logger.error("unreserve_seqs ({}): seqs are not currently reserved: {}".format(name, not_reserveds))
+          if wrong_reserveds: _logger.error("unreserve_seqs ({}): seqs aren't reserved by dropee: {}".format(name, wrong_reserveds))
           if success: _logger.info("unreserve_seqs ({}): successfully dropped {}".format(name, success))
 
           return success, DNEs, not_reserveds, wrong_reserveds
@@ -700,7 +699,7 @@ class SequencesManager(_SequencesData):
                     continue
                success.append(seq)
 
-          if DNEs: _logger.warning("update_seqs ({}): seqs don't exist: {}".format(name, DNEs))
+          if DNEs: _logger.error("update_seqs ({}): seqs don't exist: {}".format(name, DNEs))
           if success: _logger.info("update_seqs ({}): successfully queued for update {}".format(name, success))
 
           return success, DNEs
