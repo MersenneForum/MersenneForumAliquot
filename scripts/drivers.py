@@ -32,7 +32,7 @@ add_path_relative_to_script('..')
 # this should be removed when proper pip installation is supported
 from mfaliquot.theory import numtheory as nt
 from mfaliquot.theory import aliquot as aq
-from mfaliquot.application import AliquotSequence, SequencesManager
+from mfaliquot.application import SequencesManager
 from mfaliquot import blogotubes, InterpolatedJSONConfig
 
 CONFIG = InterpolatedJSONConfig()
@@ -140,8 +140,8 @@ def main():
      print('Starting examinations')
      # This and other code in this and other modules is sometimes a bit confusing
      # because I use 'seq' for both just the integer of the sequence leader *and*
-     # the corresponding AliquotSequence object.
-     # data is a dictionary mapping the ints to the AliquotSequence objects.
+     # the corresponding SequenceInfo object.
+     # data is a dictionary mapping the ints to the SequenceInfo objects.
      data = SequencesManager(CONFIG)
      data.readonly_init()
      targets = []; derp = []

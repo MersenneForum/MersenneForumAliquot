@@ -29,7 +29,7 @@ network error of some sort, or raise an FDBDataError for bad data.'''
 
 import logging, re
 from .. import blogotubes
-from . import AliquotSequence, DATETIMEFMT
+from .sequence import SequenceInfo, DATETIMEFMT
 from enum import Enum, auto
 from time import gmtime, sleep, strftime, strptime
 from math import log10
@@ -135,7 +135,7 @@ def query_id(fdb_id, tries=5):
 
 def query_sequence(seq, tries=5):
      '''Returns None on network error, raises FDBDataError if `tries` consecutive bad data,
-     or a new AliquotSequence object if successful'''
+     or a new SequenceInfo object if successful'''
 
      for i in reversed(range(tries)):
           page = _blogotubes_with_fdb_useragent('http://factordb.com/sequences.php?se=1&action=last&aq='+str(seq))
@@ -177,7 +177,7 @@ def process_ali_data(seq, page):
      if not info:
           raise FDBDataError(f"Seq {seq}: no basic information!")
 
-     ali = AliquotSequence(seq=seq, size=int(info.group('size')), index=int(info.group('index')), id=int(info.group('id')))
+     ali = SequenceInfo(seq=seq, size=int(info.group('size')), index=int(info.group('index')), id=int(info.group('id')))
      ali.time = strftime(DATETIMEFMT, gmtime())
 
      if 'Not all factors known' not in page:
