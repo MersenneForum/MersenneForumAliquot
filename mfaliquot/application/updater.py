@@ -165,16 +165,18 @@ class AllSeqUpdater:
           if not old or not old.is_minimally_valid() or not old.id:
                return self.query_sequence(old)
 
-          status, retval = self._fdb_error_handler_wrapper(fdb.query_id, old.seq, old.id)
-          if not status: # the wrapper has logged it and set self.quitting as necessary
+          retval = self._fdb_error_handler_wrapper(fdb.query_id, old.seq, old.id)
+          if retval is None: # the wrapper has logged it and set self.quitting as necessary
                return old, False
+          else:
+               status, data = retval
 
 
           if status is fdb.FDBStatus.CompositeFullyFactored:
                return self.query_sequence(old)
 
           elif status is fdb.FDBStatus.CompositePartiallyFactored: # no progress since last update
-               factors, cofactor = retval
+               factors, cofactor = data
                if factors != old.factors:
                     #_logger.debug(f'Seq {old.seq} index {old.index}, partial progress: parsed {factors!r}, stored {old.factors!r}')
                     old.factors = factors
@@ -202,7 +204,7 @@ class AllSeqUpdater:
                seq = old.seq
 
           ali = self._fdb_error_handler_wrapper(fdb.query_sequence, seq, seq)
-          if not ali: # the wrapper has logged it and set self.quitting as necessary
+          if ali is None: # the wrapper has logged it and set self.quitting as necessary
                return old, False
 
           broken_index = self.broken[old.seq][0] if old.seq in self.broken else None
