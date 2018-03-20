@@ -239,9 +239,13 @@ def parse_factors(ident, page, check_size):
           cofactor = int(comp)
           size += cofactor
 
-     # the digit size overestimates the actual log of a given prime by a small fraction,
-     # hence allow slight excess of size over ali.size
-     if not (check_size - 1 < size < check_size + 3):
+     # each big prime, plus the composite itself, introduce up to 1.0 error in the
+     # logsize, e.g. 1.2 * 10^x vs 9.8 * 10^x, the former introduces nearly 1.0
+     # error, the latter introduces nearly 0.0 error, so allow maximum error based on
+     # the number of such primes, assuming all hit the maximum error = 1.0 per prime
+     error_bound = len(bigs) + len(comps)
+
+     if not (check_size - 1 < size < check_size + error_bound):
           raise FDBDataError(f'{ident}, size {check_size}: garbage factors found: {factors} (calcsize {size:.2f})')
 
      return factors, cofactor
