@@ -289,8 +289,10 @@ class _SequencesData:
 
      def write(self):
           '''Finalize self to file. Totally overwrites old data with current data.'''
-          if not self._have_lock: raise LockError("Can't use SequencesManager.write() without lock!")
-          # TODO: should these errors be (programmatically) distinguishable from unable-to-acquire-lock errors?
+          if not self._have_lock:
+               raise LockError("Can't use SequencesManager.write() without lock!")
+               # TODO: should these errors be (programmatically) distinguishable from
+               # unable-to-acquire-lock errors?
           # ignore dropped seqs (HEAPENTRY)
           out = [item[2] for item in self._heap if (isfinite(item[2]) and item[2] in self._data)]
           # Find seqs that have been dropped from heap, they're just appended
