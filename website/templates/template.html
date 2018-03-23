@@ -48,14 +48,14 @@
      $.fn.dataTableExt.afnFiltering.push(
        function(oSettings, aData, iDataIndex) {{
          if( document.getElementById('three').checked ) {{
-           if( aData[4].indexOf("* 3 *") > -1 || aData[4].indexOf("* 3^") > -1 ){{
+           if( aData[7].indexOf("* 3 *") > -1 || aData[7].indexOf("* 3^") > -1 ){{
              return false;
            }}
          }}
-         if( document.getElementById('driver').checked && aData[12] ) {{
+         if( document.getElementById('driver').checked && aData[13] ) {{
            return false;
          }}
-         if( document.getElementById('reserve').checked && aData[7] ) {{
+         if( document.getElementById('reserve').checked && aData[8] ) {{
            return false;
          }}
          var rmin = document.getElementById('min').value*1; // *1 converts str to int
@@ -104,14 +104,14 @@
 		"bDeferRender": true,
 		//"bAutoWidth": false,
 		"aoColumnDefs": [
-		     {{ "sClass": "factorcol", "aTargets": [3, 4] }}, // left justified
-		     {{ "bSearchable": false, "bVisible": false, "aTargets": [11, 12] }}, // id and is_driver are totally invisible
+		     {{ "sClass": "factorcol", "aTargets": [3, 7] }}, // left justified
+		     {{ "bSearchable": false, "bVisible": false, "aTargets": [12, 13] }}, // id and is_driver are totally invisible
 		     // ~~three~~ two columns are rendered as links
 		     {{ "fnRender": function (o, val) {{return '<a target="_blank" class="lol" href="http://factordb.com/sequences.php?se=1&aq='+val+'&action=last20">'+val+'</a>'}}, "bUseRendered": false, "aTargets": [0] }},
 		     {{ "fnRender": function (o, val) {{return '<a target="_blank" class="lol" href="http://factordb.com/aliquot.php?type=1&aq='+o.aData[0]+'&big=1">'+val+'</a>'}}, "bUseRendered": false, "aTargets": [2] }},
-		     {{ "fnRender": function (o, val) {{return val.toFixed(2)}}, "aTargets": [10] }},
-		     //{{ "fnRender": function (o, val) {{return '<a target="_blank" class="lol" href="http://factordb.com/index.php?id='+o.aData[11]+'">'+val+'</a>'}}, "bUseRendered": false, "aTargets": [5] }},
-		     {{ "sType": "special", "aTargets": [8] }} // special sort for progress column
+		     {{ "fnRender": function (o, val) {{return val.toFixed(2)}}, "aTargets": [11] }},
+		     {{ "fnRender": function (o, val) {{return val.toFixed(3)}}, "aTargets": [5], "bUseRendered": false }},
+		     {{ "sType": "special", "aTargets": [9] }} // special sort for progress column
 		]
        }});
        $("div.check").html('Exclude sequences with a 3: <input type="checkbox" id="three"> &nbsp;'+
@@ -208,17 +208,18 @@
      <table id="win" border="1" bordercolor="#B8B8B8" cellpadding="2" cellspacing="0">
        <thead>
           <tr class="headerrow">
-          <th>Sequence</th>
-          <th>Size</th>
-          <th>Index</th>
+          <th title="The originating term that leads to the current term">Seq</th>
+          <th title="Size, in digits, of the current term in the sequence">Sz</th>
+          <th title="Index of the current term in the sequence">Ind</th>
           <th>Guide</th>
+          <th title="The class of the guide, a measure of its stability">Cls</th>
+          <th title="The abundance of the known factors of the current term">Ab</th>
+          <th title="Digit size of the current composite">CSz</th>
           <th>Known Factors</th>
-          <th>CSize</th>
-          <th>Class</th>
-          <th>Reservation</th>
-          <th>Progress</th>
+          <th title="The reservation of the sequence (if any)">Res</th>
+          <th title='"Progress", the number of terms added since previous update, if any, or date of creation of the current term'>Prog</th>
           <th>Last Updated</th>
-          <th>Prio</th>
+          <th title='The rather ad hoc update priority assigned to this sequence'>Prio</th>
           <th>Hidden ID</th>
           <th>Hidden Driver Bool</th>
           </tr>
