@@ -215,7 +215,8 @@ class SequenceInfo(list):
 
 
      def set_abundance(self):
-          self.abundance = alq.abundance(self.factors)
+          # P10s and larger are excluded, which bounds the max precision to ~10 digits
+          self.abundance = round(alq.abundance(self.factors), 9)
 
 
 
