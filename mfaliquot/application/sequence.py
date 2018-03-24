@@ -34,12 +34,12 @@ DATETIMEFMT = '%Y-%m-%d %H:%M:%S'
 
 class SequenceInfo(list):
      _map = {'seq':       (0,  None), # (list_index, default_val)
-             'size':      (1,  None),
-             'index':     (2,  None),
-             'guide':     (3,  ''),
-             'klass':     (4,  None),
-             'abundance': (5,  None),
-             'cofactor':  (6,  0),
+             'index':     (1,  None),
+             'size':      (2,  None),
+             'cofactor':  (3,  0),
+             'guide':     (4,  ''),
+             'klass':     (5,  None),
+             'abundance': (6,  None),
              'factors':   (7,  ''),
              'res':       (8,  ''),
              'progress':  (9,  None),

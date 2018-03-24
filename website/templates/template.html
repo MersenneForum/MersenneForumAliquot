@@ -16,7 +16,7 @@
           footer    {{ text-align: center;
                     font-size: 70%; }}
           a         {{ color: #FF9B00; }}
-          a.lol     {{ color: #FF8300; }}
+          a.lol     {{ color: #B07000; }}
           .dataTables_wrapper {{
                     width: 90%;
                     height: 100%;
@@ -100,17 +100,17 @@
 		"sScrollY": "577px",
 		"sAjaxSource": "AllSeq.json",
 		"sDom": '<"check">fritS',
-		"aaSorting": [[ 1, "asc" ]],
+		"aaSorting": [[ 2, "asc" ]],
 		"bDeferRender": true,
 		//"bAutoWidth": false,
 		"aoColumnDefs": [
-		     {{ "sClass": "factorcol", "aTargets": [3, 7] }}, // left justified
+		     {{ "sClass": "factorcol", "aTargets": [4, 7] }}, // left justified
 		     {{ "bSearchable": false, "bVisible": false, "aTargets": [12, 13] }}, // id and is_driver are totally invisible
 		     // ~~three~~ two columns are rendered as links
 		     {{ "fnRender": function (o, val) {{return '<a target="_blank" class="lol" href="http://factordb.com/sequences.php?se=1&aq='+val+'&action=last20">'+val+'</a>'}}, "bUseRendered": false, "aTargets": [0] }},
-		     {{ "fnRender": function (o, val) {{return '<a target="_blank" class="lol" href="http://factordb.com/aliquot.php?type=1&aq='+o.aData[0]+'&big=1">'+val+'</a>'}}, "bUseRendered": false, "aTargets": [2] }},
+		     {{ "fnRender": function (o, val) {{return '<a target="_blank" class="lol" href="http://factordb.com/aliquot.php?type=1&aq='+o.aData[0]+'&big=1">'+val+'</a>'}}, "bUseRendered": false, "aTargets": [1] }},
 		     {{ "fnRender": function (o, val) {{return val.toFixed(2)}}, "aTargets": [11] }},
-		     {{ "fnRender": function (o, val) {{return val.toFixed(3)}}, "aTargets": [5], "bUseRendered": false }},
+		     {{ "fnRender": function (o, val) {{return val.toFixed(3)}}, "aTargets": [6], "bUseRendered": false }},
 		     {{ "sType": "special", "aTargets": [9] }} // special sort for progress column
 		]
        }});
@@ -208,18 +208,18 @@
      <table id="win" border="1" bordercolor="#B8B8B8" cellpadding="2" cellspacing="0">
        <thead>
           <tr class="headerrow">
-          <th title="The originating term that leads to the current term">Seq</th>
-          <th title="Size, in digits, of the current term in the sequence">Sz</th>
+          <th title="The originating number that leads to the current term (index 0)">Seq</th>
           <th title="Index of the current term in the sequence">Ind</th>
-          <th>Guide</th>
+          <th title="Size, in digits, of the current term in the sequence">Sz</th>
+          <th title="Digit size of the composite in the current term">CSz</th>
+          <th title="The perpetual portion of the factors, which is 2^b*sigma(2^b)">Guide</th>
           <th title="The class of the guide, a measure of its stability">Cls</th>
-          <th title="The abundance of the known factors of the current term">Ab</th>
-          <th title="Digit size of the current composite">CSz</th>
-          <th>Known Factors</th>
+          <th title="The abundance the known factors of the current term (accurate to 9 digits)">Ab</th>
+          <th title="The current term">Known Factors</th>
           <th title="The reservation of the sequence (if any)">Res</th>
           <th title='"Progress", the number of terms added since previous update, if any, or date of creation of the current term'>Prog</th>
-          <th>Last Updated</th>
-          <th title='The rather ad hoc update priority assigned to this sequence'>Prio</th>
+          <th title="This one should be self explanatory...">Last Updated</th>
+          <th title="The rather ad hoc update priority assigned to this sequence (lesser number is greater importance)">Prio</th>
           <th>Hidden ID</th>
           <th>Hidden Driver Bool</th>
           </tr>
