@@ -6,43 +6,7 @@
      <meta name="description" content="Making status updates on Aliquot Sequences easier. :)" >
      <link rel="icon" href="http://mersenneforum.org/favicon.ico">
      <link rel="Shortcut Icon" href="http://mersenneforum.org/favicon.ico">
-     <style type="text/css">
-          body      {{ background: #0000D2;
-                    font-family: "sans serif";
-                    color: #FFFFFF; }}
-          .cen      {{ text-align: center; }}
-          .just     {{ margin-left: 6%;
-                    margin-right: 6%; }}
-          footer    {{ text-align: center;
-                    font-size: 70%; }}
-          a         {{ color: #FF9B00; }}
-          a.lol     {{ color: #946000; }}
-          .dataTables_wrapper {{
-                    width: 90%;
-                    height: 100%;
-                    text-align: center;
-                    margin-left: auto;
-                    margin-right: auto;
-                    margin-bottom: 24px; }}
-          table     {{ text-align: center;
-                    color: #000000;
-                    background-color: #05E9FF;
-                    border-collapse: collapse;
-                    font-size: 95%;
-                    margin: 0 auto; }}
-          th        {{ background-color: #E0E0E0;
-                    font-size: 105%;
-                    font-weight: bold;
-                    cursor: pointer; }}
-          td        {{ white-space: nowrap;
-                    padding-left:  4px;
-                    padding-right: 4px}}
-          .factorcol {{ text-align: left; }}
-	  img.center {{ display: block;
-                     clear: both;
-                     margin-left: auto;
-                     margin-right: auto; }}
-     </style>
+     <link rel="stylesheet" type="text/css" href="main.css">
      <script type="text/javascript" src="js/jquery.js"></script>
      <script type="text/javascript" src="js/jquery.dataTables.js"></script>
      <script type="text/javascript" src="js/dataTables.scroller.js"></script>
@@ -72,7 +36,7 @@
        }}
      );
      function specialSort(a, b) {{
-     // x any y should be true if a or b are a date, false otherwise
+     // x and y should be true if a or b are a date, false otherwise
        //console.log("a: "+a+' b: '+b);
        if( typeof a == "string" )
          x = a.indexOf('-') > -1; // true for date
@@ -106,11 +70,11 @@
 		"bDeferRender": true,
 		//"bAutoWidth": false,
 		"aoColumnDefs": [
-		     {{ "sClass": "factorcol", "aTargets": [4, 7] }}, // left justified
+		     {{ "sClass": "left", "aTargets": [4, 7] }}, // columns listing factors
 		     {{ "bSearchable": false, "bVisible": false, "aTargets": [12, 13] }}, // id and is_driver are totally invisible
 		     // ~~three~~ two columns are rendered as links
-		     {{ "fnRender": function (o, val) {{return '<a target="_blank" class="lol" href="http://factordb.com/sequences.php?se=1&aq='+val+'&action=last20">'+val+'</a>'}}, "bUseRendered": false, "aTargets": [0] }},
-		     {{ "fnRender": function (o, val) {{return '<a target="_blank" class="lol" href="http://factordb.com/aliquot.php?type=1&aq='+o.aData[0]+'&big=1">'+val+'</a>'}}, "bUseRendered": false, "aTargets": [1] }},
+		     {{ "fnRender": function (o, val) {{return '<a target="_blank" class="darklink" href="http://factordb.com/sequences.php?se=1&aq='+val+'&action=last20">'+val+'</a>'}}, "bUseRendered": false, "aTargets": [0] }},
+		     {{ "fnRender": function (o, val) {{return '<a target="_blank" class="darklink" href="http://factordb.com/aliquot.php?type=1&aq='+o.aData[0]+'&big=1">'+val+'</a>'}}, "bUseRendered": false, "aTargets": [1] }},
 		     {{ "fnRender": function (o, val) {{return val.toFixed(2)}}, "aTargets": [11] }},
 		     {{ "fnRender": function (o, val) {{return val.toFixed(3)}}, "aTargets": [6], "bUseRendered": false }},
 		     {{ "sType": "special", "aTargets": [9] }} // special sort for progress column
@@ -202,14 +166,13 @@
      <br>
      <div class="cen">
           <p>All times are UTC. Reservations are current as of {:s}. <br />
-          <!--<p>All times are UTC. <strong>Reservations are not up to date!</strong> <br /> -->
                          These sequences are currently broken: {:s}</p>
           {:s}
      </div>
      <br />
      <table id="win" border="1" bordercolor="#B8B8B8" cellpadding="2" cellspacing="0">
        <thead>
-          <tr class="headerrow">
+          <tr>
           <th title="The originating number that leads to the current term (index 0)">Seq</th>
           <th title="Index of the current term in the sequence">Ind</th>
           <th title="Size, in digits, of the current term in the sequence">Sz</th>
