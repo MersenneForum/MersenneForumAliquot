@@ -1,4 +1,4 @@
-#! /usr/bin/env python3
+#!/opt/rh/rh-python36/root/usr/bin/python
 
 # This is written to Python 3.6 standards
 # indentation: 5 spaces (eccentric personal preference)
