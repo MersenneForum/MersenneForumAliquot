@@ -126,7 +126,7 @@ class AllSeqUpdater:
           # Create broken sequences HTML
           if self.broken:
                # horizontal table: create a list of tuples containing each column (i.e. each sequence)
-               entries = (('''<a href="http://factordb.com/sequences.php?se=1&aq={}&action=last20">{}</a>'''.format(self.broken[seq][1], seq), str(self.broken[seq][0])) for seq in sorted(self.broken))
+               entries = (('''<a target="_blank" class="darklink" href="http://factordb.com/sequences.php?se=1&aq={}&action=last20">{}</a>'''.format(self.broken[seq][1], seq), str(self.broken[seq][0])) for seq in sorted(self.broken))
                row1, row2 = zip(*entries)
                r1 = ''.join('<td>{}</td>'.format(datum) for datum in row1)
                r2 = ''.join('<td>{}</td>'.format(datum) for datum in row2)
