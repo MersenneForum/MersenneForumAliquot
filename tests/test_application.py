@@ -25,7 +25,8 @@ import sys
 sys.path.insert(0, realpath(join(dirname(sys.argv[0]), '..')))
 
 from mfaliquot.application import reservations as R
-from mfaliquot.application import SequencesManager, LockError, AliquotSequence
+from mfaliquot.application import SequencesManager, LockError
+from mfaliquot.application.sequence import SequenceInfo
 from os import remove as rm
 from shutil import copy2 as cp
 from os.path import exists, realpath, join, dirname
@@ -111,7 +112,7 @@ class TestSequencesManagerLocking(TestCaseWithFilesEqual):
           self.assertFalse(exists(self.lockfile))
           self.assertRaises(LockError, seqinfo.write)
           self.assertRaises(LockError, seqinfo.drop, 276)
-          self.assertRaises(LockError, seqinfo.push_new_info, AliquotSequence)
+          self.assertRaises(LockError, seqinfo.push_new_info, SequenceInfo)
           self.assertRaises(LockError, seqinfo.find_and_drop_merges)
           self.assertRaises(LockError, seqinfo.reserve_seqs, 'mersenneforum', [276])
           self.assertRaises(LockError, seqinfo.unreserve_seqs, 'mersenneforum', [276])
@@ -178,7 +179,7 @@ class TestSequencesManagerLocking(TestCaseWithFilesEqual):
 
 
 
-#_SEQINFO = {x[0]: AliquotSequence(lst=x) for x in \
+#_SEQINFO = {x[0]: SequenceInfo(lst=x) for x in \
 
 
 if __name__ == '__main__':

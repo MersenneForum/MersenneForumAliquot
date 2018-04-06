@@ -23,7 +23,8 @@ primary logic to interface with the FDB to actually update SequencesManager inst
 
 from time import sleep
 from subprocess import Popen
-from . import AliquotSequence, fdb
+from . import fdb
+from .sequence import SequenceInfo
 import logging, signal, json
 _logger = logging.getLogger(__name__)
 
@@ -111,7 +112,7 @@ class AllSeqUpdater:
                     if seq <= 276 or seq >= 10**7 or not seq & 1 == 0:
                          raise ValueError(f"new seq {seq} is invalid")
                     news.append(seq)
-                    self.seqinfo.push_new_info(AliquotSequence(seq=seq, index=-1))
+                    self.seqinfo.push_new_info(SequenceInfo(seq=seq, index=-1))
           if news:
                _logger.info(f"Added {len(news)} new seqs: {' '.join(str(s) for s in news)}")
                self.seqinfo.write() # "Atomic"

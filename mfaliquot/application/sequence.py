@@ -33,21 +33,22 @@ DATETIMEFMT = '%Y-%m-%d %H:%M:%S'
 # purposes
 
 class SequenceInfo(list):
-     _map = {'seq':      (0, None), # (list_index, default_val)
-             'size':     (1, None),
-             'index':    (2, None),
-             'guide':    (3, ''),
-             'factors':  (4, ''),
-             'cofactor': (5, 0),
-             'klass':    (6, None),
-             'res':      (7, ''),
-             'progress': (8, None),
-             'time':     (9, ''),
-             'priority': (10, -1),
-             'id':       (11, None),
-             'driver':   (12, None)
+     _map = {'seq':       (0,  None), # (list_index, default_val)
+             'index':     (1,  None),
+             'size':      (2,  None),
+             'cofactor':  (3,  0),
+             'guide':     (4,  ''),
+             'klass':     (5,  None),
+             'abundance': (6,  None),
+             'factors':   (7,  ''),
+             'res':       (8,  ''),
+             'progress':  (9,  None),
+             'time':      (10, ''),
+             'priority':  (11, -1),
+             'id':        (12, None),
+             'driver':    (13, None)
             }
-     _defaults = [None] * len(_map)
+     _defaults = [None] * len(_map) # when dicts are guaranteed ordered, this could be simplified
      for attr, tup in _map.items():
           _defaults[tup[0]] = tup[1]
 
@@ -189,6 +190,7 @@ class SequenceInfo(list):
           self.res = old.res
           self.progress = self.index - old.index
           self.guide, self.klass, self.driver = self.guide_description()
+          self.set_abundance()
 
           if broken_offset:
                self.seq = old.seq
@@ -210,6 +212,11 @@ class SequenceInfo(list):
                return "Downdriver!", 1, False
           else:
                return guidestring, alq.get_class(self.factors), alq.is_driver(guide=guide)
+
+
+     def set_abundance(self):
+          # P10s and larger are excluded, which bounds the max precision to ~10 digits
+          self.abundance = round(alq.abundance(self.factors), 9)
 
 
 
