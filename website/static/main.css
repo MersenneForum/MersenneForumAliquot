@@ -31,6 +31,7 @@ td         { white-space: nowrap;
 
 .left      { text-align: left; }
 .cen       { text-align: center; }
+.cen table { margin-left: auto; margin-right: auto; }
 .just      { margin-left:  4%;
              margin-right: 4%; }
 
