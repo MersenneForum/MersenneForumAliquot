@@ -6,36 +6,13 @@
      <meta name="description" content="Making status updates on Aliquot Sequences easier. :)" >
      <link rel="icon" href="http://img4.wikia.nocookie.net/__cb20110423145435/bungie/images/3/32/Twinkie_7thMarathon.gif">
      <link rel="Shortcut Icon" href="http://img4.wikia.nocookie.net/__cb20110423145435/bungie/images/3/32/Twinkie_7thMarathon.gif">
+     <link rel="stylesheet" type="text/css" href="main.css">
      <style type="text/css">
-          body      {{ background: #0000D2;
-                    font-family: "sans serif";
-                    color: #FFFFFF;
-                    text-align: center; }}
-          a         {{ color:#FF9B00 }}
-          footer    {{ text-align: center;
-                    font-size: 70%; }}
           .dataTables_wrapper {{
                     float: left;
-                    margin-left: 2%;
-                    margin-right: 2%;
-                    width: 240px;
-                    margin-bottom: 24px; }}
-          table     {{ text-align: center;
-                    color: #000000;
-                    background-color: #05E9FF;
-                    border-collapse: collapse;
-                    width: 10px;
-                    font-size: 95%; }}
-          td        {{ white-space: nowrap; }}
-          img.center {{ display: block;
-                     clear: both;
-                     margin-left: auto;
-                     margin-right: auto; }}
-          .headerrow {{ background-color: #E0E0E0;
-                     font-size: 105%;
-                     font-weight: bold;
-                     cursor: pointer; }}
-          .factorcol {{ text-align: left; }}
+                    margin-left: 1.5%;
+                    margin-right: 1.5%;
+                    width: 240px; }}
      </style>
      <script type="text/javascript" src="js/jquery.js"></script>
      <script type="text/javascript" src="js/jquery.dataTables.js"></script>
@@ -108,7 +85,7 @@
 		"bDeferRender": true,
 		"bAutoWidth": false,
 		"aoColumnDefs": [
-		     {{ "sClass": "factorcol", "aTargets": [0] }}
+		     {{ "sClass": "left", "aTargets": [0] }} // lists factors, so left-just it
 		]
        }});
        var oTable5 = $('#progress').dataTable( {{
@@ -136,17 +113,17 @@
      </script>
      <title>The tru7h, the whole tru7h, and nothing but the tru7h.</title>
 </head>
-<body>
-     <br>This page contains some simple statistics based on the overall <a href="AllSeq.html">status</a> of all un-terminated Aliquot sequences &lt; 1M.<br>
+<body class="cen">
+     <br>This page contains some simple statistics based on the overall <a href="AllSeq.html">status</a> of all un-terminated Aliquot sequences &lt; 2M.<br>
      <br>This page is under construction, hopefully there'll be some awesome features.<br>
      <br><br>Some simple numbers:
      <br>First, the total lengths (of all seqs) divided by total size: <b>{totinc:1.4f}</b> lines per digit increase
      <br>Second, the average of the individual length/size ratios for each sequence: <b>{avginc:1.4f}</b> lines per digit increase
      <br>Total sequences extended since their prior query: <b>{totprog:d}</b> (or <b>{progcent:2.2%}</b>)<br>
      <br><br>Now some tables.
-     <br>First, a table giving the counts of how many sequences are at what size. (Sizes &lt; ~110 are probably FactorDB <a href="http://www.mersenneforum.org/showthread.php?t=16935">sequence errors</a>.)
+     <br>First, a table giving the counts of how many sequences are at what size. (Sizes &lt; ~100 without a downdriver are probably FactorDB <a href="http://www.mersenneforum.org/showthread.php?t=16935">sequence errors</a>.)
      <br>Second, a table giving the counts of how many sequences have what size cofactors. (This table is obviously highly volatile, especially thanks to <a href="http://yafu.myfirewall.org/yafu/">yafu@home</a>.)
-     <br>Third, a table giving the counts of how many sequences are at what length. (Lengths &lt;  400 are definitely FDB errors.)
+     <br>Third, a table giving the counts of how many sequences are at what length. (Lengths &lt;  300 are definitely FDB errors.)
      <br>Fourth, a table giving the counts of how many sequences are controlled by which drivers.
      <br>Fifth, a table showing any recent progress, or the date of last progress. (See the main status page for more details.)
      <br>Sixth, a table showing the counts of how many sequences were last updated on which dates.
@@ -154,42 +131,42 @@
      <br><br>
      <table id="sizes" border="1" bordercolor="#B8B8B8" cellpadding="2" cellspacing="0">
        <thead>
-          <tr class="headerrow"> <th>Size</th> <th>Count</th> </tr>
+          <tr> <th>Size</th> <th>Count</th> </tr>
        </thead>
        <tbody>
        </tbody>
      </table>
      <table id="cofacts" border="1" bordercolor="#B8B8B8" cellpadding="2" cellspacing="0">
        <thead>
-          <tr class="headerrow"> <th>Cofactor Size</th> <th>Count</th> </tr>
+          <tr> <th>Cofactor Size</th> <th>Count</th> </tr>
        </thead>
        <tbody>
        </tbody>
      </table>
      <table id="lens" border="1" bordercolor="#B8B8B8" cellpadding="2" cellspacing="0">
        <thead>
-          <tr class="headerrow"> <th>Length</th> <th>Count</th> <th>Percentile</th> </tr>
+          <tr> <th>Length</th> <th>Count</th> <th>Percentile</th> </tr>
        </thead>
        <tbody>
        </tbody>
      </table>
      <table id="guides" border="1" bordercolor="#B8B8B8" cellpadding="2" cellspacing="0">
        <thead>
-          <tr class="headerrow"> <th>Guide</th> <th>Count</th> </tr>
+          <tr> <th>Guide</th> <th>Count</th> </tr>
        </thead>
        <tbody>
        </tbody>
      </table>
      <table id="progress" border="1" bordercolor="#B8B8B8" cellpadding="2" cellspacing="0">
        <thead>
-          <tr class="headerrow"> <th>Recent Progress?</th> <th>Count</th></tr>
+          <tr> <th>Recent Progress?</th> <th>Count</th></tr>
        </thead>
        <tbody>
        </tbody>
      </table>
      <table id="updated" border="1" bordercolor="#B8B8B8" cellpadding="2" cellspacing="0">
        <thead>
-          <tr class="headerrow"> <th>Last Updated</th> <th>Count</th></tr>
+          <tr> <th>Last Updated</th> <th>Count</th></tr>
        </thead>
        <tbody>
        </tbody>
