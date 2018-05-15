@@ -25,12 +25,14 @@
 # sequences from first principles: start with all even numbers, take all seqs
 # up to a certain bound, then eliminate all duplicates.
 
-from subprocess import run, PIPE, STDOUT
-import re
-_PATTERN = re.compile(r'^P([0-9]+) = ([0-9]+)')
+
+import re, pickle
+_PATTERN = re.compile(r'^P[0-9]+ = ([0-9]+)\r?$', re.MULTILINE)
+from pexpect.replwrap import REPLWrapper
+from pexpect.exceptions import TIMEOUT
 from mfaliquot.theory import numtheory as nt, aliquot as aq
-#nt.set_cache(10**7)
 from collections import defaultdict
+from os import remove
 
 
 ################################################################################
@@ -42,23 +44,25 @@ def aliquot_sieve(bound, inputs=None):
      inputs should be a sequence of (original_seq, current_val) tuples for
      use in resuming/extending previous sieves to a higher bound.'''
 
+     yafu = Yafu('/home/bill/yafu/yafu -threads 8')
+
      if inputs is None:
           values = defaultdict(list)
           unique = []
           l = 0
-          for seq in range(2, 2*10**6, 2):
+          for seq in range(2, 5*10**6, 2):
                #print(seq)
                n = seq
-               #n = yafu_factor(n)
-               n = nt.factor(n)
+               n = yafu.factor(n)
+               #n = nt.factor(n)
                m = aq.aliquot(n)
                if m < int(n):
                     continue
                n = m
-               while n < 10**13:
+               while n < bound:
                     #print(f"seq: {seq} -- val: {n} -- total vals: {len(values)}")
-                    #n = yafu_factor(n)
-                    m = nt.factor(n)
+                    m = yafu.factor(n)
+                    #m = nt.factor(n)
                     #if m._unparse() != n: raise ValueError("bad factors")
                     m = aq.aliquot(m)
                     if m in values:
@@ -70,44 +74,53 @@ def aliquot_sieve(bound, inputs=None):
                else:
                     unique.append(seq)
                     l += 1
-                    if l % 1000 == 0:
-                         print(f"have {l} unique seqs (ratio {seq/(2*l):2.2f}) removed per unique")
+                    if l % 100 == 0:
+                         print(f"have {l} unique seqs (ratio {seq/l:2.2f} removed per unique)")
+                    #print(f"have {l} unique seqs (ratio {seq/(2*l):2.2f} removed per unique)")
           return unique, values
 
 
+class Yafu(REPLWrapper):
 
-def yafu_factor(n):
-     # some sort of bug??? in yafu doesn't print small factors. fortunately,
-     # mfaliquot.theory.numtheory gives a simple workaround
-     factors = nt.Factors()
-     _n = n # save for verification
-
-
-     for p in nt._primes:
-          while n % p == 0:
-               factors[p] += 1
-               n //= p
-     if n == 1:
-          return factors
-     if n < 1:
-          raise ValueError("wtf?")
+     def __init__(self, cmd, **kwargs):
+          super().__init__(cmd, '>> ', None, **kwargs)
+          self.child.delaybeforesend = None
+          self.args = cmd, kwargs
 
 
-     args = ['/home/bill/yafu/yafu', f'factor({n})', '-threads', '8']
-     result = run(args, stdout=PIPE, stderr=STDOUT, universal_newlines=True)
+     def factor(self, n):
+          #_n = n # save for verification
+          output = None
+          while not output:
+               try:
+                    output = self.run_command(f"factor({n})", timeout=5)
+               except TIMEOUT:
+                    print(f'doh! {n}')
+                    try:
+                         remove('siqs.dat')
+                         remove('factor.log')
+                    except FileNotFoundError:
+                         pass
+                    self.__init__(self.args[0], **self.args[1])
 
-     for line in result.stdout.splitlines():
-          if line and line[0] == 'P':
-               match = _PATTERN.match(line)
-               if match:
-                    factors[int(match.group(2))] += 1
-
-     if not factors.full:
-          raise ValueError("composite factor!")
-     if int(factors) != int(_n):
-          raise ValueError(f"bad factors: {_n}, {factors}")
-     return factors
+          facts = nt.Factors()
+          for factor in _PATTERN.findall(output):
+               facts[int(factor)] += 1
+          #if int(facts) != int(_n):
+          #     raise ValueError(f"bad factors: {_n}, {facts}")
+          return facts
 
 
 if __name__ == '__main__':
-     print(yafu_factor(1892736541092853734567345636191985016290354645634563123418764325356735))
+     unique, values = aliquot_sieve(10**40)
+
+     print(len(unique), len(values))
+
+     with open('generate_seqs.values', 'wb') as f:
+          pickle.dump(values, f, protocol=-1)
+
+     with open('generate_seqs.txt', 'w') as f:
+          for seq in unique:
+               f.write(str(seq)+'\n')
+
+     #print(Yafu('/home/bill/yafu/yafu -threads 8').factor(1892736541092853734567345636191985016290354645634563123418764325356735))
