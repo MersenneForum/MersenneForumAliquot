@@ -53,11 +53,13 @@ while read line; do
 		for seq in $other; do
 			# determine common index (first line that is present in all alq_*.txt files)
 			ci=$(grep -F -h -f "alq_$first.txt" "alq_$seq.txt" | head -n 1)
-
-			# find common index between the two sequences and prepare for output
-			merger=$(grep -B 1 -F "$ci" "alq_$first.elf" "alq_$seq.elf")
-			out="$out\n$merger\n\n"
-
+			if [[ "x$ci" -eq "x" ]]; then
+				out="$out\nNo common index found for: $first $other\n\n"
+			else
+				# find common index between the two sequences and prepare for output
+				merger=$(grep -B 1 -F "$ci" "alq_$first.elf" "alq_$seq.elf")
+				out="$out\n$merger\n\n"
+			fi
 			# delete temporary files
 			rm "alq_$seq.elf" "alq_$seq.txt"
 		done
