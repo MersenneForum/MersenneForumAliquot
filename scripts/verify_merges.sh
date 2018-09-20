@@ -28,6 +28,7 @@ if [[ -e $tmpfile ]]; then exit 0; fi
 
 if [[ ! -f $aliqueit || ! -x $aliqueit ]]; then
 	$emailscript "Could not find aliqueit executable at $aliqueit"
+	exit 1;
 fi
 
 mv $mergefile $tmpfile
@@ -59,7 +60,7 @@ while read line; do
 		for seq in $other; do
 			# determine common index (first line that is present in all alq_*.txt files)
 			ci=$(grep -F -h -f "alq_$first.txt" "alq_$seq.txt" | head -n 1)
-			if [[ "x$ci" -eq "x" ]]; then
+			if [[ "x$ci" == "x" ]]; then
 				out="$out\nNo common index found for: $first $other\n\n"
 			else
 				# find common index between the two sequences and prepare for output
