@@ -412,7 +412,8 @@ class SequencesManager(_SequencesData):
           '''Returns a tuple of (mergee, (*mergers)) tuples (does not drop)'''
           ids = defaultdict(list)
           for ali in self.values():
-               ids[ali.id].append(ali.seq)
+               if ali.id != None:
+                    ids[ali.id].append(ali.seq)
 
           merges = [list(sorted(lst)) for lst in ids.values() if len(lst) > 1]
           merges = tuple((lst[0], tuple(lst[1:])) for lst in merges)

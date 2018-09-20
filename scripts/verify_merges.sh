@@ -18,14 +18,20 @@
 
 aliqueit="./aliqueit"
 mergefile="./allseq.merges.txt"
+tmpfile="./allseq.merges.tmp"
 errfile="./allseq.broken.txt"
 emailscript="./send_email.py"
 
 if [[ ! -s $mergefile ]]; then exit 1; fi
 
+if [[ -e $tmpfile ]]; then exit 0; fi
+
 if [[ ! -f $aliqueit || ! -x $aliqueit ]]; then
 	$emailscript "Could not find aliqueit executable at $aliqueit"
 fi
+
+mv $mergefile $tmpfile
+touch $mergefile
 
 out="Sequences verified as merged:\n"
 
@@ -65,11 +71,11 @@ while read line; do
 		done
 		rm "alq_$first.elf" "alq_$first.txt"
 	fi
-done < $mergefile
+done < $tmpfile
 
 $emailscript "$(echo -e "$out")" # echo -e to interpret the \n to actual newlines
 
-echo > $mergefile
+rm $tmpfile
 
 if [[ -s $errfile ]]; then
 	$emailscript "Something is wrong with these sequences: $(cat $errfile)"
