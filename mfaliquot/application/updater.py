@@ -25,7 +25,7 @@ from time import sleep
 from subprocess import Popen
 from . import fdb
 from .sequence import SequenceInfo
-import logging, signal, json
+import logging, signal, json, os
 _logger = logging.getLogger(__name__)
 
 
@@ -297,6 +297,9 @@ class AllSeqUpdater:
                Popen(self.mergescript, start_new_session=True)
           else:
                _logger.info("No merges found")
+               if os.stat(self.mergefile).st_size > 0:
+                    _logger.info("Launching merge verification script...")
+                    Popen(self.mergescript, start_new_session=True)
 
 
           _logger.info(f'Currently have {len(self.seqinfo)} sequences on file. Creating statistics...')
