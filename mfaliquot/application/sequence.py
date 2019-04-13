@@ -22,6 +22,9 @@ from ..theory import aliquot as alq
 from time import strftime, gmtime
 from datetime import datetime, timedelta, date
 DATETIMEFMT = '%Y-%m-%d %H:%M:%S'
+import logging, re
+
+_logger = logging.getLogger(__name__)
 
 # SequenceInfo is the standard record of information for one single sequence,
 # and is the primary ingredient in the AllSeq.json/.html files. It is a dependency
