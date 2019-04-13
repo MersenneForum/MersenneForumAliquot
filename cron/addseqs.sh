@@ -23,7 +23,7 @@ while [[ $num_seqs -gt 0 ]]; do
   cur_pos=$((cur_pos+1))
 done < "$input"
 
-scl enable rh-python36 "./allseq.py $newseqs" > /dev/null 2>&1
+./allseq.py $newseqs > /dev/null 2>&1
 if [ $? -eq 0 ]; then
   echo $cur_pos > pointer
 fi
