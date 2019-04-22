@@ -161,7 +161,7 @@ class BufferingSMTPHandler(logging.Handler):
           msg['From'] = self.from_addr
           msg.set_content("Something went wrong (?) while {}.py was running:\n\n".format(self.scriptname)+txt)
           try:
-               s = SMTP()
+               s = SMTP(self.host)
                s.connect(self.host, self.port)
                s.starttls()
                if self.username and self.password:
