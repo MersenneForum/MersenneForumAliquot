@@ -21,8 +21,7 @@
     "termscript":  "{script_dir}/verify_terminations.sh",
     "mergescript": "{script_dir}/verify_merges.sh",
     "batchsize": 100,
-    "broken": {"1465290": [1365, 11764279019832486585710256]
-               },
+    "broken": {"933564": [129, 1150187197239087798]},
     "_example_broken_since_no_json_comments":
               {"747720": [67, 1977171370480],
                "72708": [255, 744313934763611816],
@@ -59,7 +58,7 @@
             "when": "W6"
         },
         "console_handler": {
-            "level": "INFO",
+            "level": "DEBUG",
             "formatter": "main",
             "class": "logging.StreamHandler",
             "stream": "ext://sys.stdout"
