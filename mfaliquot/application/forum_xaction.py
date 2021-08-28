@@ -28,7 +28,8 @@ from .. import blogotubes
 
 
 _logger = logging.getLogger(__name__)
-SEQ_REGEX = re.compile(r'(?<![0-9])[0-9]{5,7}(?![0-9])') # matches only 5-7 digit numbers
+# 30.06.2021 added 4 digits as reservable because there is interest on MF
+SEQ_REGEX = re.compile(r'(?<![0-9])[0-9]{4,7}(?![0-9])') # matches only 4-7 digit numbers
 
 ################################################################################
 # Spidering/reading code
