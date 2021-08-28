@@ -11,25 +11,25 @@
      <script type="text/javascript" src="js/jquery.dataTables.js"></script>
      <script type="text/javascript" src="js/dataTables.scroller.js"></script>
      <script type="text/javascript">
-     $.fn.dataTableExt.afnFiltering.push(
-       function(oSettings, aData, iDataIndex) {{
+     $.fn.dataTable.ext.search.push(
+       function(settings, searchData, index, rowData, counter) {{
          if( document.getElementById('three').checked ) {{
-           if( aData[7].indexOf("* 3 *") > -1 || aData[7].indexOf("* 3^") > -1 ){{
+           if( searchData[7].indexOf("* 3 *") > -1 || searchData[7].indexOf("* 3^") > -1 ){{
              return false;
            }}
          }}
-         if( document.getElementById('driver').checked && aData[13] ) {{
+         if( document.getElementById('driver').checked && searchData[13] ) {{
            return false;
          }}
-         if( document.getElementById('reserve').checked && aData[8] ) {{
+         if( document.getElementById('reserve').checked && searchData[8] ) {{
            return false;
          }}
          var rmin = document.getElementById('min').value*1; // *1 converts str to int
-         if( rmin != "" && aData[0] < rmin ) {{
+         if( rmin != "" && searchData[0] < rmin ) {{
            return false;
          }}
          var rmax = document.getElementById('max').value*1;
-         if( rmax != "" && aData[0] > rmax ) {{
+         if( rmax != "" && searchData[0] > rmax ) {{
            return false;
          }}
          return true;
@@ -59,32 +59,31 @@
          return (a < b) ? 1 : ( (a > b) ? -1 : 0);
        }}
      }}
-     jQuery.fn.dataTableExt.oSort['special-asc'] = specialSort;
-     jQuery.fn.dataTableExt.oSort['special-desc'] = function(a, b) {{ return -specialSort(a, b); }};
+     jQuery.fn.dataTable.ext.type.order['special-asc'] = specialSort;
+     jQuery.fn.dataTable.ext.type.order['special-desc'] = function(a, b) {{ return -specialSort(a, b); }};
      $(document).ready(function() {{
-       var oTable = $('#win').dataTable( {{
-		"sScrollY": "577px",
-		"sAjaxSource": "AllSeq.json",
-		"sDom": '<"check">fritS',
-		"aaSorting": [[ 2, "asc" ]],
-		"bDeferRender": true,
-		//"bAutoWidth": false,
-		"aoColumnDefs": [
-		     {{ "sClass": "left", "aTargets": [4, 7] }}, // columns listing factors
-		     {{ "bSearchable": false, "bVisible": false, "aTargets": [12, 13] }}, // id and is_driver are totally invisible
-		     // ~~three~~ two columns are rendered as links
-		     {{ "fnRender": function (o, val) {{return '<a target="_blank" class="darklink" href="http://factordb.com/sequences.php?se=1&aq='+val+'&action=last20">'+val+'</a>'}}, "bUseRendered": false, "aTargets": [0] }},
-		     {{ "fnRender": function (o, val) {{return '<a target="_blank" class="darklink" href="http://factordb.com/aliquot.php?type=1&aq='+o.aData[0]+'&big=1">'+val+'</a>'}}, "bUseRendered": false, "aTargets": [1] }},
-		     {{ "fnRender": function (o, val) {{return val.toFixed(2)}}, "aTargets": [11] }},
-		     {{ "fnRender": function (o, val) {{return val.toFixed(3)}}, "aTargets": [6], "bUseRendered": false }},
-		     {{ "sType": "special", "aTargets": [9] }} // special sort for progress column
-		]
+        var oTable = $('#win').dataTable( {{
+            "ajax": "AllSeq.json",
+            "scrollY": "577px",
+            "dom": '<"check">fritS',
+            "order": [[ 2, "asc" ]],
+            "deferRender": true,
+            "columnDefs": [
+                {{"className": "left", "targets": [4,7]}}, // columns listing factors
+                {{"searchable": false, "visible": false, "targets": [12,13]}}, // id and is_driver are totally invisible
+                // ~~three~~ two columns are rendered as links
+                {{"createdCell": function (td, cellData, rowData, row, col) {{$(td).html('<a target="_blank" class="darklink" href="http://factordb.com/sequences.php?se=1&aq='+cellData+'&action=last20">'+cellData+'</a>')}}, "targets": [0]}},
+                {{"createdCell": function (td, cellData, rowData, row, col) {{$(td).html('<a target="_blank" class="darklink" href="http://factordb.com/aliquot.php?type=1&aq='+rowData[0]+'&big=1">'+cellData+'</a>')}}, "targets": [1]}},
+                {{"createdCell": function (td, cellData, rowData, row, col) {{$(td).html(cellData.toFixed(2))}}, "targets": [11]}},
+                {{"createdCell": function (td, cellData, rowData, row, col) {{$(td).html(cellData.toFixed(3))}}, "targets": [6]}},
+                {{"type": "special", "targets": [9]}} // special sort for progress column
+            ]
        }});
        $("div.check").html('Exclude sequences with a 3: <input type="checkbox" id="three"> &nbsp;'+
           'Exclude drivers: <input type="checkbox" id="driver"> &nbsp;'+
           'Exclude reserved sequences: <input type="checkbox" id="reserve"><br>'+
           'Range-filter sequence leaders: <input type="text" id="min" maxlength=7 size=7> - <input type="text" id="max" maxlength=7 size=7> <!--button type="button" id="button">Filter</button-->' );
-       function redraw() {{ oTable.fnDraw(); }}
+       function redraw() {{ oTable.draw(); }}
        $('#three').change( redraw );
        $('#driver').change( redraw );
        $('#reserve').change( redraw );
