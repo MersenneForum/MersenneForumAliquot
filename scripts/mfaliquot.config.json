@@ -21,9 +21,7 @@
     "termscript":  "{script_dir}/verify_terminations.sh",
     "mergescript": "{script_dir}/verify_merges.sh",
     "batchsize": 100,
-    "broken": {"933564": [129, 1150187197239087798],
-               "1475172": [255, 115054299854133875896],
-               "1866192": [3835, 1650082498696992926527054552]},
+    "broken": {},
     "_example_broken_since_no_json_comments":
               {"747720": [67, 1977171370480],
                "72708": [255, 744313934763611816],
