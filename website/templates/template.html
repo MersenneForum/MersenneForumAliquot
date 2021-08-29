@@ -18,7 +18,7 @@
              return false;
            }}
          }}
-         if( document.getElementById('driver').checked && searchData[13] ) {{
+         if( document.getElementById('driver').checked && rowData[13] ) {{
            return false;
          }}
          if( document.getElementById('reserve').checked && searchData[8] ) {{
@@ -62,9 +62,10 @@
      jQuery.fn.dataTable.ext.type.order['special-asc'] = specialSort;
      jQuery.fn.dataTable.ext.type.order['special-desc'] = function(a, b) {{ return -specialSort(a, b); }};
      $(document).ready(function() {{
-        var oTable = $('#win').dataTable( {{
+        var oTable = $('#win').DataTable( {{
             "ajax": "AllSeq.json",
             "scrollY": "577px",
+            "scroller": true,
             "dom": '<"check">fritS',
             "order": [[ 2, "asc" ]],
             "deferRender": true,
