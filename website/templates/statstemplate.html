@@ -48,9 +48,10 @@
      $(document).ready(function() {{
        var oTable1 = $('#sizes').DataTable( {{
 		"scrollY": szht,
-		"ajax": {
+		"scroller": true,
+		"ajax": {{
                     "url": "statistics.json",
-                    "dataSrc": "aSizes" }
+                    "dataSrc": "aSizes" }},
 		"dom": 'rtS',
 		"order": [[ 0, "asc" ]],
 		"deferRender": true,
@@ -58,9 +59,10 @@
        }});
        var oTable2 = $('#cofacts').DataTable( {{
 		"scrollY": szht,
-		"ajax": {
+		"scroller": true,
+		"ajax": {{
                     "url": "statistics.json",
-                    "dataSrc": "aCofacts" }
+                    "dataSrc": "aCofacts" }},
 		"dom": 'rtS',
 		"order": [[ 0, "asc" ]],
 		"deferRender": true,
@@ -68,9 +70,10 @@
        }});
        var oTable3 = $('#lens').DataTable( {{
 		"scrollY": szht,
-		"ajax": {
+		"scroller": true,
+		"ajax": {{
                     "url": "statistics.json",
-                    "dataSrc": "aLens" }
+                    "dataSrc": "aLens" }},
 		"dom": 'rtS',
 		"order": [[ 0, "asc" ]],
 		"deferRender": true,
@@ -81,9 +84,10 @@
        }});
        var oTable4 = $('#guides').DataTable( {{
 		"scrollY": szht,
-		"ajax": {
+		"scroller": true,
+		"ajax": {{
                     "url": "statistics.json",
-                    "dataSrc": "aGuides" }
+                    "dataSrc": "aGuides" }},
 		"dom": 'rtS',
 		"order": [[ 0, "asc" ]],
 		"deferRender": true,
@@ -94,9 +98,10 @@
        }});
        var oTable5 = $('#progress').DataTable( {{
 		"scrollY": szht,
-		"ajax": {
+		"scroller": true,
+		"ajax": {{
                     "url": "statistics.json",
-                    "dataSrc": "aProgress" }
+                    "dataSrc": "aProgress" }},
 		"dom": 'rtS',
 		"order": [[ 0, "asc" ]],
 		"deferRender": true,
@@ -107,9 +112,10 @@
        }});
        var oTable5 = $('#updated').DataTable( {{
 		"scrollY": szht,
-		"ajax": {
+		"scroller": true,
+		"ajax": {{
                     "url": "statistics.json",
-                    "dataSrc": "aUpdated" }
+                    "dataSrc": "aUpdated" }},
 		"dom": 'rtS',
 		"order": [[ 0, "asc" ]],
 		"deferRender": true,
