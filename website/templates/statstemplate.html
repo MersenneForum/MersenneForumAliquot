@@ -42,72 +42,78 @@
          return (a < b) ? 1 : ( (a > b) ? -1 : 0);
        }}
      }}
-     jQuery.fn.dataTableExt.oSort['special-asc'] = specialSort;
-     jQuery.fn.dataTableExt.oSort['special-desc'] = function(a, b) {{ return -specialSort(a, b); }};
+     jQuery.fn.dataTable.ext.type.order['special-asc'] = specialSort;
+     jQuery.fn.dataTable.ext.type.order['special-desc'] = function(a, b) {{ return -specialSort(a, b); }};
      var szht = "600px";
      $(document).ready(function() {{
-       var oTable1 = $('#sizes').dataTable( {{
-		"sScrollY": szht,
-		"sAjaxSource": "statistics.json",
-		"sAjaxDataProp": "aSizes",
-		"sDom": 'rtS',
-		"aaSorting": [[ 0, "asc" ]],
-		"bDeferRender": true,
-		"bAutoWidth": false,
+       var oTable1 = $('#sizes').DataTable( {{
+		"scrollY": szht,
+		"ajax": {
+                    "url": "statistics.json",
+                    "dataSrc": "aSizes" }
+		"dom": 'rtS',
+		"order": [[ 0, "asc" ]],
+		"deferRender": true,
+		"autoWidth": false,
        }});
-       var oTable2 = $('#cofacts').dataTable( {{
-		"sScrollY": szht,
-		"sAjaxSource": "statistics.json",
-		"sAjaxDataProp": "aCofacts",
-		"sDom": 'rtS',
-		"aaSorting": [[ 0, "asc" ]],
-		"bDeferRender": true,
-		"bAutoWidth": false,
+       var oTable2 = $('#cofacts').DataTable( {{
+		"scrollY": szht,
+		"ajax": {
+                    "url": "statistics.json",
+                    "dataSrc": "aCofacts" }
+		"dom": 'rtS',
+		"order": [[ 0, "asc" ]],
+		"deferRender": true,
+		"autoWidth": false,
        }});
-       var oTable3 = $('#lens').dataTable( {{
-		"sScrollY": szht,
-		"sAjaxSource": "statistics.json",
-		"sAjaxDataProp": "aLens",
-		"sDom": 'rtS',
-		"aaSorting": [[ 0, "asc" ]],
-		"bDeferRender": true,
-		"bAutoWidth": false,
-		"aoColumnDefs": [
-		     {{ "sType": "numeric", "aTargets": [2] }}
+       var oTable3 = $('#lens').DataTable( {{
+		"scrollY": szht,
+		"ajax": {
+                    "url": "statistics.json",
+                    "dataSrc": "aLens" }
+		"dom": 'rtS',
+		"order": [[ 0, "asc" ]],
+		"deferRender": true,
+		"autoWidth": false,
+		"columnDefs": [
+		     {{ "type": "num", "targets": [2] }}
 		]
        }});
-       var oTable4 = $('#guides').dataTable( {{
-		"sScrollY": szht,
-		"sAjaxSource": "statistics.json",
-		"sAjaxDataProp": "aGuides",
-		"sDom": 'rtS',
-		"aaSorting": [[ 0, "asc" ]],
-		"bDeferRender": true,
-		"bAutoWidth": false,
-		"aoColumnDefs": [
-		     {{ "sClass": "left", "aTargets": [0] }} // lists factors, so left-just it
+       var oTable4 = $('#guides').DataTable( {{
+		"scrollY": szht,
+		"ajax": {
+                    "url": "statistics.json",
+                    "dataSrc": "aGuides" }
+		"dom": 'rtS',
+		"order": [[ 0, "asc" ]],
+		"deferRender": true,
+		"autoWidth": false,
+		"columnDefs": [
+		     {{ "class": "left", "targets": [0] }} // lists factors, so left-just it
 		]
        }});
-       var oTable5 = $('#progress').dataTable( {{
-		"sScrollY": szht,
-		"sAjaxSource": "statistics.json",
-		"sAjaxDataProp": "aProgress",
-		"sDom": 'rtS',
-		"aaSorting": [[ 0, "asc" ]],
-		"bDeferRender": true,
-		"bAutoWidth": false,
-		"aoColumnDefs": [
-		     {{ "sType": "special", "aTargets": [0] }}
+       var oTable5 = $('#progress').DataTable( {{
+		"scrollY": szht,
+		"ajax": {
+                    "url": "statistics.json",
+                    "dataSrc": "aProgress" }
+		"dom": 'rtS',
+		"order": [[ 0, "asc" ]],
+		"deferRender": true,
+		"autoWidth": false,
+		"columnDefs": [
+		     {{ "type": "special", "targets": [0] }}
 		]
        }});
-       var oTable5 = $('#updated').dataTable( {{
-		"sScrollY": szht,
-		"sAjaxSource": "statistics.json",
-		"sAjaxDataProp": "aUpdated",
-		"sDom": 'rtS',
-		"aaSorting": [[ 0, "asc" ]],
-		"bDeferRender": true,
-		"bAutoWidth": false,
+       var oTable5 = $('#updated').DataTable( {{
+		"scrollY": szht,
+		"ajax": {
+                    "url": "statistics.json",
+                    "dataSrc": "aUpdated" }
+		"dom": 'rtS',
+		"order": [[ 0, "asc" ]],
+		"deferRender": true,
+		"autoWidth": false,
        }});
      }});
      </script>
