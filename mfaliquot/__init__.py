@@ -22,9 +22,13 @@ import logging
 _logger = logging.getLogger(__name__)
 
 from urllib import request, parse, error
+from socket import timeout
 #from http.cookiejar import CookieJar
 #def add_cookies():
 #     request.install_opener(request.build_opener(request.HTTPCookieProcessor(CookieJar())))
+
+#from http.client import HTTPConnection
+#HTTPConnection.debuglevel = 1
 
 def blogotubes(url, encoding='utf-8', hdrs=None, data=None):
      if hdrs is None:
@@ -40,6 +44,11 @@ def blogotubes(url, encoding='utf-8', hdrs=None, data=None):
      except error.HTTPError as e:
           _logger.exception(f'{type(e).__name__}: {str(e)}', exc_info=e)
           return None
+     except error.URLError as e:
+          _logger.exception(f'{type(e).__name__}: {str(e)}', exc_info=e)
+          return None
+     except timeout:
+          _logger.exception(f'socket timed out - URL %s', url)
      except Exception as e:
           _logger.exception(f'{type(e).__name__}: {str(e)}', exc_info=e)
           return None
