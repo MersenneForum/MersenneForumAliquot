@@ -73,16 +73,17 @@ def parse_mass_reservation(reservee, url):
           return None, None, None
      current, dups, unknowns = set(), [], []
      for line in txt.splitlines():
-          if SEQ_REGEX.match(line):
+
+          if not re.match(r'^[0-9]+$', line): # don't remember what purpose this line serves, ignoring any number-shaped thing that isn't a 5-7 digit sequence
+               _logger.error("mass reservation: unknown line from {}: '{}'".format(reservee, line))
+               unknowns.append(line)
+          elif SEQ_REGEX.match(line):
                seq = int(line)
                if seq in current:
                     _logger.error("mass reservation: mass res-er {} listed a duplicate for {}".format(reservee, seq))
                     dups.append(seq)
                else:
                     current.add(seq)
-          elif not re.match(r'^[0-9]+$', line): # don't remember what purpose this line serves, ignoring any number-shaped thing that isn't a 5-7 digit sequence
-               _logger.error("mass reservation: unknown line from {}: '{}'".format(reservee, line))
-               unknowns.append(line)
      return current, dups, unknowns
 
 
