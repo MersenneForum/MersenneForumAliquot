@@ -27,8 +27,8 @@ from socket import timeout
 #def add_cookies():
 #     request.install_opener(request.build_opener(request.HTTPCookieProcessor(CookieJar())))
 
-#from http.client import HTTPConnection
-#HTTPConnection.debuglevel = 1
+from http.client import HTTPConnection
+HTTPConnection.debuglevel = 1
 
 def blogotubes(url, encoding='utf-8', hdrs=None, data=None):
      if hdrs is None:
@@ -45,7 +45,7 @@ def blogotubes(url, encoding='utf-8', hdrs=None, data=None):
           _logger.exception(f'{type(e).__name__}: {str(e)}', exc_info=e)
           return None
      except error.URLError as e:
-          _logger.exception(f'{type(e).__name__}: {str(e)}', exc_info=e)
+          _logger.exception(f'URLError with URL %s', url)
           return None
      except timeout:
           _logger.exception(f'socket timed out - URL %s', url)

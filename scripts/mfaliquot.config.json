@@ -68,8 +68,8 @@
             "host": "localhost",
             "username": "",
             "password": "",
-            "from_addr": "mfaliquot email logging",
-            "to_addrs": ["bunslow@gmail.com"],
+            "from_addr": "technik@rechenkraft.net",
+            "to_addrs": ["technik@rechenkraft.net"],
             "scriptname": "{{}}"
         }
     },
