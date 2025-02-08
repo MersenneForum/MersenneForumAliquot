@@ -38,8 +38,8 @@ SEQ_REGEX = re.compile(r'(?<![0-9])[0-9]{4,7}(?![0-9])') # matches only 4-7 digi
 # This is the top level function that spiders the thread
 def spider_res_thread(last_pid):
      wobsite = 'https://www.mersenneforum.org/node/8391/page'
-
-     html = blogotubes(wobsite+'100000') # vBulletin rounds to last page
+     login_config = dotenv_values()
+     html = blogotubes(wobsite+'100000', login=login_config) # vBulletin rounds to last page
      if not html or "Aliquot sequence reservations" not in html: # check if html and we are in the right thread
           _logger.error(f"unable to spider forum")
           return last_pid, [], []
