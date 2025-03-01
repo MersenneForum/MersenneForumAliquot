@@ -21,8 +21,8 @@
 import logging
 _logger = logging.getLogger(__name__)
 
-import requests
-from urllib import request, parse, error
+import requests, re
+from urllib import error
 from socket import timeout
 #from http.cookiejar import CookieJar
 #def add_cookies():
@@ -31,15 +31,15 @@ from socket import timeout
 from http.client import HTTPConnection
 HTTPConnection.debuglevel = 1
 
-def blogotubes(url, encoding='utf-8', hdrs=None, data=None, login=None):
+def blogotubes(url: str, encoding='utf-8', hdrs: dict[str,str]=None, data: dict[str,str]=None, login: dict[str,str]=None):
      if hdrs is None:
           hdrs = {}
      s = requests.Session()
      if login is not None:
           username = login['username']
           password = login['password']
-          BASE_URL = login['login_url']
-          r = s.post(BASE_URL + '/auth/ajax-login', {'username': username, 'password': password, 'securitytoken': 'guest'})
+          base_url = login['login_url']
+          r = s.post(base_url + '/auth/ajax-login', {'username': username, 'password': password, 'securitytoken': 'guest'})
           if r.status_code != 200:
                _logger.exception(f'authentication error status_code %s', r.status_code)
                return None

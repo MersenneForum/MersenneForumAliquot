@@ -60,7 +60,7 @@ class FDBResourceLimitReached(FDBDataError):
                 # ^ avoid repeating the entire regex 5 times with slight variations. very typo prone.
                 retmpl = r'>{}</td>\n<td[^>]*?>{}</td>'
                 pages, ids, queries, cputime, when = [
-                    re.search(retmpl.format(name, valgroup), page).group(1)
+                    re.search(retmpl.format(name, valgroup), fdbpage).group(1)
                     for name, valgroup in (
                     (r'Page requests',           r'([0-9,]+)'),
                     (r'IDs created',             r'([0-9,]+)'),

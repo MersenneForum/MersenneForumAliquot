@@ -20,9 +20,9 @@
 
 from ..theory import aliquot as alq
 from time import strftime, gmtime
-from datetime import datetime, timedelta, date
+from datetime import datetime, timedelta, date, timezone
 DATETIMEFMT = '%Y-%m-%d %H:%M:%S'
-import logging, re
+import logging
 
 _logger = logging.getLogger(__name__)
 
@@ -89,7 +89,7 @@ class SequenceInfo(list):
 
           for kw, val in kwargs.items():
                if kw not in self._map:
-                    raise TypeError("unknown keyword arugment {}".format(kw))
+                    raise TypeError("unknown keyword argument {}".format(kw))
                self.__setattr__(kw, val)
 
 
@@ -134,8 +134,8 @@ class SequenceInfo(list):
           max_update_period = config['max_update_period']
 
           last_update_datetime = datetime.strptime(self.time, DATETIMEFMT)
-          updatedelta = (datetime.utcnow() - last_update_datetime)
-          updatedeltadays = updatedelta/timedelta(days=1)
+          updatedelta = (datetime.now(timezone.utc) - last_update_datetime)
+          updatedeltadays = int(updatedelta/timedelta(days=1))
           # timedelta objects have a .days attribute, but that truncates the seconds
           # "dividing" instead by a unit of days leaves the fractional part on the float
 

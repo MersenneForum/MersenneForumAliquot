@@ -29,17 +29,17 @@ fi
 
 out="Sequences verified as terminated:\n"
 
-for seq in $(cat $termfile); do
-	if [[ ! -s "alq_$seq.elf" ]]; then
-		wget "http://factordb.com/elf.php?seq=$seq&type=1" -O "alq_$seq.elf"
-	fi
-	if $aliqueit -u $seq; then
-		rm "alq_$seq.elf"
-		out="$out$seq\n"
-	else
-		echo "$seq" >> $errfile
-	fi
-done
+while IFS=' ' read -r seq text; do
+  if [[ ! -s "alq_$seq.elf" ]]; then
+    wget "http://factordb.com/elf.php?seq=$seq&type=1" -O "alq_$seq.elf"
+  fi
+  if $aliqueit -u $seq; then
+    rm "alq_$seq.elf"
+    out="$out$seq $text\n"
+  else
+    echo "$seq $text" >> $errfile
+  fi
+done < "$termfile"
 
 $emailscript "$(echo -e "$out")" # echo -e to interpret the \n to actual newlines
 
