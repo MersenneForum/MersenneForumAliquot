@@ -265,7 +265,7 @@ class AllSeqUpdater:
                     count += 1
                     _logger.info(f'{count} sequence{"s" if count > 1 else " "} complete: {ali.seq}')
                if 'terminated' in ali.factors:
-                    terminated.append(ali.seq)
+                    terminated.append((ali.seq, ali.res))
 
                if self.quitting:
                     break
@@ -277,11 +277,11 @@ class AllSeqUpdater:
 
      def postloop_finalize(self, terminated):
           if terminated:
-               _logger.error(f"Writing terminations to {self.termfile}: {' '.join(str(seq) for seq in terminated)}")
+               _logger.error(f"Writing terminations to {self.termfile}: {' '.join(str(seq[0]) for seq in terminated)}")
                # _logger.notable()
                with open(self.termfile, 'a') as f:
-                    f.write(''.join(f'{seq}\n' for seq in terminated))
-               self.seqinfo.drop(terminated)
+                    f.write(''.join(f'{seq[0]} {seq[1]}\n' for seq in terminated))
+               self.seqinfo.drop([x[0] for x in terminated]) # extract first element of tuple in list for dropping
                _logger.info("Launching termination verification script...")
                Popen(self.termscript, start_new_session=True)
 

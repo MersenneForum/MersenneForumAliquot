@@ -24,6 +24,7 @@
 
 
 import re, logging
+from dotenv import dotenv_values
 from .. import blogotubes
 
 
@@ -35,7 +36,7 @@ SEQ_REGEX = re.compile(r'(?<![0-9])[0-9]{5,7}(?![0-9])') # matches only 5-7 digi
 #
 
 # This is the top level function that spiders the thread
-def spider_res_thread(last_pid):
+def spider_res_thread(last_pid: int):
      wobsite = 'https://www.mersenneforum.org/node/8391/page'
      login_config = dotenv_values()
      html = blogotubes(wobsite+'100000', login=login_config) # vBulletin rounds to last page
@@ -108,7 +109,7 @@ def _read_msg(msg):
 # already knew how to use any parser, I would. But the overhead is too much to start now, so...
 # thankfully there are comments in the html that are individually closed; without that,
 # this would be substantially harder and I'd probably resort to a parser.
-def _parse_msg(msg):
+def _parse_msg(msg: str):
      return msg.replace('<br />','').replace('</div>','').strip()
      # Drop text after the last </div>
      ind = msg.rfind('</div>')
