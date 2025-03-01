@@ -33,12 +33,12 @@ _logger = logging.getLogger(__name__)
 
 
 class ReservationsSpider: # name is of debatable good-ness
-     '''A class to manage the statefulness of spidering the MersenneForum res
-     thread. Delegates the primary spidering logic to the module level functions.'''
+     """A class to manage the statefulness of spidering the MersenneForum res
+     thread. Delegates the primary spidering logic to the module level functions."""
 
      def __init__(self, seqinfo, config):
-          '''`seqinfo` should be a SequencesManager instance. It is assumed to
-          already have acquired its lock.'''
+          """`seqinfo` should be a SequencesManager instance. It is assumed to
+          already have acquired its lock."""
           self.seqinfo = seqinfo
           self.pidfile = config['pidfile']
           self.mass_reses = config['mass_reservations']
@@ -65,8 +65,8 @@ class ReservationsSpider: # name is of debatable good-ness
 
 # First the standalone func that processes mass text file reservations
 def parse_mass_reservation(reservee, url):
-     '''Parses a '\n' separated list of sequences, to be reserved to the given
-     name. Returns (current_entries, duplicate_seqs, unknown_lines)'''
+     """Parses a '\n' separated list of sequences, to be reserved to the given
+     name. Returns (current_entries, duplicate_seqs, unknown_lines)"""
      txt = blogotubes(url)
      if not txt:
           _logger.error(f"unable to get mass reservation file for {reservee}")
@@ -88,8 +88,8 @@ def parse_mass_reservation(reservee, url):
 
 
 def update_apply_all_res(seqinfo, last_pid, mass_reses):
-     '''Searches all known reservations, returning compiled reses to be applied,
-     as well as various results from subordinate functions'''
+     """Searches all known reservations, returning compiled reses to be applied,
+     as well as various results from subordinate functions"""
 
      now = strftime(DATETIMEFMT, gmtime())
 

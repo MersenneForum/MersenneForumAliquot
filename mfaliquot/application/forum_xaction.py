@@ -79,9 +79,9 @@ def spider_res_thread(last_pid: int):
 
 
 # This processes the parsed HTML and its add/drop commands
-def _read_msg(msg):
-     '''This processes the parsed HTML and its add/drop commands. Returns the two
-     such list of sequences.'''
+def _read_msg(msg: str):
+     """This processes the parsed HTML and its add/drop commands. Returns the two
+     such list of sequences."""
      add = []; addkws = ('Reserv', 'reserv', 'Add', 'add', 'Tak', 'tak')
      drop = []; dropkws = ('Unreserv', 'unreserv', 'Drop', 'drop', 'Releas', 'releas')
      update = []; updatekws = ('Update', 'update')
@@ -126,14 +126,14 @@ def _parse_msg(msg: str):
      return msg.replace('<br />', '').strip()
 
 
-def _parse_post(post):
+def _parse_post(post: str):
      name = re.search(r'''alt="([^"]*).*?responsive alteration: Added userinfo-details wrapper in order to''', post, re.DOTALL).group(1)
      msg = re.search(r'<div class="js-post__content-text.+?>(.*?)<div class="(b-post__edit|b-post__footer)', post, re.DOTALL).group(1)
      return name, _parse_msg(msg)
 
 
-def _parse_page(page):
-     '''returns a list of (pid, name, msg)s'''
+def _parse_page(page: str):
+     """returns a list of (pid, name, msg)s"""
      out = []
      posts = re.findall(r'<li data-node-id="([0-9]+)".*?(<a.*?)</li><!-- /end .b-post -->', page, re.DOTALL)
      for post in posts:

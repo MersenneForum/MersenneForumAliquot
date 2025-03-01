@@ -84,10 +84,10 @@ def get_id_info(id):
      return nt.Factors(' * '.join(smalls + larges)), comps
 
 def examine_seq(id, forms=None, n=None, guide=None, seq=None):
-     '''Query the FDB by ID to analyze if the corresponding number may mutate by assuming
+     """Query the FDB by ID to analyze if the corresponding number may mutate by assuming
      the composite is of the given `forms`, where `forms` is a list of `form`s as used by
      the mfaliquot.aliquot.composite_tau_lte function. The optional n and guide arguments
-     are for error checking purposes.'''
+     are for error checking purposes."""
      primes, comps = get_id_info(id)
      if len(comps) == 0:
           return None # json data for this seq is out of date
@@ -96,7 +96,7 @@ def examine_seq(id, forms=None, n=None, guide=None, seq=None):
      c = int(list(comps.keys())[0])
      guideprime, s, t = aq.canonical_form(primes)
 
-     # We do a cross check that the fdb and data file agree: to do this,
+     # We do a cross-check that the fdb and data file agree: to do this,
      # we cut primes >9 digits from the fdb data
      nprime = {p: a for p, a in primes.items() if len(str(p)) <= 9}
      if (n is not None and nprime != n) or (guide is not None and guideprime != guide):
@@ -108,8 +108,8 @@ def examine_seq(id, forms=None, n=None, guide=None, seq=None):
 
 #count = 0
 def filter_seq(seq):
-     '''Examines unreserved sequences to see if they are prone to mutation. This
-     currently ignores solely-power-of-2 guides with b > 3'''
+     """Examines unreserved sequences to see if they are prone to mutation. This
+     currently ignores solely-power-of-2 guides with b > 3"""
      if seq.res:
           return None
      n = nt.Factors(seq.factors)

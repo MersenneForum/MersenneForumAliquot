@@ -1,4 +1,5 @@
 __pycache__/
+doc/html/
 scripts/res_thread_last_pid
 scripts/allseq.drops.txt
 scripts/allseq.terms.txt

@@ -85,18 +85,18 @@ from collections.abc import MutableMapping
 import json
 
 class InterpolatedJSONConfig(OrderedDict):
-     '''A class to allow human-readable text configuration, without the complicated and
+     """A class to allow human-readable text configuration, without the complicated and
      historical API of the stdlib's ConfigParser. Example:
 
-     >>> ijc = InterpolatedJSONConfig()
-     >>> test = {"akey": 2, "bkey": "notmplstr", "ckey": "a formatted str: {akey}", "dkey": {"ekey": "nested val", "fkey": "nested formatted val: {akey}  (with nested formattings:) {dkey[ekey]}!!"}}
-     >>> ijc.update(test)
-     >>> ijc
+     >> ijc = InterpolatedJSONConfig()
+     >> test = {"akey": 2, "bkey": "notmplstr", "ckey": "a formatted str: {akey}", "dkey": {"ekey": "nested val", "fkey": "nested formatted val: {akey}  (with nested formattings:) {dkey[ekey]}!!"}}
+     >> ijc.update(test)
+     >> ijc
      InterpolatedJSONConfig([('akey', 2), ('bkey', 'notmplstr'), ('ckey', 'a formatted str: 2'), ('dkey', {'ekey': 'nested val', 'fkey': 'nested formatted val: 2  (with nested formattings:) nested val!!'})])
 
      Caution: dynamically adding further dicts requires manually calling interpolate() on those
      dicts as well.
-     '''
+     """
 
      def update(self, other):
           super().update(other)
