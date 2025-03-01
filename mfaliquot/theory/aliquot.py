@@ -52,9 +52,9 @@ The important functionality of the module also comes from the Factors class, whi
 is a subclass of dict(). The keys are the individual factors, and the corresponding
 values are the power of that factor. Example:
 
->>> import aliquot as a
->>> num = a.Factors("2^3 * 3^2 * 5 * 7 * 31^5")
->>> num
+>> import aliquot as a
+>> num = a.Factors("2^3 * 3^2 * 5 * 7 * 31^5")
+>> num
 {31: 5, 2: 3, 3: 2, 5: 1, 7: 1}
 
 As demonstrated, the Factors() constructor can parse factor strings, but is also
@@ -63,19 +63,19 @@ The reason to subclass dict() is to define custom versions of the str() and int(
 functions that make sense in the integer factorization context, as well as to add
 the factor string parsing. Example:
 
->>> num
+>> num
 {31: 5, 2: 3, 3: 2, 5: 1, 7: 1}
->>> str(num)
+>> str(num)
 '2^3 * 3^2 * 5 * 7 * 31^5'
->>> print(num)
+>> print(num)
 2^3 * 3^2 * 5 * 7 * 31^5
->>> int(num)
+>> int(num)
 72145460520
 
 Another example:
 
->>> num = a.Factors(72145460520)
->>> print(num)
+>> num = a.Factors(72145460520)
+>> print(num)
 2^3 * 3^2 * 5 * 7 * 31^5
 
 factor() and get_guide() return Factors instances, while the other functions
@@ -83,52 +83,52 @@ return ints or booleans as appropriate.
 
 More examples:
 
->>> print(num)
+>> print(num)
 2^3 * 3^2 * 5 * 7 * 31^5
->>> a.get_guide(num)
+>> a.get_guide(num)
 {2: 3, 3: 2, 5: 1}
->>> print(a.get_guide(num))
+>> print(a.get_guide(num))
 2^3 * 3^2 * 5
->>> a.get_class(num)
+>> a.get_class(num)
 2
->>> a.is_driver(a.get_guide(num))
+>> a.is_driver(a.get_guide(num))
 True
->>> mun = a.aliquot(num)
->>> mun
+>> mun = a.aliquot(num)
+>> mun
 204755687640
->>> mun = a.factor(mun)
->>> print(mun)
+>> mun = a.factor(mun)
+>> print(mun)
 2^3 * 3^2 * 5 * 7 * 269 * 302053
 
->>> a.get_class('2^3*3*5')
+>> a.get_class('2^3*3*5')
 0
->>> a.is_driver('2^2*3')
+>> a.is_driver('2^2*3')
 False
->>> a.get_class(2**2*7)
+>> a.get_class(2**2*7)
 -1
->>> print(a.get_guide(4*49*5*13))
+>> print(a.get_guide(4*49*5*13))
 2^2 * 7^2
->>> print(a.get_guide(4*49*5*13, powers=False))
+>> print(a.get_guide(4*49*5*13, powers=False))
 2^2 * 7
->>> a.get_class(4*49*5*13)
+>> a.get_class(4*49*5*13)
 2
->>> a.get_class(4*49*5*13, powers=False)
+>> a.get_class(4*49*5*13, powers=False)
 -1
 
->>> a.factor(a.sigma(2**3))
+>> a.factor(a.sigma(2**3))
 {3: 1, 5: 1}
->>> print(_) # "_" is a special variable containing the previous result
+>> print(_) # "_" is a special variable containing the previous result
 3 * 5
->>> a.twos_count(_)
+>> a.twos_count(_)
 3
->>> 3 - _ # The power of 2 minus the twos_count of v=sigma(2**3) is the class
+>> 3 - _ # The power of 2 minus the twos_count of v=sigma(2**3) is the class
 0
->>> a.get_class(2**3*3*5)
+>> a.get_class(2**3*3*5)
 0
->>> a.get_class(2**3 * a.sigma(2**3))
+>> a.get_class(2**3 * a.sigma(2**3))
 0
 
->>> for b in range(1, 11):
+>> for b in range(1, 11):
 ...     v = a.factor(a.sigma(2**b))
 ...     guide = a.get_guide(2**b * int(v))
 ...     classs = a.get_class(guide)
@@ -185,9 +185,9 @@ def get_guide(facts, powers=True):
 
 
 def canonical_form(n):
-     '''Splits a number into its canonical aliquot form, i.e. (2^b*v)*s*t where 2^b*v
+     """Splits a number into its canonical aliquot form, i.e. (2^b*v)*s*t where 2^b*v
      is the guide, s is even powered primes, and t is everything else/odd powered primes.
-     The return value is (guide, s, t) where each is a Factors instance'''
+     The return value is (guide, s, t) where each is a Factors instance"""
      n = _sanitize(n)
      if not isinstance(n, Factors): n = factor(n)
 
@@ -257,7 +257,7 @@ def is_driver(n=0, guide=None):
 
 
 def mutation_possible(known_factors, composite, forms=None):
-     '''Given an aliquot term in the form `known_factors` * `composite` (where the
+     """Given an aliquot term in the form `known_factors` * `composite` (where the
      former is an `nt.Factors` instance), then test if a mutation is possible
      depending on how the composite factors. Returning an empty list guarantees
      that a mutation won't happen, but a non-empty list (which comprises the
@@ -266,7 +266,7 @@ def mutation_possible(known_factors, composite, forms=None):
 
      If `forms` is not passed, then all possible square-free forms will be tried.
 
-     Use mutation_possible_to_str to interpret the results.'''
+     Use mutation_possible_to_str to interpret the results."""
 
      target_tau = known_factors[2] - twos_count(known_factors)
      if target_tau < 2:
@@ -281,7 +281,7 @@ def mutation_possible(known_factors, composite, forms=None):
 
 
 def composite_tau_lte(composite, x, form):
-     '''This function is literally a one line list comprehension around test_composite_tau.
+     """This function is literally a one line list comprehension around test_composite_tau.
 
      Given an odd number n of unknown factorization, test if it's possible for tau(n)
      to be <= x, assuming it factors into the form given. A false retval guarantees
@@ -295,12 +295,12 @@ def composite_tau_lte(composite, x, form):
      raise a value error.
 
      Returns a series of the congruence conditions which n may satisfy. Use
-     composite_tau_lte_to_str to interpret the congruence conditions.'''
+     composite_tau_lte_to_str to interpret the congruence conditions."""
      return [pos_res for xprime in range(2, x+1) for pos_res in test_composite_tau(composite, xprime, form)]
 
 
 def test_composite_tau(n, x, form):
-     '''Given an odd number n of unknown factorization, test if it's possible for tau(n)
+     """Given an odd number n of unknown factorization, test if it's possible for tau(n)
      to be x, assuming it factors into the form given. False guarantees that
      tau(n) != x, but true does not guarantee that tau(n) = x.
 
@@ -312,7 +312,7 @@ def test_composite_tau(n, x, form):
      raise a value error.
 
      Returns a series of the congruence conditions which n may satisfy. Use
-     test_composite_tau_to_str to interpret the congruence conditions.'''
+     test_composite_tau_to_str to interpret the congruence conditions."""
 
      n = int(_positive(n, "test_composite_tau"))
      x = int(_positive(x-1, "test_composite_tau"))+1
@@ -359,10 +359,10 @@ mutation_possible_to_str = test_composite_tau_to_str
 
 
 def analyze_composite_tau(n, x, component_taus):
-     '''Helper to test_composite_tau(). Given an odd number n and a target tau(n) together with
+     """Helper to test_composite_tau(). Given an odd number n and a target tau(n) together with
      a list of the specific tau(p) to be assumed for each prime in n, test if
      the implied conditions on p_i mod 2^{x_i+1} are compatible with n. If such a
-     compatibility is possible, return it, else return an empty value.'''
+     compatibility is possible, return it, else return an empty value."""
      # First, ignore the even part of n
      b = beta(n)
      n >>= b
@@ -415,8 +415,8 @@ def analyze_composite_tau_to_str(result, comp_str=''):
 
 @lru_cache()
 def partitions_of_size(n, count):
-     '''Creates all combinations of `count` numbers that sum to n (order doesn't
-     matter, so combos are returned in sorted form)'''
+     """Creates all combinations of `count` numbers that sum to n (order doesn't
+     matter, so combos are returned in sorted form)"""
      # Use a simple recursive construction with caching for performance.
      # A non-recursive construction certainly is not overly difficult
      if count < 1 or n < count:

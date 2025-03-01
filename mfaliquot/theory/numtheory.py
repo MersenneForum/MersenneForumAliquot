@@ -268,9 +268,9 @@ def factor(num, depth=0, factors=None, start=3):
      return factors
 
 def is_prime(n, depth=0): # Similar to factor(), except abort after first factor
-     '''\
-Returns ... if a manual depth is given and there are no factors below that depth.
-Tell me if you think of a better idea.'''
+     """\
+     Returns ... if a manual depth is given and there are no factors below that depth.
+     Tell me if you think of a better idea."""
      n = _positive(n, "is_prime")
 
      if n in _primes[:5]: return True
