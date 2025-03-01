@@ -22,9 +22,9 @@
 # A module with various random fdb interaction needed by allseq.py
 # The goal is to completely remove any reference to fdb html layout from allseq.py
 
-'''A module to query information from the FactorDatabase, factordb.com.
+"""A module to query information from the FactorDatabase, factordb.com.
 All functions provided have automatic retries. They return None if there is a
-network error of some sort, or raise an FDBDataError for bad data.'''
+network error of some sort, or raise an FDBDataError for bad data."""
 
 
 import logging, re
@@ -102,8 +102,8 @@ class FDBStatus(Enum):
 
 
 def query_id(fdb_id, tries=5):
-     '''Returns None on network error, raises FDBDataError on bad data, or an FDBStatus otherwise.
-     Partially factored lines get a (factors, cofactor), all other statuses have no parsing.'''
+     """Returns None on network error, raises FDBDataError on bad data, or an FDBStatus otherwise.
+     Partially factored lines get a (factors, cofactor), all other statuses have no parsing."""
      for i in range(tries):
           page = _blogotubes_with_fdb_useragent('http://factordb.com/index.php?id='+str(fdb_id))
           if page is None:
@@ -134,8 +134,8 @@ def query_id(fdb_id, tries=5):
 
 
 def query_sequence(seq, tries=5):
-     '''Returns None on network error, raises FDBDataError if `tries` consecutive bad data,
-     or a new SequenceInfo object if successful'''
+     """Returns None on network error, raises FDBDataError if `tries` consecutive bad data,
+     or a new SequenceInfo object if successful"""
 
      for i in reversed(range(tries)):
           page = _blogotubes_with_fdb_useragent('http://factordb.com/sequences.php?se=1&action=last&aq='+str(seq))
@@ -203,9 +203,9 @@ def process_ali_data(seq, page):
 
 
 def parse_factors(ident, page, check_size):
-     # Parse factors from a given number. Assumes small factors and composites.
-     # Error checks against the given `size`.
-     # returns factors-as-string, calculated-size (base 10)
+     """Parse factors from a given number. Assumes small factors and composites.
+     Error checks against the given `size`.
+     returns factors-as-string, calculated-size (base 10)"""
 
      comps = COMPOSITEREGEX.findall(page)
      smalls = SMALLFACTREGEX.findall(page)
