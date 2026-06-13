@@ -104,7 +104,7 @@ class FDBStatus(Enum):
 def query_id(fdb_id, tries=5):
      """Returns None on network error, raises FDBDataError on bad data, or an FDBStatus otherwise.
      Partially factored lines get a (factors, cofactor), all other statuses have no parsing."""
-     for i in range(tries):
+     for i in reversed(range(tries)):
           page = _blogotubes_with_fdb_useragent('http://factordb.com/index.php?id='+str(fdb_id))
           if page is None:
                return None
@@ -140,7 +140,13 @@ def query_sequence(seq, tries=5):
      for i in reversed(range(tries)):
           page = _blogotubes_with_fdb_useragent('http://factordb.com/sequences.php?se=1&action=last&aq='+str(seq))
           if page is None:
-               return None
+               if i <= 0:
+                    _logger.warning(f"Seq {seq}: page load error after {tries} tries")
+                    return None
+               else:
+                    _logger.info(f'Seq {seq}: retrying query ({i} tries left)')
+                    sleep(1)
+                    continue
 
           if 'Resources used by your IP' in page: # This is a "permanent"-for-rest-of-script condition, only absolute raises here
                _logger.error(f'Seq {seq}: the FDB is refusing requests')

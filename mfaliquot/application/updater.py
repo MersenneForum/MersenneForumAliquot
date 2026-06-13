@@ -228,7 +228,7 @@ class AllSeqUpdater:
                _logger.info(f"Skipping sequence {seq}")
                return None
           if out is None:
-               self.quitting = True
+               #self.quitting = True # don't quit on temporary error 500 from FDB
                return None
 
           return out
