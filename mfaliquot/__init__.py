@@ -20,8 +20,11 @@
 
 import logging
 _logger = logging.getLogger(__name__)
+logging.getLogger("requests").setLevel(logging.WARNING)
+logging.getLogger("urllib3").setLevel(logging.WARNING)
 
-from urllib import request, parse, error
+import requests, re
+from urllib import error
 from socket import timeout
 #from http.cookiejar import CookieJar
 #def add_cookies():
@@ -30,26 +33,49 @@ from socket import timeout
 from http.client import HTTPConnection
 HTTPConnection.debuglevel = 1
 
-def blogotubes(url, encoding='utf-8', hdrs=None, data=None):
+def blogotubes(url, encoding='utf-8', hdrs=None, data=None, login=None):
      if hdrs is None:
           hdrs = {}
-     if data is not None:
-          data = parse.urlencode(data, encoding=encoding)
-          data = data.encode(encoding)
-          #hdrs['Content-Type'] = 'application/x-www-form-urlencoded;charset='+encoding
-     #req = request.Request(parse.quote(url, safe='/:'), headers=hdrs)
-     req = request.Request(url, headers=hdrs)
+     s = requests.Session()
+     if login is not None:
+          username = login['username']
+          password = login['password']
+          base_url = login['login_url']
+          r = s.post(base_url + '/auth/ajax-login', {'username': username, 'password': password, 'securitytoken': 'guest'}, headers=hdrs)
+          if r.status_code != 200:
+               _logger.exception(f'authentication error status_code %s', r.status_code)
+               return None
+          if data is not None:
+               if "newtoken" in r.text: # check if we got a new securitytoken
+                    data['securitytoken'] = re.search(r'"newtoken":"([0-9a-f-]*?)"', r.text).group(1)
+               else:
+                    data['securitytoken'] = re.search(r'<input type="hidden" name="securitytoken" value="([0-9a-f-]*?)" />', r.text).group(1)
+                    data['channelid'] = re.search(r'data-channelid=\'([0-9a-f]*?)\'', r.text).group(1)
      try:
-          page = request.urlopen(req, data, timeout=300).read().decode(encoding) # 5 min timeout
+          if data is None:
+               r = s.get(url, headers=hdrs, timeout=300)
+          else:
+               r = s.post(url, data=data, headers=hdrs, timeout=300)
+          if r.status_code != 200:
+               _logger.exception(f'page load error status_code %s for %s', r.status_code, url)
+               return None
+          if login is not None:
+               s.get('https://www.mersenneforum.org/auth/logout', headers=hdrs, timeout=300)
+          page = r.text
+          s.close()
      except error.HTTPError as e:
+          s.close()
           _logger.exception(f'{type(e).__name__}: {str(e)}', exc_info=e)
           return None
      except error.URLError as e:
+          s.close()
           _logger.exception(f'URLError with URL %s', url)
           return None
      except timeout:
+          s.close()
           _logger.exception(f'socket timed out - URL %s', url)
      except Exception as e:
+          s.close()
           _logger.exception(f'{type(e).__name__}: {str(e)}', exc_info=e)
           return None
      else:
@@ -61,18 +87,18 @@ from collections.abc import MutableMapping
 import json
 
 class InterpolatedJSONConfig(OrderedDict):
-     '''A class to allow human-readable text configuration, without the complicated and
+     """A class to allow human-readable text configuration, without the complicated and
      historical API of the stdlib's ConfigParser. Example:
 
-     >>> ijc = InterpolatedJSONConfig()
-     >>> test = {"akey": 2, "bkey": "notmplstr", "ckey": "a formatted str: {akey}", "dkey": {"ekey": "nested val", "fkey": "nested formatted val: {akey}  (with nested formattings:) {dkey[ekey]}!!"}}
-     >>> ijc.update(test)
-     >>> ijc
+     >> ijc = InterpolatedJSONConfig()
+     >> test = {"akey": 2, "bkey": "notmplstr", "ckey": "a formatted str: {akey}", "dkey": {"ekey": "nested val", "fkey": "nested formatted val: {akey}  (with nested formattings:) {dkey[ekey]}!!"}}
+     >> ijc.update(test)
+     >> ijc
      InterpolatedJSONConfig([('akey', 2), ('bkey', 'notmplstr'), ('ckey', 'a formatted str: 2'), ('dkey', {'ekey': 'nested val', 'fkey': 'nested formatted val: 2  (with nested formattings:) nested val!!'})])
 
      Caution: dynamically adding further dicts requires manually calling interpolate() on those
      dicts as well.
-     '''
+     """
 
      def update(self, other):
           super().update(other)

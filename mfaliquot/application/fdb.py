@@ -22,9 +22,9 @@
 # A module with various random fdb interaction needed by allseq.py
 # The goal is to completely remove any reference to fdb html layout from allseq.py
 
-'''A module to query information from the FactorDatabase, factordb.com.
+"""A module to query information from the FactorDatabase, factordb.com.
 All functions provided have automatic retries. They return None if there is a
-network error of some sort, or raise an FDBDataError for bad data.'''
+network error of some sort, or raise an FDBDataError for bad data."""
 
 
 import logging, re
@@ -60,7 +60,7 @@ class FDBResourceLimitReached(FDBDataError):
                 # ^ avoid repeating the entire regex 5 times with slight variations. very typo prone.
                 retmpl = r'>{}</td>\n<td[^>]*?>{}</td>'
                 pages, ids, queries, cputime, when = [
-                    re.search(retmpl.format(name, valgroup), page).group(1)
+                    re.search(retmpl.format(name, valgroup), fdbpage).group(1)
                     for name, valgroup in (
                     (r'Page requests',           r'([0-9,]+)'),
                     (r'IDs created',             r'([0-9,]+)'),
@@ -102,9 +102,9 @@ class FDBStatus(Enum):
 
 
 def query_id(fdb_id, tries=5):
-     '''Returns None on network error, raises FDBDataError on bad data, or an FDBStatus otherwise.
-     Partially factored lines get a (factors, cofactor), all other statuses have no parsing.'''
-     for i in range(tries):
+     """Returns None on network error, raises FDBDataError on bad data, or an FDBStatus otherwise.
+     Partially factored lines get a (factors, cofactor), all other statuses have no parsing."""
+     for i in reversed(range(tries)):
           page = _blogotubes_with_fdb_useragent('http://factordb.com/index.php?id='+str(fdb_id))
           if page is None:
                return None
@@ -134,13 +134,19 @@ def query_id(fdb_id, tries=5):
 
 
 def query_sequence(seq, tries=5):
-     '''Returns None on network error, raises FDBDataError if `tries` consecutive bad data,
-     or a new SequenceInfo object if successful'''
+     """Returns None on network error, raises FDBDataError if `tries` consecutive bad data,
+     or a new SequenceInfo object if successful"""
 
      for i in reversed(range(tries)):
           page = _blogotubes_with_fdb_useragent('http://factordb.com/sequences.php?se=1&action=last&aq='+str(seq))
           if page is None:
-               return None
+               if i <= 0:
+                    _logger.warning(f"Seq {seq}: page load error after {tries} tries")
+                    return None
+               else:
+                    _logger.info(f'Seq {seq}: retrying query ({i} tries left)')
+                    sleep(1)
+                    continue
 
           if 'Resources used by your IP' in page: # This is a "permanent"-for-rest-of-script condition, only absolute raises here
                _logger.error(f'Seq {seq}: the FDB is refusing requests')
@@ -203,9 +209,9 @@ def process_ali_data(seq, page):
 
 
 def parse_factors(ident, page, check_size):
-     # Parse factors from a given number. Assumes small factors and composites.
-     # Error checks against the given `size`.
-     # returns factors-as-string, calculated-size (base 10)
+     """Parse factors from a given number. Assumes small factors and composites.
+     Error checks against the given `size`.
+     returns factors-as-string, calculated-size (base 10)"""
 
      comps = COMPOSITEREGEX.findall(page)
      smalls = SMALLFACTREGEX.findall(page)

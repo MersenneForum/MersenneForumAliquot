@@ -20,9 +20,9 @@
 
 from ..theory import aliquot as alq
 from time import strftime, gmtime
-from datetime import datetime, timedelta, date
+from datetime import datetime, timedelta, date, timezone
 DATETIMEFMT = '%Y-%m-%d %H:%M:%S'
-import logging, re
+import logging
 
 _logger = logging.getLogger(__name__)
 
@@ -36,6 +36,14 @@ _logger = logging.getLogger(__name__)
 # purposes
 
 class SequenceInfo(list):
+     """
+     SequenceInfo is the standard record of information for one single sequence,
+     and is the primary ingredient in the AllSeq.json/.html files. It is a dependency
+     of several other files in the package. It uses a secret dictionary to map
+     attributes to list form, which is handy for trivial JSONification.
+     Kept in a separate file for modularity and replacement
+     purposes
+     """
      _map = {'seq':       (0,  None), # (list_index, default_val)
              'index':     (1,  None),
              'size':      (2,  None),
@@ -72,8 +80,8 @@ class SequenceInfo(list):
 
 
      def __init__(self, **kwargs):
-          '''This recognizes all valid attributes, as well as the 'lst' kwarg
-          to convert from list format (must be correct length).'''
+          """This recognizes all valid attributes, as well as the 'lst' kwarg
+          to convert from list format (must be correct length)."""
           # Not exactly the prettiest code, but it's very general code
           # First super().__init__ as appropriate
           if 'lst' in kwargs:
@@ -89,7 +97,7 @@ class SequenceInfo(list):
 
           for kw, val in kwargs.items():
                if kw not in self._map:
-                    raise TypeError("unknown keyword arugment {}".format(kw))
+                    raise TypeError("unknown keyword argument {}".format(kw))
                self.__setattr__(kw, val)
 
 
@@ -105,7 +113,7 @@ class SequenceInfo(list):
 
 
      def reservation_string(self):
-          '''str(SequenceInfo) gives the AllSeq.txt format, this gives the MF reservations post format'''
+          """str(SequenceInfo) gives the AllSeq.txt format, this gives the MF reservations post format"""
           #    966  Paul Zimmermann   893  178
           # 933436  unconnected     12448  168
           if not self.res:
@@ -128,12 +136,16 @@ class SequenceInfo(list):
 
 
      def calculate_priority(self, **kwargs):
+          if self.priority > 10000:
+               return None
           config = self._prio_config # Saves the attribute lookup a dozen times per call
           config.update(kwargs)
 
           max_update_period = config['max_update_period']
 
           last_update_datetime = datetime.strptime(self.time, DATETIMEFMT)
+          #updatedelta = (datetime.now(timezone.utc) - last_update_datetime)
+          #updatedeltadays = int(updatedelta/timedelta(days=1))
           updatedelta = (datetime.utcnow() - last_update_datetime)
           updatedeltadays = updatedelta/timedelta(days=1)
           # timedelta objects have a .days attribute, but that truncates the seconds

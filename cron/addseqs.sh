@@ -5,7 +5,7 @@ if [ ! -e pointer ]; then
   echo 0 > pointer
 fi
 
-input="../tmp/open_ended4.txt"
+input="../tmp/open_ended5.txt"
 last_pos=$(head -n 1 pointer)
 num_seqs=50
 
