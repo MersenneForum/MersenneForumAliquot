@@ -4,19 +4,16 @@
      <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
      <meta name="author" content="William (Bill) Winslow">
      <meta name="description" content="Making status updates on Aliquot Sequences easier. :)" >
-     <link rel="icon" href="http://img4.wikia.nocookie.net/__cb20110423145435/bungie/images/3/32/Twinkie_7thMarathon.gif">
-     <link rel="Shortcut Icon" href="http://img4.wikia.nocookie.net/__cb20110423145435/bungie/images/3/32/Twinkie_7thMarathon.gif">
+     <link rel="icon" href="https://img4.wikia.nocookie.net/__cb20110423145435/bungie/images/3/32/Twinkie_7thMarathon.gif">
+     <link rel="Shortcut Icon" href="https://img4.wikia.nocookie.net/__cb20110423145435/bungie/images/3/32/Twinkie_7thMarathon.gif">
      <link rel="stylesheet" type="text/css" href="main.css">
      <style type="text/css">
-          .dataTables_wrapper {{
-                    float: left;
-                    margin-left: 1.5%;
-                    margin-right: 1.5%;
-                    width: 240px; }}
+         .stats_container {{
+             display: inline-flex;
+             gap: 30px; }}
      </style>
-     <script type="text/javascript" src="js/jquery.js"></script>
-     <script type="text/javascript" src="js/jquery.dataTables.js"></script>
-     <script type="text/javascript" src="js/dataTables.scroller.js"></script>
+     <script type="text/javascript" src="js/jquery4.js"></script>
+     <script type="text/javascript" src="js/dataTables.min.js"></script>
      <script type="text/javascript">
      function specialSort(a, b) {{
      // x any y should be true if a or b are a date, false otherwise
@@ -46,7 +43,7 @@
      jQuery.fn.dataTable.ext.type.order['special-desc'] = function(a, b) {{ return -specialSort(a, b); }};
      var szht = "600px";
      $(document).ready(function() {{
-       var oTable1 = $('#sizes').DataTable( {{
+       let oTable1 = new DataTable('#sizes', {{
 		"scrollY": szht,
 		"scroller": true,
 		"ajax": {{
@@ -57,7 +54,7 @@
 		"deferRender": true,
 		"autoWidth": false,
        }});
-       var oTable2 = $('#cofacts').DataTable( {{
+       let oTable2 = new DataTable('#cofacts', {{
 		"scrollY": szht,
 		"scroller": true,
 		"ajax": {{
@@ -68,7 +65,7 @@
 		"deferRender": true,
 		"autoWidth": false,
        }});
-       var oTable3 = $('#lens').DataTable( {{
+       let oTable3 = new DataTable('#lens', {{
 		"scrollY": szht,
 		"scroller": true,
 		"ajax": {{
@@ -82,7 +79,7 @@
 		     {{ "type": "num", "targets": [2] }}
 		]
        }});
-       var oTable4 = $('#guides').DataTable( {{
+       let oTable4 = new DataTable('#guides', {{
 		"scrollY": szht,
 		"scroller": true,
 		"ajax": {{
@@ -96,7 +93,7 @@
 		     {{ "class": "left", "targets": [0] }} // lists factors, so left-just it
 		]
        }});
-       var oTable5 = $('#progress').DataTable( {{
+       let oTable5 = new DataTable('#progress', {{
 		"scrollY": szht,
 		"scroller": true,
 		"ajax": {{
@@ -110,7 +107,7 @@
 		     {{ "type": "special", "targets": [0] }}
 		]
        }});
-       var oTable5 = $('#updated').DataTable( {{
+       let oTable6 = new DataTable('#updated', {{
 		"scrollY": szht,
 		"scroller": true,
 		"ajax": {{
@@ -126,7 +123,7 @@
      <title>The tru7h, the whole tru7h, and nothing but the tru7h.</title>
 </head>
 <body class="cen">
-     <br>This page contains some simple statistics based on the overall <a href="AllSeq.html">status</a> of all un-terminated Aliquot sequences &lt; 3M.<br>
+     <br>This page contains some simple statistics based on the overall <a href="AllSeq.html">status</a> of all un-terminated Aliquot sequences &lt; 5M.<br>
      <br>This page is under construction, hopefully there'll be some awesome features.<br>
      <br><br>Some simple numbers:
      <br>First, the total lengths (of all seqs) divided by total size: <b>{totinc:1.4f}</b> lines per digit increase
@@ -141,6 +138,7 @@
      <br>Sixth, a table showing the counts of how many sequences were last updated on which dates.
      <br>As with the main status table, all these tables are sortable by clicking on the column headers.
      <br><br>
+     <div class="stats_container">
      <table id="sizes" border="1" bordercolor="#B8B8B8" cellpadding="2" cellspacing="0">
        <thead>
           <tr> <th>Size</th> <th>Count</th> </tr>
@@ -183,6 +181,7 @@
        <tbody>
        </tbody>
      </table>
+     </div>
      <br>
      <footer>
        <img src="picard-appropriate.jpg" class="center" alt="Fin du page">

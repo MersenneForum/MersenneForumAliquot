@@ -8,7 +8,7 @@ footer     { text-align: center;
 a          { color: #FF9B00; }
 a.darklink { color: #946000; }
 
-.dataTables_wrapper {
+.dt-container {
           /* width: 98%;
              height: 100%; */
              text-align: center;
@@ -39,3 +39,29 @@ img.center { display: block;
              clear: both;
              margin-left: auto;
              margin-right: auto; }
+
+/* copied from datatables.css */
+div.dt-scroll {
+  width: 100%;
+}
+
+div.dt-scroll-body thead tr,
+div.dt-scroll-body tfoot tr {
+  height: 0;
+}
+div.dt-scroll-body thead tr th, div.dt-scroll-body thead tr td,
+div.dt-scroll-body tfoot tr th,
+div.dt-scroll-body tfoot tr td {
+  height: 0 !important;
+  padding-top: 0px !important;
+  padding-bottom: 0px !important;
+  border-top-width: 0px !important;
+  border-bottom-width: 0px !important;
+}
+div.dt-scroll-body thead tr th div.dt-scroll-sizing, div.dt-scroll-body thead tr td div.dt-scroll-sizing,
+div.dt-scroll-body tfoot tr th div.dt-scroll-sizing,
+div.dt-scroll-body tfoot tr td div.dt-scroll-sizing {
+  height: 0 !important;
+  overflow: hidden !important;
+}
+
