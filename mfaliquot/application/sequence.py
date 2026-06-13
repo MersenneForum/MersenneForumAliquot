@@ -136,6 +136,8 @@ class SequenceInfo(list):
 
 
      def calculate_priority(self, **kwargs):
+          if self.priority > 10000:
+               return None
           config = self._prio_config # Saves the attribute lookup a dozen times per call
           config.update(kwargs)
 
