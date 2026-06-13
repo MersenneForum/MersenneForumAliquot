@@ -20,6 +20,7 @@ aliqueit="./aliqueit"
 mergefile="./allseq.merges.txt"
 tmpfile="./allseq.merges.tmp"
 errfile="./allseq.broken.txt"
+outfile="./allseq.merges.verified.txt"
 emailscript="/usr/bin/env python3 ./send_email.py"
 
 if [[ ! -s $mergefile ]]; then exit 1; fi
@@ -75,6 +76,8 @@ while read line; do
 done < $tmpfile
 
 $emailscript "$(echo -e "$out")" # echo -e to interpret the \n to actual newlines
+
+echo -e "$out" >> $outfile
 
 rm $tmpfile
 

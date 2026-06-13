@@ -18,8 +18,8 @@
 aliqueit="./aliqueit"
 termfile="./allseq.terms.txt"
 errfile="./allseq.broken.txt"
+outfile="./allseq.terms.verified.txt"
 emailscript="/usr/bin/env python3 ./send_email.py"
-
 
 if [[ ! -s $termfile ]]; then exit 1; fi
 
@@ -43,6 +43,7 @@ done < "$termfile"
 
 $emailscript "$(echo -e "$out")" # echo -e to interpret the \n to actual newlines
 
+echo -e $out >> $outfile
 echo > $termfile
 
 if [[ -s $errfile ]]; then
