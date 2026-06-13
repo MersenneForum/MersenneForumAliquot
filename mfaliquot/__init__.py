@@ -55,7 +55,7 @@ def blogotubes(url: str, encoding='utf-8', hdrs: dict[str,str]=None, data: dict[
           else:
                r = s.post(url, data=data, headers=hdrs, timeout=300)
           if r.status_code != 200:
-               _logger.exception(f'page load error status_code %s', r.status_code)
+               _logger.exception(f'page load error status_code %s for %s', r.status_code, url)
                return None
           if login is not None:
                s.get('https://www.mersenneforum.org/auth/logout', headers=hdrs, timeout=300)
