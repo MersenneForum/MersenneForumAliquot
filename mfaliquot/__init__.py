@@ -20,6 +20,8 @@
 
 import logging
 _logger = logging.getLogger(__name__)
+logging.getLogger("requests").setLevel(logging.WARNING)
+logging.getLogger("urllib3").setLevel(logging.WARNING)
 
 import requests, re
 from urllib import error
@@ -31,7 +33,7 @@ from socket import timeout
 from http.client import HTTPConnection
 HTTPConnection.debuglevel = 1
 
-def blogotubes(url: str, encoding='utf-8', hdrs: dict[str,str]=None, data: dict[str,str]=None, login: dict[str,str]=None):
+def blogotubes(url, encoding='utf-8', hdrs=None, data=None, login=None):
      if hdrs is None:
           hdrs = {}
      s = requests.Session()
@@ -39,7 +41,7 @@ def blogotubes(url: str, encoding='utf-8', hdrs: dict[str,str]=None, data: dict[
           username = login['username']
           password = login['password']
           base_url = login['login_url']
-          r = s.post(base_url + '/auth/ajax-login', {'username': username, 'password': password, 'securitytoken': 'guest'})
+          r = s.post(base_url + '/auth/ajax-login', {'username': username, 'password': password, 'securitytoken': 'guest'}, headers=hdrs)
           if r.status_code != 200:
                _logger.exception(f'authentication error status_code %s', r.status_code)
                return None

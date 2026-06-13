@@ -24,7 +24,7 @@
 
 
 import re, logging
-from dotenv import dotenv_values
+#from dotenv import dotenv_values
 from .. import blogotubes
 
 
@@ -39,8 +39,9 @@ SEQ_REGEX = re.compile(r'(?<![0-9])[0-9]{4,7}(?![0-9])') # matches only 4-7 digi
 # This is the top level function that spiders the thread
 def spider_res_thread(last_pid: int):
      wobsite = 'https://www.mersenneforum.org/node/8391/page'
-     login_config = dotenv_values()
-     html = blogotubes(wobsite+'100000', login=login_config) # vBulletin rounds to last page
+     #login_config = { "username": " ", "password": " ", "login_url": "https://www.mersenneforum.org"}
+     #headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36"}
+     html = blogotubes(wobsite+'100000', login=login_config, hdrs=headers) # vBulletin rounds to last page
      if not html or "Aliquot sequence reservations" not in html: # check if html and we are in the right thread
           _logger.error(f"unable to spider forum")
           return last_pid, [], []
@@ -56,7 +57,7 @@ def spider_res_thread(last_pid: int):
           page_num = str(int(page_num)-1)
           _logger.info("forum_spider: looks like posts were missed, checking page {}".format(page_num))
           prev_pages.append(page_num)
-          html = blogotubes(wobsite+page_num)
+          html = blogotubes(wobsite+page_num, login=login_config, hdrs=headers)
           if not html:
                _logger.error(f"unable to spider forum (prev page)")
                return last_pid, [], []
