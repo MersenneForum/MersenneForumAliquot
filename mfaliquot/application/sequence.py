@@ -144,8 +144,10 @@ class SequenceInfo(list):
           max_update_period = config['max_update_period']
 
           last_update_datetime = datetime.strptime(self.time, DATETIMEFMT)
-          updatedelta = (datetime.now(timezone.utc) - last_update_datetime)
-          updatedeltadays = int(updatedelta/timedelta(days=1))
+          #updatedelta = (datetime.now(timezone.utc) - last_update_datetime)
+          #updatedeltadays = int(updatedelta/timedelta(days=1))
+          updatedelta = (datetime.utcnow() - last_update_datetime)
+          updatedeltadays = updatedelta/timedelta(days=1)
           # timedelta objects have a .days attribute, but that truncates the seconds
           # "dividing" instead by a unit of days leaves the fractional part on the float
 
