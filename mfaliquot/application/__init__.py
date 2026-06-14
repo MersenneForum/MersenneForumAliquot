@@ -64,67 +64,67 @@ _logger = logging.getLogger(__name__)
 # which chokes on the non-subclass subclass. So just remove it for now
 
 class _DelegatedAttribute:
-    def __init__(self, delegator_name, attr_name, baseclass):
-        self.attr_name = attr_name
-        self.delegator_name = delegator_name
-        self.baseclass = baseclass
+     def __init__(self, delegator_name, attr_name, baseclass):
+         self.attr_name = attr_name
+         self.delegator_name = delegator_name
+         self.baseclass = baseclass
 
-    def __get__(self, instance, klass):
-        if instance is None:
-            # klass.DelegatedAttr() -> baseclass.attr
-            return getattr(self.baseclass, self.attr_name)
-        else:
-            # instance.DelegatedAttr() -> instance.delegate.attr
-            return getattr(self.delegator(instance), self.attr_name)
+     def __get__(self, instance, klass):
+         if instance is None:
+             # klass.DelegatedAttr() -> baseclass.attr
+             return getattr(self.baseclass, self.attr_name)
+         else:
+             # instance.DelegatedAttr() -> instance.delegate.attr
+             return getattr(self.delegator(instance), self.attr_name)
 
-    def __set__(self, instance, value):
-        # instance.delegate.attr = value
-        setattr(self.delegator(instance), self.attr_name, value)
+     def __set__(self, instance, value):
+         # instance.delegate.attr = value
+         setattr(self.delegator(instance), self.attr_name, value)
 
-    def __delete__(self, instance):
-        delattr(self.delegator(instance), self.attr_name)
+     def __delete__(self, instance):
+         delattr(self.delegator(instance), self.attr_name)
 
-    def delegator(self, instance):
-        # minor syntactic sugar to help remove "getattr" spam (marginal utility)
-        return getattr(instance, self.delegator_name)
+     def delegator(self, instance):
+         # minor syntactic sugar to help remove "getattr" spam (marginal utility)
+         return getattr(instance, self.delegator_name)
 
-    def __str__(self):
-        return ""
+     def __str__(self):
+         return ""
 
 
 def _custom_inherit(baseclass, delegator='delegate', include=None, exclude=None):
-    '''A decorator to customize inheritance of the decorated class from the
-    given baseclass. `delegator` is the name of the attribute on the subclass
-    through which delegation is done;  `include` and `exclude` are a whitelist
-    and blacklist of attrs to include from baseclass.__dict__, providing the
-    main customization hooks.'''
-    # `autoincl` is a boolean describing whether or not to include all of baseclass.__dict__
+     """A decorator to customize inheritance of the decorated class from the
+     given baseclass. `delegator` is the name of the attribute on the subclass
+     through which delegation is done;  `include` and `exclude` are a whitelist
+     and blacklist of attrs to include from baseclass.__dict__, providing the
+     main customization hooks."""
+     # `autoincl` is a boolean describing whether or not to include all of baseclass.__dict__
 
-    # turn include and exclude into sets, if they aren't already
-    if not isinstance(include, set):
-        include = set(include) if include else set()
-    if not isinstance(exclude, set):
-        exclude = set(exclude) if exclude else set()
+     # turn include and exclude into sets, if they aren't already
+     if not isinstance(include, set):
+          include = set(include) if include else set()
+     if not isinstance(exclude, set):
+          exclude = set(exclude) if exclude else set()
 
-    # delegated_attrs = set(baseclass.__dict__.keys()) if autoincl else set()
-    # Couldn't get the above line to work, because delegating __new__ fails miserably
-    delegated_attrs = set()
-    attributes = include | delegated_attrs - exclude
+     # delegated_attrs = set(baseclass.__dict__.keys()) if autoincl else set()
+     # Couldn't get the above line to work, because delegating __new__ fails miserably
+     delegated_attrs = set()
+     attributes = include | delegated_attrs - exclude
 
-    def wrapper(subclass):
-        ## create property for storing the delegate
-        #setattr(subclass, delegator, None)
-        # ^ Initializing the delegator is the duty of the subclass itself, this
-        # decorator is only a tool to create attrs that go through it
+     def wrapper(subclass):
+          """create property for storing the delegate
+          setattr(subclass, delegator, None)
+           ^ Initializing the delegator is the duty of the subclass itself, this
+           decorator is only a tool to create attrs that go through it"""
 
-        # don't bother adding attributes that the class already has
-        attrs = attributes - set(subclass.__dict__.keys())
-        # set all the attributes
-        for attr in attrs:
-            setattr(subclass, attr, _DelegatedAttribute(delegator, attr, baseclass))
-        return subclass
+          # don't bother adding attributes that the class already has
+          attrs = attributes - set(subclass.__dict__.keys())
+          # set all the attributes
+          for attr in attrs:
+               setattr(subclass, attr, _DelegatedAttribute(delegator, attr, baseclass))
+          return subclass
 
-    return wrapper
+     return wrapper
 
 #
 ################################################################################
@@ -164,14 +164,14 @@ class LockError(Exception): pass
                    '__contains__', 'get', 'items', 'keys', 'values', '__str__'])
 # TODO: types.MappingProxyType? Why is that buried away where it's useless?
 class _SequencesData:
-     '''The class that reads and writes The Sequence Data File. The `file`
+     """The class that reads and writes The Sequence Data File. The `file`
      constructor argument is immutable for the lifetime of the object. Writing
-     also writes to the other two files (which are read-only).'''
+     also writes to the other two files (which are read-only)."""
 
      def __init__(self, config, _sequence_class=SequenceInfo):
-          '''Create the object with its one and only jsonfile. To switch files,
+          """Create the object with its one and only jsonfile. To switch files,
           you must finalize this object and "manually" move the file, then make
-          a new SequencesManager object.'''
+          a new SequencesManager object."""
           self._jsonfile = config['jsonfile']
           self._lockfile = config['lockfile']
           self._txtfile  = config['txtfile']
@@ -205,7 +205,7 @@ class _SequencesData:
 
 
      def _lock_init_empty(self):
-          '''Use if starting from scratch, not reading from file'''
+          """Use if starting from scratch, not reading from file"""
           self._lock()
           self._data = dict()
           self._heap = _Heap()
@@ -238,7 +238,7 @@ class _SequencesData:
 
 
      def lock_read_init(self):
-          '''Initialize self from the (immutable attribute) `file` passed to the constructor.'''
+          """Initialize self from the (immutable attribute) `file` passed to the constructor."""
           self._lock()
           _logger.info("Lock acquired, reading {}".format(self.file))
           try:
@@ -250,7 +250,7 @@ class _SequencesData:
 
      @contextmanager
      def acquire_lock(self, block_minutes=0):
-          '''Use this to begin a `with` statement'''
+          """Use this to begin a `with` statement"""
           # seems better to *not* define self as a context manager, I don't think
           # `self` will ever have a name suitable for reading a with statement,
           # i.e. "with seqinfo.acquire_lock():" is much clearer than "with seqinfo:"
@@ -288,7 +288,7 @@ class _SequencesData:
 
 
      def write(self):
-          '''Finalize self to file. Totally overwrites old data with current data.'''
+          """Finalize self to file. Totally overwrites old data with current data."""
           if not self._have_lock:
                raise LockError("Can't use SequencesManager.write() without lock!")
                # TODO: should these errors be (programmatically) distinguishable from
@@ -351,7 +351,7 @@ class _SequencesData:
 
 
      def pop_n_todo(self, n): # Should the two pop* methods be write-only?
-          '''A lazy iterator yielding the n highest priority sequences'''
+          """A lazy iterator yielding the n highest priority sequences"""
           while n > 0:
                seq = self._heap.pop()[2] # HEAPENTRY
                if isfinite(seq): # heap entries are sabotaged by setting seq=_Inf
@@ -360,13 +360,13 @@ class _SequencesData:
 
 
      def pop_seqs(self, seqs):
-          '''Rather than popping the n most important seqs, instead pop the specified seqs'''
+          """Rather than popping the n most important seqs, instead pop the specified seqs"""
           for seq in seqs:
                self._sabotage_heap_entry(self._data[seq])
 
 
      def drop(self, seqs):
-          '''Drop the given sequences from the dictionary.'''
+          """Drop the given sequences from the dictionary."""
           if not self._have_lock: raise LockError("Can't use SequencesManager.drop() without lock!")
           _logger.info("Dropping seqs {}".format(', '.join(str(s) for s in seqs)))
           # ^ I can't decide if this should be in the actual package or at clients' discretion
@@ -381,9 +381,9 @@ class _SequencesData:
 
 
      def push_new_info(self, ali):
-          '''Call this method to insert a newly updated SequenceInfo object
+          """Call this method to insert a newly updated SequenceInfo object
           into the underlying datastructures. Any previous such object is
-          silently overwritten.'''
+          silently overwritten."""
           if not self._have_lock: raise LockError("Can't use SequencesManager.push_new_info() without lock!")
           if ali.seq in self._data:
                self._sabotage_heap_entry(self._data[ali.seq])
@@ -403,16 +403,17 @@ class _SequencesData:
 # several such algorithms, they are separated out into this public class.
 
 class SequencesManager(_SequencesData):
-     '''The public class which implements the basic methods to manipulate
+     """The public class which implements the basic methods to manipulate
      aliquot sequence data, as well as several common algorithms on top of the
      basic methods. Update the resdatetime attribute when reservations are
-     spidered.'''
+     spidered."""
 
      def find_merges(self):
-          '''Returns a tuple of (mergee, (*mergers)) tuples (does not drop)'''
+          """Returns a tuple of (mergee, (*mergers)) tuples (does not drop)"""
           ids = defaultdict(list)
           for ali in self.values():
-               ids[ali.id].append(ali.seq)
+               if ali.id is not None:
+                    ids[ali.id].append(ali.seq)
 
           merges = [list(sorted(lst)) for lst in ids.values() if len(lst) > 1]
           merges = tuple((lst[0], tuple(lst[1:])) for lst in merges)
@@ -424,7 +425,7 @@ class SequencesManager(_SequencesData):
 
 
      def find_and_drop_merges(self):
-          '''A convenience method wrapped around `find_merges` and `drop`.'''
+          """A convenience method wrapped around `find_merges` and `drop`."""
           if not self._have_lock: raise LockError("Can't use SequencesManager.find_and_drop_merges() without lock!")
           merges = self.find_merges()
           drops = [drop for target, drops in merges for drop in drops]
@@ -435,8 +436,8 @@ class SequencesManager(_SequencesData):
 
 
      def reserve_seqs(self, name, seqs):
-          '''Mark the `seqs` as reserved by `name`.
-          Returns (successes, DNEs, already_owns, other_owns)'''
+          """Mark the `seqs` as reserved by `name`.
+          Returns (successes, DNEs, already_owns, other_owns)"""
           if not self._have_lock: raise LockError("Can't use SequencesManager.reserve_seqs() without lock!")
           success, DNEs, already_owns, other_owns = [], [], [], []
           for seq in seqs:
@@ -463,8 +464,8 @@ class SequencesManager(_SequencesData):
 
 
      def unreserve_seqs(self, name, seqs):
-          '''Mark the `seqs` as no longer reserved.
-          Returns (successes, DNEs, not_reserveds, wrong_reserveds) '''
+          """Mark the `seqs` as no longer reserved.
+          Returns (successes, DNEs, not_reserveds, wrong_reserveds) """
           if not self._have_lock: raise LockError("Can't use SequencesManager.unreserve_seqs() without lock!")
           success, DNEs, not_reserveds, wrong_reserveds = [], [], [], []
           for seq in seqs:
@@ -491,8 +492,8 @@ class SequencesManager(_SequencesData):
 
 
      def update_seqs(self, name, seqs):
-          '''Validate sequences to be updated. (Caller is responsible for actual updating.)
-          Returns (successes, DNEs) '''
+          """Validate sequences to be updated. (Caller is responsible for actual updating.)
+          Returns (successes, DNEs) """
           if not self._have_lock: raise LockError("Can't use SequencesManager.update_seqs() without lock!")
           success, DNEs = [], []
           for seq in seqs:

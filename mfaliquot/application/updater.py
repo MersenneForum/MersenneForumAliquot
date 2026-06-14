@@ -18,21 +18,21 @@
 #
 #    See the LICENSE file for more details.
 
-'''This is the module that contains the AllSeqUpdater class, which contains the
-primary logic to interface with the FDB to actually update SequencesManager instances'''
+"""This is the module that contains the AllSeqUpdater class, which contains the
+primary logic to interface with the FDB to actually update SequencesManager instances"""
 
 from time import sleep
 from subprocess import Popen
 from . import fdb
 from .sequence import SequenceInfo
-import logging, signal, json
+import logging, signal, json, os
 _logger = logging.getLogger(__name__)
 
 
 class AllSeqUpdater:
-     '''A class to manage the state of updating a batch of sequences from the FDB.
+     """A class to manage the state of updating a batch of sequences from the FDB.
      The only method that calling code needs to worry about is do_all_updates,
-     everything else is an implementation detail.'''
+     everything else is an implementation detail."""
 
      def __init__(self, config):
           self._maintemplate  = config['maintemplate']
@@ -161,7 +161,7 @@ class AllSeqUpdater:
      # primary update logic
 
      def update(self, old):
-          '''Returns (old-or-new ali object, successful_update)'''
+          """Returns (old-or-new ali object, successful_update)"""
 
           if not old or not old.is_minimally_valid() or not old.id:
                return self.query_sequence(old)
@@ -215,8 +215,8 @@ class AllSeqUpdater:
 
 
      def _fdb_error_handler_wrapper(self, func, seq, *args, **kwargs):
-          '''Calling the functions in the `fdb` module basically always looks the same:
-          catch errors, log them, and return (aliobj, False). Factor that out here.'''
+          """Calling the functions in the `fdb` module basically always looks the same:
+          catch errors, log them, and return (aliobj, False). Factor that out here."""
           try:
                out = func(*args, **kwargs)
           except fdb.FDBResourceLimitReached as e:
@@ -228,7 +228,7 @@ class AllSeqUpdater:
                _logger.info(f"Skipping sequence {seq}")
                return None
           if out is None:
-               self.quitting = True
+               #self.quitting = True # don't quit on temporary error 500 from FDB
                return None
 
           return out
@@ -256,6 +256,7 @@ class AllSeqUpdater:
 
 
      def primary_update_loop(self, seqs_todo):
+          """ returns (count of updated seqs, list of terminated seq as tuple (seq, reservee)"""
           count, terminated = 0, []
           for seq in seqs_todo:
                old = self.seqinfo[seq]
@@ -265,7 +266,7 @@ class AllSeqUpdater:
                     count += 1
                     _logger.info(f'{count} sequence{"s" if count > 1 else " "} complete: {ali.seq}')
                if 'terminated' in ali.factors:
-                    terminated.append(ali.seq)
+                    terminated.append((ali.seq, ali.res))
 
                if self.quitting:
                     break
@@ -277,11 +278,11 @@ class AllSeqUpdater:
 
      def postloop_finalize(self, terminated):
           if terminated:
-               _logger.error(f"Writing terminations to {self.termfile}: {' '.join(str(seq) for seq in terminated)}")
+               _logger.error(f"Writing terminations to {self.termfile}: {' '.join(str(seq[0]) for seq in terminated)}")
                # _logger.notable()
                with open(self.termfile, 'a') as f:
-                    f.write(''.join(f'{seq}\n' for seq in terminated))
-               self.seqinfo.drop(terminated)
+                    f.write(''.join(f'{seq[0]} {seq[1]}\n' for seq in terminated))
+               self.seqinfo.drop([x[0] for x in terminated]) # extract first element of tuple in list for dropping
                _logger.info("Launching termination verification script...")
                Popen(self.termscript, start_new_session=True)
 
@@ -297,6 +298,9 @@ class AllSeqUpdater:
                Popen(self.mergescript, start_new_session=True)
           else:
                _logger.info("No merges found")
+               if os.stat(self.mergefile).st_size > 0:
+                    _logger.info("Launching merge verification script...")
+                    Popen(self.mergescript, start_new_session=True)
 
 
           _logger.info(f'Currently have {len(self.seqinfo)} sequences on file. Creating statistics...')
@@ -305,9 +309,9 @@ class AllSeqUpdater:
 
 
      def do_all_updates(self, seqinfo, special=None):
-          '''The only method that external code needs to call. `seqinfo` must
+          """The only method that external code needs to call. `seqinfo` must
           already be locked and initialized. Returns whether or not the loop was
-          aborted due to error, or completed normally.'''
+          aborted due to error, or completed normally."""
           self.seqinfo = seqinfo
           self.quitting = False
 

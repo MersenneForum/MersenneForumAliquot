@@ -96,6 +96,20 @@ def inner_main(seqinfo, err):
                LOGGER.info("Drop {} seqs".format(len(argv[3:])))
                out = seqinfo.unreserve_seqs(argv[2], [int(seq.replace(',','')) for seq in argv[3:]])
 
+     elif argv[1] == 'update':
+
+          if len(argv[2:]) < 1:
+               print("Error: {} update <seq> [<seq>...]".format(argv[0]))
+          else:
+               LOGGER.info("Update {} seqs".format(len(argv[2:])))
+               seqs, _ = seqinfo.update_seqs("update", [int(seq.replace(',','')) for seq in argv[2:]])
+               for seq in seqs:
+                    seqinfo[seq].priority = 0
+               seqinfo.write() # "atomic"
+               updater = AllSeqUpdater(CONFIG['AllSeqUpdater'])
+               updater.do_all_updates(seqinfo, seqs)
+               LOGGER.info('manual seq updates complete')
+
      elif argv[1] == 'spider':
 
           do_spider(seqinfo)
@@ -106,7 +120,7 @@ def inner_main(seqinfo, err):
 
 
 def main():
-     err = "Error: commands are 'add', 'drop', or 'spider'"
+     err = "Error: commands are 'add', 'drop', 'update', or 'spider'"
      if len(argv) < 2:
           print(err)
           exit(-1)

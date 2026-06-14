@@ -18,14 +18,22 @@
 
 aliqueit="./aliqueit"
 mergefile="./allseq.merges.txt"
+tmpfile="./allseq.merges.tmp"
 errfile="./allseq.broken.txt"
+outfile="./allseq.merges.verified.txt"
 emailscript="/usr/bin/env python3 ./send_email.py"
 
 if [[ ! -s $mergefile ]]; then exit 1; fi
 
+if [[ -e $tmpfile ]]; then exit 0; fi
+
 if [[ ! -f $aliqueit || ! -x $aliqueit ]]; then
 	$emailscript "Could not find aliqueit executable at $aliqueit"
+	exit 1;
 fi
+
+mv $mergefile $tmpfile
+touch $mergefile
 
 out="Sequences verified as merged:\n"
 
@@ -53,21 +61,25 @@ while read line; do
 		for seq in $other; do
 			# determine common index (first line that is present in all alq_*.txt files)
 			ci=$(grep -F -h -f "alq_$first.txt" "alq_$seq.txt" | head -n 1)
-
-			# find common index between the two sequences and prepare for output
-			merger=$(grep -B 1 -F "$ci" "alq_$first.elf" "alq_$seq.elf")
-			out="$out\n$merger\n\n"
-
+			if [[ "x$ci" == "x" ]]; then
+				out="$out\nNo common index found for: $first $other\n\n"
+			else
+				# find common index between the two sequences and prepare for output
+				merger=$(grep -B 1 -F "$ci" "alq_$first.elf" "alq_$seq.elf")
+				out="$out\n$merger\n\n"
+			fi
 			# delete temporary files
 			rm "alq_$seq.elf" "alq_$seq.txt"
 		done
 		rm "alq_$first.elf" "alq_$first.txt"
 	fi
-done < $mergefile
+done < $tmpfile
 
 $emailscript "$(echo -e "$out")" # echo -e to interpret the \n to actual newlines
 
-echo > $mergefile
+echo -e "$out" >> $outfile
+
+rm $tmpfile
 
 if [[ -s $errfile ]]; then
 	$emailscript "Something is wrong with these sequences: $(cat $errfile)"

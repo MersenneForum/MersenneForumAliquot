@@ -4,32 +4,31 @@
      <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
      <meta name="author" content="Bill Winslow">
      <meta name="description" content="Making status updates on Aliquot Sequences easier. :)" >
-     <link rel="icon" href="http://mersenneforum.org/favicon.ico">
-     <link rel="Shortcut Icon" href="http://mersenneforum.org/favicon.ico">
+     <link rel="icon" href="https://mersenneforum.org/favicon.ico">
+     <link rel="Shortcut Icon" href="https://mersenneforum.org/favicon.ico">
      <link rel="stylesheet" type="text/css" href="main.css">
-     <script type="text/javascript" src="js/jquery.js"></script>
-     <script type="text/javascript" src="js/jquery.dataTables.js"></script>
-     <script type="text/javascript" src="js/dataTables.scroller.js"></script>
+     <script type="text/javascript" src="js/jquery4.js"></script>
+     <script type="text/javascript" src="js/dataTables.min.js"></script>
      <script type="text/javascript">
-     $.fn.dataTableExt.afnFiltering.push(
-       function(oSettings, aData, iDataIndex) {{
+     $.fn.dataTable.ext.search.push(
+       function(settings, searchData, index, rowData, counter) {{
          if( document.getElementById('three').checked ) {{
-           if( aData[7].indexOf("* 3 *") > -1 || aData[7].indexOf("* 3^") > -1 ){{
+           if( searchData[7].indexOf("* 3 *") > -1 || searchData[7].indexOf("* 3^") > -1 ){{
              return false;
            }}
          }}
-         if( document.getElementById('driver').checked && aData[13] ) {{
+         if( document.getElementById('driver').checked && rowData[13] ) {{
            return false;
          }}
-         if( document.getElementById('reserve').checked && aData[8] ) {{
+         if( document.getElementById('reserve').checked && searchData[8] ) {{
            return false;
          }}
          var rmin = document.getElementById('min').value*1; // *1 converts str to int
-         if( rmin != "" && aData[0] < rmin ) {{
+         if( rmin != "" && searchData[0] < rmin ) {{
            return false;
          }}
          var rmax = document.getElementById('max').value*1;
-         if( rmax != "" && aData[0] > rmax ) {{
+         if( rmax != "" && searchData[0] > rmax ) {{
            return false;
          }}
          return true;
@@ -59,32 +58,32 @@
          return (a < b) ? 1 : ( (a > b) ? -1 : 0);
        }}
      }}
-     jQuery.fn.dataTableExt.oSort['special-asc'] = specialSort;
-     jQuery.fn.dataTableExt.oSort['special-desc'] = function(a, b) {{ return -specialSort(a, b); }};
+     jQuery.fn.dataTable.ext.type.order['special-asc'] = specialSort;
+     jQuery.fn.dataTable.ext.type.order['special-desc'] = function(a, b) {{ return -specialSort(a, b); }};
      $(document).ready(function() {{
-       var oTable = $('#win').dataTable( {{
-		"sScrollY": "577px",
-		"sAjaxSource": "AllSeq.json",
-		"sDom": '<"check">fritS',
-		"aaSorting": [[ 2, "asc" ]],
-		"bDeferRender": true,
-		//"bAutoWidth": false,
-		"aoColumnDefs": [
-		     {{ "sClass": "left", "aTargets": [4, 7] }}, // columns listing factors
-		     {{ "bSearchable": false, "bVisible": false, "aTargets": [12, 13] }}, // id and is_driver are totally invisible
-		     // ~~three~~ two columns are rendered as links
-		     {{ "fnRender": function (o, val) {{return '<a target="_blank" class="darklink" href="http://factordb.com/sequences.php?se=1&aq='+val+'&action=last20">'+val+'</a>'}}, "bUseRendered": false, "aTargets": [0] }},
-		     {{ "fnRender": function (o, val) {{return '<a target="_blank" class="darklink" href="http://factordb.com/aliquot.php?type=1&aq='+o.aData[0]+'&big=1">'+val+'</a>'}}, "bUseRendered": false, "aTargets": [1] }},
-		     {{ "fnRender": function (o, val) {{return val.toFixed(2)}}, "aTargets": [11] }},
-		     {{ "fnRender": function (o, val) {{return val.toFixed(3)}}, "aTargets": [6], "bUseRendered": false }},
-		     {{ "sType": "special", "aTargets": [9] }} // special sort for progress column
-		]
+        let oTable = new DataTable('#win', {{
+            "ajax": "AllSeq.json",
+            "scrollY": "577px",
+            "scroller": true,
+            "dom": '<"check">fritS',
+            "order": [[ 2, "asc" ]],
+            "deferRender": true,
+            "columnDefs": [
+                {{"className": "left", "targets": [4,7]}}, // columns listing factors
+                {{"searchable": false, "visible": false, "targets": [12,13]}}, // id and is_driver are totally invisible
+                // ~~three~~ two columns are rendered as links
+                {{"createdCell": function (td, cellData, rowData, row, col) {{$(td).html('<a target="_blank" class="darklink" href="http://factordb.com/sequences.php?se=1&aq='+cellData+'&action=last20">'+cellData+'</a>')}}, "targets": [0]}},
+                {{"createdCell": function (td, cellData, rowData, row, col) {{$(td).html('<a target="_blank" class="darklink" href="http://factordb.com/aliquot.php?type=1&aq='+rowData[0]+'&big=1">'+cellData+'</a>')}}, "targets": [1]}},
+                {{"createdCell": function (td, cellData, rowData, row, col) {{$(td).html(cellData.toFixed(2))}}, "targets": [11]}},
+                {{"createdCell": function (td, cellData, rowData, row, col) {{$(td).html(cellData.toFixed(3))}}, "targets": [6]}},
+                {{"type": "special", "targets": [9]}} // special sort for progress column
+            ]
        }});
        $("div.check").html('Exclude sequences with a 3: <input type="checkbox" id="three"> &nbsp;'+
           'Exclude drivers: <input type="checkbox" id="driver"> &nbsp;'+
           'Exclude reserved sequences: <input type="checkbox" id="reserve"><br>'+
           'Range-filter sequence leaders: <input type="text" id="min" maxlength=7 size=7> - <input type="text" id="max" maxlength=7 size=7> <!--button type="button" id="button">Filter</button-->' );
-       function redraw() {{ oTable.fnDraw(); }}
+       function redraw() {{ oTable.draw(); }}
        $('#three').change( redraw );
        $('#driver').change( redraw );
        $('#reserve').change( redraw );
@@ -93,10 +92,10 @@
        //$('#button').mousedown( redraw );
      }});
      </script>
-     <title>Current status of aliquot sequences with start term below 2 million</title>
+     <title>Current status of aliquot sequences with start term below 4 million</title>
 </head>
 <body>
-     <h3 class="cen">Current status of aliquot sequences with start term below <s>1</s> <em>2</em> million</h3><br>
+     <h3 class="cen">Current status of aliquot sequences with start term below <s>1 2 3 4</s> <em>5</em> million</h3><br>
      <div class="cen just">
      <p>This is a page I put together inspired by schickel's AllSeq.txt, combined with the fact that finding a recent copy was a pain in the butt.
      This is supposed to make things easier (including easier sorting and data mining).
@@ -115,13 +114,7 @@
 
      <p>If you find a sequence you would like to extend, you should reserve it in <a href="http://www.mersenneforum.org">mersenneforum.org</a>'s
      <a href="http://www.mersenneforum.org/forumdisplay.php?f=90">Aliquot sequence</a> <a href="http://www.mersenneforum.org/showthread.php?t=11588">reservations thread</a>;
-     That's the source for the reservations shown in this table. Also note that if the sequence is less than 10,000,
-     there's a good chance it's being <a href="http://christophe.clavier.free.fr/Aliquot/site/clavier_table.html">worked on</a> by
-     <a href="http://christophe.clavier.free.fr/Aliquot/site/Aliquot.html">Christophe Clavier</a>. All such reservation requests should be emailed to him. Also keep in mind
-     that his work may not be in the FDB (and thus not in this table). <s>Sequences between 10,000 and 100,000
-     should also be checked further at MersenneForum, because this range was worked on by Clifford Stern. See
-     <a href="http://www.mersenneforum.org/showthread.php?t=11625">this MF thread</a> for more details about or to ask about the status of sequences in these ranges.</s>
-     The previous two sentences don't seem to be true anymore; 5 digit sequences may be reserved and worked as freely as 6 or 7 digit sequences.</p>
+     That's the source for the reservations shown in this table. Keep in mind that his work may not be in the FDB (and thus not in this table).</p>
 
      <p>If you'd like to have the basic information available in the old AllSeq.txt format (to e.g. perform an analysis with grep, etc.), that can be found <a href="AllSeq.txt">here</a>, while the raw JSON data that the table presents is found <a href="AllSeq.json">here</a>.</p>
 

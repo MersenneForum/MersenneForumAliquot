@@ -24,6 +24,7 @@
 
 
 import re, logging
+from dotenv import dotenv_values
 from .. import blogotubes
 
 
@@ -35,11 +36,11 @@ SEQ_REGEX = re.compile(r'(?<![0-9])[0-9]{5,7}(?![0-9])') # matches only 5-7 digi
 #
 
 # This is the top level function that spiders the thread
-def spider_res_thread(last_pid):
-     wobsite = 'http://www.mersenneforum.org/showthread.php?t=11588&page='
-
-     html = blogotubes(wobsite+'100000') # vBulletin rounds to last page
-     if not html:
+def spider_res_thread(last_pid: int):
+     wobsite = 'https://www.mersenneforum.org/node/8391/page'
+     login_config = dotenv_values()
+     html = blogotubes(wobsite+'100000', login=login_config) # vBulletin rounds to last page
+     if not html or "Aliquot sequence reservations" not in html: # check if html and we are in the right thread
           _logger.error(f"unable to spider forum")
           return last_pid, [], []
      all_pages = [_parse_page(html)]
@@ -50,7 +51,7 @@ def spider_res_thread(last_pid):
 
      prev_pages = []
      while lowest_pid > last_pid: # It's probable that we missed some posts on previous page
-          page_num = re.search('<td class="vbmenu_control" style="font-weight:normal">Page ([0-9]+)', html).group(1)
+          page_num = re.search('value="([0-9]+)" /> of <span', html).group(1)
           page_num = str(int(page_num)-1)
           _logger.info("forum_spider: looks like posts were missed, checking page {}".format(page_num))
           prev_pages.append(page_num)
@@ -78,9 +79,9 @@ def spider_res_thread(last_pid):
 
 
 # This processes the parsed HTML and its add/drop commands
-def _read_msg(msg):
-     '''This processes the parsed HTML and its add/drop commands. Returns the two
-     such list of sequences.'''
+def _read_msg(msg: str):
+     """This processes the parsed HTML and its add/drop commands. Returns the two
+     such list of sequences."""
      add = []; addkws = ('Reserv', 'reserv', 'Add', 'add', 'Tak', 'tak')
      drop = []; dropkws = ('Unreserv', 'unreserv', 'Drop', 'drop', 'Releas', 'releas')
      update = []; updatekws = ('Update', 'update')
@@ -108,7 +109,8 @@ def _read_msg(msg):
 # already knew how to use any parser, I would. But the overhead is too much to start now, so...
 # thankfully there are comments in the html that are individually closed; without that,
 # this would be substantially harder and I'd probably resort to a parser.
-def _parse_msg(msg):
+def _parse_msg(msg: str):
+     return msg.replace('<br />','').replace('</div>','').strip()
      # Drop text after the last </div>
      ind = msg.rfind('</div>')
      msg = msg[:ind]
@@ -124,18 +126,17 @@ def _parse_msg(msg):
      return msg.replace('<br />', '').strip()
 
 
-def _parse_post(post):
-     name = re.search(r'''alt="(.*?) is o''', post).group(1) # "is offline" or "is online"
-     msg = re.search(r'<!-- message -->(.*?)<!-- / message -->', post, re.DOTALL).group(1)
+def _parse_post(post: str):
+     name = re.search(r'''alt="([^"]*).*?responsive alteration: Added userinfo-details wrapper in order to''', post, re.DOTALL).group(1)
+     msg = re.search(r'<div class="js-post__content-text.+?>(.*?)<div class="(b-post__edit|b-post__footer)', post, re.DOTALL).group(1)
      return name, _parse_msg(msg)
 
 
-def _parse_page(page):
-     '''returns a list of (pid, name, msg)s'''
+def _parse_page(page: str):
+     """returns a list of (pid, name, msg)s"""
      out = []
-     posts = re.findall(r'<!-- post #([0-9]{6,7}) -->(.*?)<!-- / post #\1 -->', page, re.DOTALL)
+     posts = re.findall(r'<li data-node-id="([0-9]+)".*?(<a.*?)</li><!-- /end .b-post -->', page, re.DOTALL)
      for post in posts:
-          #name, msg = parse_post(post[1])
           out.append(  (int(post[0]),) + _parse_post(post[1])  )
      return out
 
